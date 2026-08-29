@@ -1,0 +1,93 @@
+'use client';
+
+import React from 'react';
+import { 
+  LayoutDashboard, 
+  PieChart, 
+  Zap,
+  History, 
+  Settings as SettingsIcon, 
+  Plus
+} from 'lucide-react';
+import { DashboardTab } from './Header';
+
+interface MobileBottomNavProps {
+  activeTab: DashboardTab;
+  onTabChange: (tab: DashboardTab) => void;
+  onOpenQuickAdd: () => void;
+}
+
+export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
+  activeTab,
+  onTabChange,
+  onOpenQuickAdd,
+}) => {
+  return (
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface/90 backdrop-blur-xl border-t border-surface-border px-2 py-2 safe-area-pb">
+      <div className="max-w-md mx-auto flex items-center justify-around relative">
+        {/* 1. Home Tab */}
+        <button
+          onClick={() => onTabChange('home')}
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition-all ${
+            activeTab === 'home'
+              ? 'text-primary font-bold scale-105'
+              : 'text-zinc-400 hover:text-foreground'
+          }`}
+        >
+          <LayoutDashboard className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
+          <span className="text-[9px] sm:text-[10px] tracking-tight">Home</span>
+        </button>
+
+        {/* 2. Summary Tab */}
+        <button
+          onClick={() => onTabChange('summary')}
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition-all ${
+            activeTab === 'summary'
+              ? 'text-primary font-bold scale-105'
+              : 'text-zinc-400 hover:text-foreground'
+          }`}
+        >
+          <PieChart className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
+          <span className="text-[9px] sm:text-[10px] tracking-tight">Summary</span>
+        </button>
+
+        {/* Center Quick Add Floating Trigger */}
+        <div className="flex items-center justify-center px-1">
+          <button
+            onClick={onOpenQuickAdd}
+            className="w-11 h-11 sm:w-12 sm:h-12 -mt-5 rounded-full bg-primary hover:bg-primary-600 text-white flex items-center justify-center shadow-lg shadow-primary/35 border-2 border-surface transition-transform active:scale-95"
+            aria-label="Add Transaction"
+          >
+            <Plus className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
+          </button>
+        </div>
+
+        {/* 3. Automate Tab */}
+        <button
+          onClick={() => onTabChange('automate')}
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition-all ${
+            activeTab === 'automate'
+              ? 'text-primary font-bold scale-105'
+              : 'text-zinc-400 hover:text-foreground'
+          }`}
+        >
+          <Zap className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
+          <span className="text-[9px] sm:text-[10px] tracking-tight">Automate</span>
+        </button>
+
+        {/* 4. History Tab */}
+        <button
+          onClick={() => onTabChange('history')}
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition-all ${
+            activeTab === 'history'
+              ? 'text-primary font-bold scale-105'
+              : 'text-zinc-400 hover:text-foreground'
+          }`}
+        >
+          <History className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
+          <span className="text-[9px] sm:text-[10px] tracking-tight">History</span>
+        </button>
+      </div>
+    </nav>
+  );
+};
