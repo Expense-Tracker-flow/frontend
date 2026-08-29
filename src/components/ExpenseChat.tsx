@@ -70,6 +70,35 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Load chat history from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('flow_chat_history');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setMessages(parsed);
+          }
+        } catch (e) {}
+      }
+    }
+  }, []);
+
+  // Save messages to localStorage on change
+  useEffect(() => {
+    if (typeof window !== 'undefined' && messages.length > 0) {
+      localStorage.setItem('flow_chat_history', JSON.stringify(messages.slice(-30)));
+    }
+  }, [messages]);
+
+  const handleClearChat = () => {
+    setMessages([]);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('flow_chat_history');
+    }
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -794,6 +823,20 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       ) : (
         /* 2. Active Chat Stream with Compact Pods & Interactive Widgets */
         <div className="flex-1 flex flex-col justify-between max-w-2xl w-full mx-auto px-4 pb-4">
+          {/* Header Action Bar */}
+          <div className="flex items-center justify-between pt-2 pb-1 border-b border-surface-border/50 text-xs text-zinc-400 font-mono">
+            <span className="flex items-center space-x-1.5 text-zinc-500">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span>Conversation Active</span>
+            </span>
+            <button
+              onClick={handleClearChat}
+              className="px-2 py-0.5 rounded-lg hover:bg-surface-raised hover:text-foreground text-[11px] transition-colors"
+            >
+              Clear Conversation
+            </button>
+          </div>
+
           {/* Messages Stream */}
           <div className="flex-1 space-y-4 py-4 overflow-y-auto">
             {messages.map((msg) => (
