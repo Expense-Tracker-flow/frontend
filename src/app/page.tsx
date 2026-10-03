@@ -440,7 +440,9 @@ export default function DashboardPage() {
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
-        'An account with this email address already exists. Please sign in.';
+        (err?.response?.status === 404
+          ? 'API service unavailable (404). Please verify backend connection.'
+          : err?.message || 'Failed to send verification code. Please check your connection.');
       setAuthError(msg);
     } finally {
       setAuthLoading(false);
@@ -503,7 +505,9 @@ export default function DashboardPage() {
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
-        (isLoginMode ? 'Invalid email or password' : 'Registration failed. Please check your verification code.');
+        (err?.response?.status === 404
+          ? 'API service unavailable (404). Please verify backend connection.'
+          : err?.message || (isLoginMode ? 'Invalid email or password' : 'Registration failed. Please check your verification code.'));
       setAuthError(msg);
     } finally {
       setAuthLoading(false);
