@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'edge';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://129.225.66.117.nip.io/api/v1';
+const BACKEND_URL = process.env.BACKEND_URL || 'https://tigers-effects-matter-bowling.trycloudflare.com/api/v1';
 
 async function handler(request: NextRequest, { params }: { params: Promise<{ path?: string[] }> }) {
   try {
