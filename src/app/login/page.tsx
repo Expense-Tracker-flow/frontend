@@ -49,7 +49,7 @@ export default function AuthPage() {
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
-        'An account with this email address already exists. Please sign in.';
+        (err?.response?.status === 404 ? 'API service unavailable. Please try again shortly.' : err?.message || 'Failed to send verification code. Please check your connection.');
       setError(msg);
     } finally {
       setIsLoading(false);
@@ -106,7 +106,9 @@ export default function AuthPage() {
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
-        (isLogin ? 'Invalid email or password' : 'Registration failed. Please verify your OTP code.');
+        (err?.response?.status === 404
+          ? 'API service unavailable. Please try again shortly.'
+          : err?.message || (isLogin ? 'Invalid email or password' : 'Registration failed. Please check your code.'));
       setError(msg);
     } finally {
       setIsLoading(false);
