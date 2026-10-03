@@ -4,32 +4,33 @@ export const runtime = 'edge';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://129.225.66.117.nip.io:8080/api/v1';
 
-async function handler(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
-  const resolvedParams = await params;
-  const path = resolvedParams.path ? resolvedParams.path.join('/') : '';
-  const search = request.nextUrl.search;
-  const targetUrl = `${BACKEND_URL}/${path}${search}`;
-
-  const headers: Record<string, string> = {
-    'Host': '129.225.66.117.nip.io:8080',
-  };
-
-  // Only forward necessary client headers, stripping Cloudflare internal headers
-  const ALLOWED_HEADERS = ['authorization', 'content-type', 'accept', 'accept-language', 'cache-control', 'pragma'];
-  request.headers.forEach((value, key) => {
-    const lowerKey = key.toLowerCase();
-    if (ALLOWED_HEADERS.includes(lowerKey)) {
-      headers[lowerKey] = value;
-    }
-  });
-
-  const method = request.method;
-  let body: BodyInit | null = null;
-  if (method !== 'GET' && method !== 'HEAD') {
-    body = await request.text();
-  }
-
+async function handler(request: NextRequest, { params }: { params: Promise<{ path?: string[] }> }) {
   try {
+    const resolvedParams = await Promise.resolve(params).catch(() => ({}));
+    const path =
+      resolvedParams && Array.isArray(resolvedParams.path)
+        ? resolvedParams.path.join('/')
+        : request.nextUrl.pathname.replace(/^\/api\/v1\/?/, '');
+    const search = request.nextUrl.search;
+    const targetUrl = `${BACKEND_URL}/${path}${search}`;
+
+    const headers: Record<string, string> = {};
+
+    // Forward necessary client headers, excluding forbidden and internal headers
+    const ALLOWED_HEADERS = ['authorization', 'content-type', 'accept', 'accept-language', 'cache-control', 'pragma'];
+    request.headers.forEach((value, key) => {
+      const lowerKey = key.toLowerCase();
+      if (ALLOWED_HEADERS.includes(lowerKey)) {
+        headers[lowerKey] = value;
+      }
+    });
+
+    const method = request.method;
+    let body: BodyInit | null = null;
+    if (method !== 'GET' && method !== 'HEAD') {
+      body = await request.text();
+    }
+
     const backendResponse = await fetch(targetUrl, {
       method,
       headers,
@@ -53,6 +54,7 @@ async function handler(request: NextRequest, { params }: { params: Promise<{ pat
       headers: responseHeaders,
     });
   } catch (error: any) {
+    console.error('Edge proxy error:', error);
     return NextResponse.json(
       {
         success: false,
