@@ -15,10 +15,90 @@ import {
   Calendar, 
   Receipt,
   HelpCircle,
-  Clock
+  Clock,
+  FolderPlus,
+  Trash2,
+  BarChart3,
+  Terminal
 } from 'lucide-react';
 import { Category, Transaction, TransactionType, DashboardSummary, AutomationRule } from '../lib/types';
 import { api } from '../lib/api';
+
+export interface SlashCommand {
+  command: string;
+  syntax: string;
+  description: string;
+  badge: string;
+  badgeColor: string;
+  iconType: 'income' | 'expense' | 'category' | 'summary' | 'recent' | 'clear' | 'help';
+  template: string;
+}
+
+export const SLASH_COMMANDS: SlashCommand[] = [
+  {
+    command: '/income',
+    syntax: '/income <amount> <description>',
+    description: 'Record incoming money or salary',
+    badge: 'INCOME',
+    badgeColor: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+    iconType: 'income',
+    template: '/income ',
+  },
+  {
+    command: '/expense',
+    syntax: '/expense <amount> <description>',
+    description: 'Record outgoing spending or bill',
+    badge: 'EXPENSE',
+    badgeColor: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30',
+    iconType: 'expense',
+    template: '/expense ',
+  },
+  {
+    command: '/category',
+    syntax: '/category <name>',
+    description: 'Create a new expense or income category',
+    badge: 'ACTION',
+    badgeColor: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/30',
+    iconType: 'category',
+    template: '/category ',
+  },
+  {
+    command: '/summary',
+    syntax: '/summary',
+    description: 'View total balance, income & expense overview',
+    badge: 'QUERY',
+    badgeColor: 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border-sky-500/30',
+    iconType: 'summary',
+    template: '/summary',
+  },
+  {
+    command: '/recent',
+    syntax: '/recent',
+    description: 'List your latest logged transactions',
+    badge: 'HISTORY',
+    badgeColor: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30',
+    iconType: 'recent',
+    template: '/recent',
+  },
+  {
+    command: '/clear',
+    syntax: '/clear',
+    description: 'Clear chat conversation history',
+    badge: 'SYSTEM',
+    badgeColor: 'bg-zinc-500/15 text-zinc-600 dark:text-zinc-400 border-zinc-500/30',
+    iconType: 'clear',
+    template: '/clear',
+  },
+  {
+    command: '/help',
+    syntax: '/help',
+    description: 'Show all available commands and natural language tips',
+    badge: 'HELP',
+    badgeColor: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30',
+    iconType: 'help',
+    template: '/help',
+  },
+];
 
 export interface ChatWidgetData {
   type: 'TRANSACTION_CONFIRMATION' | 'MULTI_TRANSACTIONS' | 'BALANCE_CARD' | 'SPEND_SUMMARY' | 'CATEGORY_QUERY' | 'RECENT_TRANSACTIONS' | 'INSIGHT' | 'CATEGORY_CREATED';
@@ -68,7 +148,165 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedSlashIndex, setSelectedSlashIndex] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const activeInputRef = useRef<HTMLInputElement>(null);
+
+  // Slash commands state & filtering
+  const isSlashActive = input.startsWith('/') && !input.slice(1).includes(' ');
+  const slashFilterQuery = isSlashActive ? input.slice(1).toLowerCase().trim() : '';
+
+  const filteredSlashCommands = useMemo(() => {
+    if (!isSlashActive) return [];
+    if (!slashFilterQuery) return SLASH_COMMANDS;
+    return SLASH_COMMANDS.filter((cmd) =>
+      cmd.command.slice(1).toLowerCase().startsWith(slashFilterQuery) ||
+      cmd.syntax.toLowerCase().includes(slashFilterQuery) ||
+      cmd.description.toLowerCase().includes(slashFilterQuery)
+    );
+  }, [isSlashActive, slashFilterQuery]);
+
+  useEffect(() => {
+    setSelectedSlashIndex(0);
+  }, [slashFilterQuery]);
+
+  const selectSlashCommand = (cmd: SlashCommand) => {
+    if (cmd.command === '/clear') {
+      handleClearChat();
+      setInput('');
+      return;
+    }
+    if (cmd.command === '/summary' || cmd.command === '/recent' || cmd.command === '/help') {
+      handleSendMessage(cmd.command);
+      setInput('');
+      return;
+    }
+    // For /income, /expense, /category:
+    setInput(cmd.template);
+    setTimeout(() => {
+      inputRef.current?.focus();
+      activeInputRef.current?.focus();
+    }, 10);
+  };
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (isSlashActive && filteredSlashCommands.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedSlashIndex((prev) => (prev + 1) % filteredSlashCommands.length);
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedSlashIndex((prev) => (prev - 1 + filteredSlashCommands.length) % filteredSlashCommands.length);
+        return;
+      }
+      if (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey)) {
+        e.preventDefault();
+        selectSlashCommand(filteredSlashCommands[selectedSlashIndex]);
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setInput('');
+        return;
+      }
+    }
+  };
+
+  const renderSlashCommandPalette = () => {
+    if (!isSlashActive || filteredSlashCommands.length === 0) return null;
+
+    return (
+      <div className="absolute bottom-full mb-2.5 left-0 right-0 sm:left-1 sm:right-1 bg-[#12141C]/95 backdrop-blur-xl border border-[#262A3B] rounded-2xl shadow-2xl overflow-hidden p-1.5 z-40 text-left transition-all animate-in fade-in slide-in-from-bottom-2 duration-150">
+        <div className="flex items-center justify-between px-3 py-1.5 border-b border-[#262A3B]/60 mb-1">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 flex items-center space-x-1.5 font-semibold">
+            <Terminal className="w-3 h-3 text-primary" />
+            <span>Slash Commands</span>
+          </span>
+          <span className="text-[10px] font-mono text-zinc-500">
+            Claude Code Mode
+          </span>
+        </div>
+
+        <div className="max-h-64 overflow-y-auto space-y-1">
+          {filteredSlashCommands.map((cmd, idx) => {
+            const isSelected = idx === selectedSlashIndex;
+            return (
+              <button
+                key={cmd.command}
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  selectSlashCommand(cmd);
+                }}
+                onMouseEnter={() => setSelectedSlashIndex(idx)}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all text-xs ${
+                  isSelected
+                    ? 'bg-primary/20 border border-primary/35 text-white shadow-sm'
+                    : 'border border-transparent text-zinc-400 hover:text-white hover:bg-surface-raised'
+                }`}
+              >
+                <div className="flex items-center space-x-2.5 min-w-0">
+                  <div
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      cmd.iconType === 'income'
+                        ? 'bg-emerald-500/15 text-emerald-400'
+                        : cmd.iconType === 'expense'
+                        ? 'bg-rose-500/15 text-rose-400'
+                        : cmd.iconType === 'category'
+                        ? 'bg-indigo-500/15 text-indigo-400'
+                        : cmd.iconType === 'summary'
+                        ? 'bg-sky-500/15 text-sky-400'
+                        : cmd.iconType === 'recent'
+                        ? 'bg-purple-500/15 text-purple-400'
+                        : cmd.iconType === 'help'
+                        ? 'bg-amber-500/15 text-amber-400'
+                        : 'bg-zinc-500/15 text-zinc-400'
+                    }`}
+                  >
+                    {cmd.iconType === 'income' && <ArrowUpRight className="w-4 h-4" />}
+                    {cmd.iconType === 'expense' && <ArrowDownRight className="w-4 h-4" />}
+                    {cmd.iconType === 'category' && <FolderPlus className="w-4 h-4" />}
+                    {cmd.iconType === 'summary' && <BarChart3 className="w-4 h-4" />}
+                    {cmd.iconType === 'recent' && <Clock className="w-4 h-4" />}
+                    {cmd.iconType === 'help' && <HelpCircle className="w-4 h-4" />}
+                    {cmd.iconType === 'clear' && <Trash2 className="w-4 h-4" />}
+                  </div>
+
+                  <div className="truncate">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-mono font-bold text-white text-xs">{cmd.command}</span>
+                      <span className="text-[10px] font-mono text-zinc-500 truncate">{cmd.syntax.replace(cmd.command, '').trim()}</span>
+                    </div>
+                    <div className="text-[10px] text-zinc-400 truncate">{cmd.description}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
+                  <span className={`text-[9px] font-mono font-semibold px-2 py-0.5 rounded-md border ${cmd.badgeColor}`}>
+                    {cmd.badge}
+                  </span>
+                  {isSelected && (
+                    <span className="hidden sm:inline-block text-[10px] font-mono text-primary font-bold">
+                      ↵
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="px-3 py-1.5 border-t border-[#262A3B]/60 mt-1 flex items-center justify-between text-[9px] font-mono text-zinc-500">
+          <span>Use <strong className="text-zinc-400">↑ ↓</strong> to navigate</span>
+          <span><strong className="text-zinc-400">Tab</strong> or <strong className="text-zinc-400">Enter</strong> to select</span>
+          <span><strong className="text-zinc-400">Esc</strong> to dismiss</span>
+        </div>
+      </div>
+    );
+  };
 
   // Load chat history from localStorage
   useEffect(() => {
@@ -209,10 +447,20 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
 
   // Helper 2: Disambiguate Inflow vs Outflow with refund/return/repayment edge cases
   const classifyTransactionType = (text: string): TransactionType => {
-    const lower = text.toLowerCase();
+    const lower = text.toLowerCase().trim();
 
-    // Priority Inflow patterns
+    // 1. Explicit Slash Commands have highest precedence
+    if (lower.startsWith('/income') || lower.startsWith('/inflow') || lower.startsWith('/inc')) {
+      return 'INCOME';
+    }
+    if (lower.startsWith('/expense') || lower.startsWith('/spent') || lower.startsWith('/exp')) {
+      return 'EXPENSE';
+    }
+
+    // 2. Priority Inflow patterns & keywords
     if (
+      lower.includes('income') ||
+      lower.includes('inflow') ||
       lower.includes('paid me') ||
       lower.includes('paid back') ||
       lower.includes('refund') ||
@@ -225,8 +473,20 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       lower.includes('credited') ||
       lower.includes('returned money') ||
       lower.includes('received') ||
-      lower.includes('earned')
+      lower.includes('earned') ||
+      lower.includes('got paid') ||
+      lower.includes('stipend') ||
+      lower.includes('revenue') ||
+      lower.includes('profit') ||
+      lower.includes('allowance') ||
+      lower.includes('wage') ||
+      lower.includes('deposit') ||
+      lower.includes('interest credited')
     ) {
+      // Edge case: "income tax" or "tax on income" is an EXPENSE
+      if (lower.includes('income tax') || lower.includes('tax on income')) {
+        return 'EXPENSE';
+      }
       return 'INCOME';
     }
 
@@ -236,8 +496,8 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
 
   // Helper 3: Robust Amount Extraction (prioritizes currency prefixes & avoids quantity counts)
   const extractAmount = (text: string): number => {
-    // 1. Check for currency prefixed or suffixed amounts (e.g. ₹1500, Rs. 400, $50, for 1500, cost 300, 1.5k)
-    const primaryPattern = /(?:₹|\$|€|£|rs\.?|inr|for|cost|paid|spent)\s*(\d*(?:\.\d+)?|\d+(?:,\d+)*(?:\.\d+)?)\s*(?:k|thousand)?/i;
+    // 1. Check for currency prefixed or suffixed amounts, or slash commands
+    const primaryPattern = /(?:₹|\$|€|£|rs\.?|inr|for|cost|paid|spent|\/income|\/expense|\/inflow|\/spent|income|expense)\s*(\d*(?:\.\d+)?|\d+(?:,\d+)*(?:\.\d+)?)\s*(?:k|thousand)?/i;
     const match = text.match(primaryPattern);
     
     if (match && match[1]) {
@@ -273,9 +533,10 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     const lower = text.toLowerCase();
 
     if (type === 'INCOME') {
-      if (lower.includes('freelance') || lower.includes('project') || lower.includes('client')) return 'Freelance';
-      if (lower.includes('dividend') || lower.includes('stock') || lower.includes('interest')) return 'Investments';
-      if (lower.includes('refund') || lower.includes('cashback')) return 'Refunds & Rewards';
+      if (lower.includes('freelance') || lower.includes('project') || lower.includes('client') || lower.includes('contract')) return 'Freelance';
+      if (lower.includes('dividend') || lower.includes('stock') || lower.includes('interest') || lower.includes('crypto')) return 'Investments';
+      if (lower.includes('refund') || lower.includes('cashback') || lower.includes('reward')) return 'Refunds & Rewards';
+      if (lower.includes('bonus') || lower.includes('gift')) return 'Bonus & Gifts';
       return 'Salary & Inflows';
     }
 
@@ -301,14 +562,16 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
   // Helper 5: Clean Description Title with Proper Spacing
   const cleanTitle = (rawText: string, categoryFallback: string): string => {
     let title = rawText
+      // 0. Remove slash commands e.g. /income, /expense, /inflow, /spent
+      .replace(/^\s*\/(?:income|expense|inflow|spent|add|log|inc|exp)\s*/i, ' ')
       // 1. Remove relative dates
       .replace(/\b(?:yesterday|today|day before yesterday|\d+\s*days?\s*ago)\b/gi, ' ')
       // 2. Remove currency amounts with strict non-empty digit match
       .replace(/(?:₹|\$|€|£|rs\.?|inr)?\s*(?:\b\d+(?:,\d+)*(?:\.\d+)?\s*(?:k|thousand)?|\b\d+k\b)/gi, ' ')
       // 3. Remove payment methods
       .replace(/\b(?:by|via|with|using|through)?\s*(?:upi|cash|credit\s*card|debit\s*card|card|gpay|paytm|phonepe|netbanking|bank\s*transfer)\b/gi, ' ')
-      // 4. Remove leading verbs
-      .replace(/^\s*(?:i\s+)?(?:spent|paid|bought|received|got|added|recorded|purchase|purchased)\s+(?:on|for|a|an)?\s*/i, ' ')
+      // 4. Remove leading verbs and keywords
+      .replace(/^\s*(?:i\s+)?(?:spent|paid|bought|received|got|added|recorded|purchase|purchased|income|expense|inflow)\s+(?:on|for|a|an|from|of)?\s*/i, ' ')
       // 5. Remove trailing prepositions
       .replace(/\b(?:for|on|at|in|to|from)\s*$/gi, ' ')
       // 6. Collapse spaces cleanly
@@ -325,8 +588,35 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
   const processWithAIAgent = async (queryText: string): Promise<{ text: string; widget?: ChatWidgetData }> => {
     const q = queryText.toLowerCase().trim();
 
-    // 0. INTENT: Create New Category via Natural Language Chat
+    // 0. SLASH COMMAND: /help
+    if (q === '/help' || q === 'help') {
+      return {
+        text: `Here are the available **FLOW Slash Commands** & syntax:\n\n` +
+          `• **/income <amount> <description>** — Record incoming salary or money\n` +
+          `  *Example: \`/income 50000 Monthly Salary from Posibolt\`*\n\n` +
+          `• **/expense <amount> <description>** — Record outgoing spending or bill\n` +
+          `  *Example: \`/expense 450 Team lunch at cafe\`*\n\n` +
+          `• **/category <name>** — Create a new custom category\n` +
+          `  *Example: \`/category Freelance Project\`*\n\n` +
+          `• **/summary** — View total balance, income, expenses & savings rate\n\n` +
+          `• **/recent** — List your latest recorded transactions\n\n` +
+          `• **/clear** — Clear chat history\n\n` +
+          `💡 *Tip: Simply type \`/\` in the chat input to open the Claude Code command palette!*`
+      };
+    }
+
+    // 0. SLASH COMMAND: /clear
+    if (q === '/clear' || q === 'clear') {
+      handleClearChat();
+      return {
+        text: '✨ Conversation history has been cleared.'
+      };
+    }
+
+    // 0. INTENT: Create New Category via Slash Command or Natural Language
     const isCategoryCreation =
+      q.startsWith('/category') ||
+      q.startsWith('/newcategory') ||
       q.startsWith('create category') ||
       q.startsWith('add category') ||
       q.startsWith('new category') ||
@@ -341,6 +631,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       const catType: TransactionType = isIncome ? 'INCOME' : 'EXPENSE';
 
       let cleanName = queryText
+        .replace(/^\/(?:category|newcategory)\s+/i, '')
         .replace(/^(?:please\s+)?(?:create|add|new|make)\s+(?:a\s+)?(?:expense\s+|income\s+)?category\s+/i, '')
         .replace(/\b(?:for\s+income|for\s+expense|as\s+income|as\s+expense|type\s+income|type\s+expense)\b/gi, '')
         .replace(/\b(?:with\s+color|color)\s+#[0-9a-fA-F]{6}\b/gi, '')
@@ -476,6 +767,10 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
 
     // 1. INTENT: Get Total Balance / Net Worth
     if (
+      q === '/summary' ||
+      q === '/balance' ||
+      q === 'summary' ||
+      q === 'balance' ||
       q.includes('what is my balance') ||
       q.includes('my balance') ||
       q.includes('total balance') ||
@@ -575,6 +870,10 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
 
     // 4. INTENT: List Recent Transactions
     if (
+      q === '/recent' ||
+      q === '/history' ||
+      q === 'recent' ||
+      q === 'history' ||
       q.includes('recent transactions') ||
       q.includes('last transactions') ||
       q.includes('history') ||
@@ -648,8 +947,18 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     const amount = extractAmount(queryText);
 
     if (amount <= 0) {
+      if (q.startsWith('/income') || q.startsWith('/inflow')) {
+        return {
+          text: `Please specify an amount for your income entry. Example:\n• **/income 50000 Monthly Salary from Posibolt**`
+        };
+      }
+      if (q.startsWith('/expense') || q.startsWith('/spent')) {
+        return {
+          text: `Please specify an amount for your expense entry. Example:\n• **/expense 450 Team lunch at cafe**`
+        };
+      }
       return {
-        text: `I'm your FLOW Financial AI Agent. You can log transactions with relative dates, ask questions, or review your spending breakdown!\n\n**Try asking:**\n• *"Yesterday spent 250 on pizza using upi"*\n• *"Friend paid me back 500"* (Logs as Income)\n• *"Bought 3 shirts for ₹1,500"*\n• *"Spent 50 on coffee and 120 on sandwich"*\n• *"What is my balance?"*`
+        text: `I'm your FLOW Financial AI Agent. You can log transactions with slash commands or natural language!\n\n**Try asking:**\n• **/income 50000 Monthly Salary**\n• **/expense 450 Team lunch**\n• *"Yesterday spent 250 on pizza using upi"*\n• *"Friend paid me back 500"* (Logs as Income)\n• *"What is my balance?"*`
       };
     }
 
@@ -765,12 +1074,15 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
               }}
               className="relative flex items-center bg-surface border border-surface-border focus-within:border-primary/80 rounded-3xl p-1.5 sm:p-2 shadow-xl transition-all"
             >
+              {renderSlashCommandPalette()}
               <input
+                ref={inputRef}
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleInputKeyDown}
                 disabled={isProcessing}
-                placeholder="e.g. Yesterday spent 250 on pizza, Bought 3 shirts for 1500..."
+                placeholder="Type / for commands (e.g. /income, /expense) or natural language..."
                 className="w-full bg-transparent pl-3 sm:pl-4 pr-10 sm:pr-12 py-2.5 sm:py-3 text-xs sm:text-sm text-foreground placeholder-zinc-400 focus:outline-none"
               />
               <button
@@ -785,18 +1097,36 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
             {/* Quick Action Badges */}
             <div className="flex flex-wrap items-center justify-center gap-2 mt-3 sm:mt-4">
               <button
+                onClick={() => {
+                  setInput('/expense ');
+                  inputRef.current?.focus();
+                }}
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-raised border border-surface-border hover:border-rose-500/40 text-zinc-600 dark:text-zinc-300 hover:text-foreground text-xs font-mono transition-all shadow-sm group"
+              >
+                <ArrowDownRight className="w-3.5 h-3.5 text-rose-500 group-hover:scale-110 transition-transform" />
+                <span>/expense</span>
+              </button>
+              <button
+                onClick={() => {
+                  setInput('/income ');
+                  inputRef.current?.focus();
+                }}
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-raised border border-surface-border hover:border-emerald-500/40 text-zinc-600 dark:text-zinc-300 hover:text-foreground text-xs font-mono transition-all shadow-sm group"
+              >
+                <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500 group-hover:scale-110 transition-transform" />
+                <span>/income</span>
+              </button>
+              <button
                 onClick={onOpenExpenseModal}
                 className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-raised border border-surface-border text-zinc-600 dark:text-zinc-300 hover:text-foreground text-xs font-medium transition-all shadow-sm"
               >
-                <ArrowDownRight className="w-3.5 h-3.5 text-rose-500" />
-                <span>+ Expense</span>
+                <span>+ Modal Expense</span>
               </button>
               <button
                 onClick={onOpenIncomeModal}
                 className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-raised border border-surface-border text-zinc-600 dark:text-zinc-300 hover:text-foreground text-xs font-medium transition-all shadow-sm"
               >
-                <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500" />
-                <span>+ Income</span>
+                <span>+ Modal Income</span>
               </button>
             </div>
           </div>
@@ -1053,18 +1383,21 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
               }}
               className="relative flex items-center bg-surface/90 backdrop-blur-md border border-surface-border focus-within:border-primary/80 rounded-3xl p-1.5 shadow-xl transition-all"
             >
+              {renderSlashCommandPalette()}
               <input
+                ref={activeInputRef}
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleInputKeyDown}
                 disabled={isProcessing}
-                placeholder="Ask financial questions or log expense/income..."
+                placeholder="Type / for commands (e.g. /income, /expense) or ask questions..."
                 className="w-full bg-transparent pl-4 pr-10 py-2.5 text-xs text-foreground placeholder-zinc-400 focus:outline-none"
               />
               <button
                 type="submit"
                 disabled={!input.trim() || isProcessing}
-                className="p-2 rounded-2xl bg-primary hover:bg-primary-600 disabled:opacity-30 text-white transition-all shadow-md shadow-primary/25"
+                className="p-2 rounded-2xl bg-primary hover:bg-primary-600 disabled:opacity-30 text-white transition-all shadow-md shadow-primary/25 flex-shrink-0"
               >
                 <Send className="w-3.5 h-3.5" />
               </button>
