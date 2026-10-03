@@ -6,9 +6,9 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://129.225.66.117.nip.io:808
 
 async function handler(request: NextRequest, { params }: { params: Promise<{ path?: string[] }> }) {
   try {
-    const resolvedParams = await Promise.resolve(params).catch(() => ({}));
+    const resolvedParams = (await params.catch(() => ({}))) as { path?: string[] };
     const path =
-      resolvedParams && Array.isArray(resolvedParams.path)
+      resolvedParams?.path && Array.isArray(resolvedParams.path)
         ? resolvedParams.path.join('/')
         : request.nextUrl.pathname.replace(/^\/api\/v1\/?/, '');
     const search = request.nextUrl.search;
