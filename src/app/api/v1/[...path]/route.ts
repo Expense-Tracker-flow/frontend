@@ -2,21 +2,49 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'edge';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'https://tigers-effects-matter-bowling.trycloudflare.com/api/v1';
+const DEFAULT_BACKEND_URL = 'https://tigers-effects-matter-bowling.trycloudflare.com/api/v1';
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': '*',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+}
 
 async function handler(request: NextRequest, { params }: { params: Promise<{ path?: string[] }> }) {
   try {
-    const resolvedParams = (await params.catch(() => ({}))) as { path?: string[] };
-    const path =
-      resolvedParams?.path && Array.isArray(resolvedParams.path)
-        ? resolvedParams.path.join('/')
-        : request.nextUrl.pathname.replace(/^\/api\/v1\/?/, '');
-    const search = request.nextUrl.search;
-    const targetUrl = `${BACKEND_URL}/${path}${search}`;
+    let backendBase = (process.env.BACKEND_URL || DEFAULT_BACKEND_URL).trim();
+    // Cloudflare Workers restricts outbound HTTP/non-standard ports; ensure HTTPS
+    if (backendBase.startsWith('http://')) {
+      backendBase = DEFAULT_BACKEND_URL;
+    }
+    backendBase = backendBase.replace(/\/+$/, '');
+
+    let path = '';
+    if (params) {
+      try {
+        const resolved = (typeof (params as any)?.then === 'function' ? await params : params) as { path?: string[] };
+        if (resolved && Array.isArray(resolved.path)) {
+          path = resolved.path.join('/');
+        }
+      } catch (e) {
+        // ignore param resolution failure and fallback to pathname
+      }
+    }
+
+    if (!path) {
+      path = request.nextUrl.pathname.replace(/^\/api\/v1\/?/, '');
+    }
+
+    const search = request.nextUrl.search || '';
+    const targetUrl = `${backendBase}/${path}${search}`;
 
     const headers: Record<string, string> = {};
-
-    // Forward necessary client headers, excluding forbidden and internal headers
     const ALLOWED_HEADERS = ['authorization', 'content-type', 'accept', 'accept-language', 'cache-control', 'pragma'];
     request.headers.forEach((value, key) => {
       const lowerKey = key.toLowerCase();
@@ -26,7 +54,7 @@ async function handler(request: NextRequest, { params }: { params: Promise<{ pat
     });
 
     const method = request.method;
-    let body: BodyInit | null = null;
+    let body: string | undefined = undefined;
     if (method !== 'GET' && method !== 'HEAD') {
       body = await request.text();
     }
@@ -41,6 +69,7 @@ async function handler(request: NextRequest, { params }: { params: Promise<{ pat
 
     const responseHeaders: Record<string, string> = {
       'Content-Type': backendResponse.headers.get('Content-Type') || 'application/json',
+      'Access-Control-Allow-Origin': '*',
     };
 
     const setCookie = backendResponse.headers.get('set-cookie');
@@ -50,7 +79,6 @@ async function handler(request: NextRequest, { params }: { params: Promise<{ pat
 
     return new NextResponse(responseBody, {
       status: backendResponse.status,
-      statusText: backendResponse.statusText,
       headers: responseHeaders,
     });
   } catch (error: any) {
@@ -65,4 +93,5 @@ async function handler(request: NextRequest, { params }: { params: Promise<{ pat
   }
 }
 
-export { handler as GET, handler as POST, handler as PUT, handler as DELETE, handler as PATCH, handler as OPTIONS };
+export { handler as GET, handler as POST, handler as PUT, handler as DELETE, handler as PATCH };
+
