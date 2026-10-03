@@ -2,18 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'edge';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://129.225.66.117:8080/api/v1';
+const BACKEND_URL = process.env.BACKEND_URL || 'http://129.225.66.117.nip.io:8080/api/v1';
 
-async function handler(request: NextRequest, { params }: { params: { path: string[] } }) {
-  const path = params.path ? params.path.join('/') : '';
+async function handler(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+  const resolvedParams = await params;
+  const path = resolvedParams.path ? resolvedParams.path.join('/') : '';
   const search = request.nextUrl.search;
   const targetUrl = `${BACKEND_URL}/${path}${search}`;
 
-  const headers: Record<string, string> = {};
+  const headers: Record<string, string> = {
+    'Host': '129.225.66.117.nip.io:8080',
+  };
+
+  // Only forward necessary client headers, stripping Cloudflare internal headers
+  const ALLOWED_HEADERS = ['authorization', 'content-type', 'accept', 'accept-language', 'cache-control', 'pragma'];
   request.headers.forEach((value, key) => {
-    // Filter out host and connection headers
-    if (!['host', 'connection', 'content-length'].includes(key.toLowerCase())) {
-      headers[key] = value;
+    const lowerKey = key.toLowerCase();
+    if (ALLOWED_HEADERS.includes(lowerKey)) {
+      headers[lowerKey] = value;
     }
   });
 
@@ -32,12 +38,19 @@ async function handler(request: NextRequest, { params }: { params: { path: strin
 
     const responseBody = await backendResponse.text();
 
+    const responseHeaders: Record<string, string> = {
+      'Content-Type': backendResponse.headers.get('Content-Type') || 'application/json',
+    };
+
+    const setCookie = backendResponse.headers.get('set-cookie');
+    if (setCookie) {
+      responseHeaders['Set-Cookie'] = setCookie;
+    }
+
     return new NextResponse(responseBody, {
       status: backendResponse.status,
       statusText: backendResponse.statusText,
-      headers: {
-        'Content-Type': backendResponse.headers.get('Content-Type') || 'application/json',
-      },
+      headers: responseHeaders,
     });
   } catch (error: any) {
     return NextResponse.json(
