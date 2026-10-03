@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Send, 
   ArrowDownRight, 
@@ -19,7 +20,16 @@ import {
   FolderPlus,
   Trash2,
   BarChart3,
-  Terminal
+  Terminal,
+  X,
+  BookOpen,
+  Command,
+  Zap,
+  Copy,
+  Check,
+  Lightbulb,
+  ExternalLink,
+  ChevronRight
 } from 'lucide-react';
 import { Category, Transaction, TransactionType, DashboardSummary, AutomationRule } from '../lib/types';
 import { api } from '../lib/api';
@@ -149,9 +159,34 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedSlashIndex, setSelectedSlashIndex] = useState(0);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [guideTab, setGuideTab] = useState<'slash' | 'nlp' | 'auto' | 'query'>('slash');
+  const [copiedPrompt, setCopiedPrompt] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const activeInputRef = useRef<HTMLInputElement>(null);
+
+  const handleApplyGuidePrompt = (promptText: string, autoRun = false) => {
+    setIsGuideOpen(false);
+    if (autoRun) {
+      handleSendMessage(promptText);
+    } else {
+      setInput(promptText);
+      setTimeout(() => {
+        inputRef.current?.focus();
+        activeInputRef.current?.focus();
+      }, 50);
+    }
+  };
+
+  const handleCopyGuidePrompt = (e: React.MouseEvent, promptText: string) => {
+    e.stopPropagation();
+    if (typeof navigator !== 'undefined') {
+      navigator.clipboard.writeText(promptText);
+      setCopiedPrompt(promptText);
+      setTimeout(() => setCopiedPrompt(null), 1800);
+    }
+  };
 
   // Slash commands state & filtering
   const isSlashActive = input.startsWith('/') && !input.slice(1).includes(' ');
@@ -305,6 +340,369 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
           <span><strong className="text-zinc-400">Esc</strong> to dismiss</span>
         </div>
       </div>
+    );
+  };
+
+  const renderGuideModal = () => {
+    if (!isGuideOpen) return null;
+
+    const GUIDE_ITEMS = {
+      slash: [
+        {
+          title: 'Record Income',
+          syntax: '/income 50000 Monthly Salary from Posibolt',
+          desc: 'Explicitly logs incoming funds or salary. Bypasses NLP guessing and guarantees type is always recorded as INCOME.',
+          badge: 'INCOME',
+          badgeColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+          autoRun: false,
+        },
+        {
+          title: 'Record Expense',
+          syntax: '/expense 450 Team lunch at cafe',
+          desc: 'Instantly logs an expense with automatic category deduction (e.g. Food & Dining) and payment method tagging.',
+          badge: 'EXPENSE',
+          badgeColor: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+          autoRun: false,
+        },
+        {
+          title: 'Create Category',
+          syntax: '/category Freelance income',
+          desc: 'Creates a brand new custom category for either income or expense directly from conversation.',
+          badge: 'CONFIG',
+          badgeColor: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30',
+          autoRun: false,
+        },
+        {
+          title: 'Financial Summary',
+          syntax: '/summary',
+          desc: 'Fetches your month-to-date total income, total spending, net balance, and savings rate in a visual card.',
+          badge: 'SNAPSHOT',
+          badgeColor: 'bg-sky-500/15 text-sky-400 border-sky-500/30',
+          autoRun: true,
+        },
+        {
+          title: 'Recent Activity',
+          syntax: '/recent',
+          desc: 'Displays your latest 5 logged transactions with dates, categories, payment methods, and amounts.',
+          badge: 'TIMELINE',
+          badgeColor: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+          autoRun: true,
+        },
+        {
+          title: 'Quick Command Help',
+          syntax: '/help',
+          desc: 'Shows an inline quick-reference list of all available slash commands in chat.',
+          badge: 'DOCS',
+          badgeColor: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+          autoRun: true,
+        },
+        {
+          title: 'Clear Session',
+          syntax: '/clear',
+          desc: 'Resets the chat window and cleans stored local message history.',
+          badge: 'UTILITY',
+          badgeColor: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/30',
+          autoRun: false,
+        },
+      ],
+      nlp: [
+        {
+          title: 'Natural Expense with Payment Method',
+          syntax: 'Yesterday spent 250 on pizza using UPI',
+          desc: 'FLOW extracts Amount (₹250), Category (Food), Date (Yesterday), and Payment Method (UPI) automatically.',
+          badge: 'EXPENSE',
+          badgeColor: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+          autoRun: false,
+        },
+        {
+          title: 'Income Recognition via Keywords',
+          syntax: 'Salary credited 75000 in bank',
+          desc: 'Keywords like "credited", "salary", "earned", "income", or "received" automatically set transaction type to INCOME.',
+          badge: 'INCOME',
+          badgeColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+          autoRun: false,
+        },
+        {
+          title: 'Peer Payments & Cash Reimbursements',
+          syntax: 'Friend paid me back 500 in cash',
+          desc: 'Recognizes inbound money and assigns Cash as payment method and Income as type.',
+          badge: 'INCOME',
+          badgeColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+          autoRun: false,
+        },
+        {
+          title: 'Credit Card Purchases',
+          syntax: 'Bought laptop 65000 with credit card',
+          desc: 'Extracts high-ticket purchase, classifies as Electronics / Shopping, and tags Credit Card.',
+          badge: 'EXPENSE',
+          badgeColor: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+          autoRun: false,
+        },
+      ],
+      auto: [
+        {
+          title: 'Recurring Monthly Rent',
+          syntax: 'Recurring rent 15000 every month on day 5',
+          desc: 'Creates a recurring automation rule that triggers automatically on the 5th of every month.',
+          badge: 'AUTOMATION',
+          badgeColor: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+          autoRun: false,
+        },
+        {
+          title: 'Digital Subscription Tracking',
+          syntax: 'Subscription Netflix 649 every month',
+          desc: 'Sets up a monthly subscription automation rule so you never forget recurring SaaS bills.',
+          badge: 'SUBSCRIPTION',
+          badgeColor: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30',
+          autoRun: false,
+        },
+        {
+          title: 'Utility Bills',
+          syntax: 'Monthly electricity bill 2200 on day 10',
+          desc: 'Schedules recurring utility bills into your automated rules list.',
+          badge: 'UTILITY',
+          badgeColor: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
+          autoRun: false,
+        },
+      ],
+      query: [
+        {
+          title: 'Live Net Balance',
+          syntax: 'What is my current balance?',
+          desc: 'Retrieves your real-time total income, expenses, and current cash balance directly from your dashboard.',
+          badge: 'INSIGHT',
+          badgeColor: 'bg-sky-500/15 text-sky-400 border-sky-500/30',
+          autoRun: true,
+        },
+        {
+          title: 'Recent Expense Insights',
+          syntax: 'Show my latest expenses',
+          desc: 'Queries your recent activity stream and returns the latest records.',
+          badge: 'QUERY',
+          badgeColor: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+          autoRun: true,
+        },
+        {
+          title: 'Quick Category Addition',
+          syntax: 'Create category Investments for expense',
+          desc: 'Generates a custom category without having to navigate to Settings.',
+          badge: 'SETUP',
+          badgeColor: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+          autoRun: false,
+        },
+      ],
+    };
+
+    const currentItems = GUIDE_ITEMS[guideTab];
+
+    return (
+      <AnimatePresence>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 15 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="relative w-full max-w-2xl bg-[#12141C] border border-[#262A3B] rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col my-auto text-foreground"
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-[#262A3B] bg-[#161923]">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/25 flex items-center justify-center text-primary shadow-sm shadow-primary/20">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-white flex items-center space-x-2">
+                    <span>FLOW AI Assistant Guide</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30 font-semibold">
+                      v2.0
+                    </span>
+                  </h2>
+                  <p className="text-xs text-zinc-400 mt-0.5">
+                    Interactive guide & cheatsheet for natural chat, slash commands, and automations
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsGuideOpen(false)}
+                className="w-8 h-8 rounded-xl bg-surface hover:bg-surface-raised border border-surface-border text-zinc-400 hover:text-white flex items-center justify-center transition-all"
+                title="Close guide"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Feature Tabs */}
+            <div className="flex items-center space-x-1.5 px-4 sm:px-6 py-2.5 border-b border-[#262A3B] bg-[#0E1017] overflow-x-auto scrollbar-none">
+              <button
+                type="button"
+                onClick={() => setGuideTab('slash')}
+                className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
+                  guideTab === 'slash'
+                    ? 'bg-primary text-white shadow-md shadow-primary/25 font-semibold'
+                    : 'text-zinc-400 hover:text-white hover:bg-[#161923]'
+                }`}
+              >
+                <Terminal className="w-3.5 h-3.5" />
+                <span>Slash Commands</span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-white/20 font-mono">Claude Code</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setGuideTab('nlp')}
+                className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
+                  guideTab === 'nlp'
+                    ? 'bg-primary text-white shadow-md shadow-primary/25 font-semibold'
+                    : 'text-zinc-400 hover:text-white hover:bg-[#161923]'
+                }`}
+              >
+                <Zap className="w-3.5 h-3.5" />
+                <span>Natural Speech</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setGuideTab('auto')}
+                className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
+                  guideTab === 'auto'
+                    ? 'bg-primary text-white shadow-md shadow-primary/25 font-semibold'
+                    : 'text-zinc-400 hover:text-white hover:bg-[#161923]'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Smart Automations</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setGuideTab('query')}
+                className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
+                  guideTab === 'query'
+                    ? 'bg-primary text-white shadow-md shadow-primary/25 font-semibold'
+                    : 'text-zinc-400 hover:text-white hover:bg-[#161923]'
+                }`}
+              >
+                <BarChart3 className="w-3.5 h-3.5" />
+                <span>Live Insights</span>
+              </button>
+            </div>
+
+            {/* Tab Explanation Banner */}
+            <div className="px-5 sm:px-6 py-2.5 bg-primary/5 border-b border-primary/10 flex items-center justify-between text-xs text-zinc-300">
+              {guideTab === 'slash' && (
+                <div className="flex items-center space-x-2 text-[11px]">
+                  <Command className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                  <span>
+                    Type <code className="text-primary font-mono font-bold bg-primary/10 px-1.5 py-0.5 rounded">/</code> anywhere in the chat box to open the floating Claude Code autocomplete palette.
+                  </span>
+                </div>
+              )}
+              {guideTab === 'nlp' && (
+                <div className="flex items-center space-x-2 text-[11px]">
+                  <Lightbulb className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                  <span>
+                    Keywords like <strong className="text-emerald-400 font-mono">income</strong>, <strong className="text-emerald-400 font-mono">salary</strong>, <strong className="text-emerald-400 font-mono">received</strong> automatically route to Income without typing slashes!
+                  </span>
+                </div>
+              )}
+              {guideTab === 'auto' && (
+                <div className="flex items-center space-x-2 text-[11px]">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
+                  <span>
+                    Easily schedule recurring rent, Netflix, or bills straight through natural chat conversation.
+                  </span>
+                </div>
+              )}
+              {guideTab === 'query' && (
+                <div className="flex items-center space-x-2 text-[11px]">
+                  <BarChart3 className="w-3.5 h-3.5 text-sky-400 flex-shrink-0" />
+                  <span>
+                    Real-time financial telemetry: Ask about balance, net savings, or category distributions anytime.
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Items List */}
+            <div className="p-4 sm:p-6 overflow-y-auto space-y-3 flex-1">
+              {currentItems.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="p-3.5 sm:p-4 rounded-2xl bg-[#161923] border border-[#262A3B] hover:border-primary/40 transition-all group"
+                >
+                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs font-semibold text-white group-hover:text-primary transition-colors">
+                        {item.title}
+                      </span>
+                    </div>
+                    <span className={`text-[9px] font-mono font-semibold px-2 py-0.5 rounded-md border ${item.badgeColor}`}>
+                      {item.badge}
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] text-zinc-400 leading-relaxed mb-3">
+                    {item.desc}
+                  </p>
+
+                  {/* Code / Syntax Block with 1-Click Try and Copy */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-[#0E1017] border border-[#262A3B] rounded-xl p-2 sm:px-3 sm:py-2">
+                    <div className="font-mono text-xs text-primary truncate selection:bg-primary/30">
+                      {item.syntax}
+                    </div>
+
+                    <div className="flex items-center space-x-2 flex-shrink-0 self-end sm:self-auto">
+                      <button
+                        type="button"
+                        onClick={(e) => handleCopyGuidePrompt(e, item.syntax)}
+                        className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-surface hover:bg-surface-raised border border-surface-border text-zinc-400 hover:text-white text-[10px] font-mono transition-all"
+                        title="Copy to clipboard"
+                      >
+                        {copiedPrompt === item.syntax ? (
+                          <>
+                            <Check className="w-3 h-3 text-emerald-400" />
+                            <span className="text-emerald-400">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3 h-3" />
+                            <span>Copy</span>
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleApplyGuidePrompt(item.syntax, item.autoRun)}
+                        className="flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-primary hover:bg-primary-600 text-white text-[11px] font-medium transition-all shadow-md shadow-primary/20"
+                      >
+                        <span>{item.autoRun ? 'Run Now ↵' : 'Try in Chat ↵'}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer Summary / Pro Tips */}
+            <div className="px-5 sm:px-6 py-3 border-t border-[#262A3B] bg-[#161923] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-zinc-400">
+              <div className="flex items-center space-x-2 text-[11px]">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Need dialog forms? You can still use traditional <strong className="text-zinc-300">+ Modal</strong> buttons anytime.</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsGuideOpen(false)}
+                className="px-4 py-1.5 rounded-xl bg-surface hover:bg-surface-raised border border-surface-border text-white text-xs font-medium transition-all w-full sm:w-auto"
+              >
+                Got it, let's go!
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </AnimatePresence>
     );
   };
 
@@ -1053,9 +1451,19 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
         <div className="flex-1 flex flex-col items-center justify-center max-w-3xl w-full mx-auto px-2 sm:px-4 py-6 sm:py-12 text-center space-y-6 sm:space-y-8">
           {/* Greeting */}
           <div className="space-y-2 sm:space-y-3">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold">
-              <Bot className="w-3.5 h-3.5" />
-              <span>FLOW Financial AI Agent</span>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold">
+                <Bot className="w-3.5 h-3.5" />
+                <span>FLOW Financial AI Agent</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsGuideOpen(true)}
+                className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-surface hover:bg-surface-raised border border-surface-border hover:border-primary/50 text-zinc-300 hover:text-foreground text-xs font-medium transition-all shadow-sm group"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform" />
+                <span>AI Guide & Cheat Sheet</span>
+              </button>
             </div>
             <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground font-sans">
               What happened with your money today?
@@ -1096,6 +1504,14 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
 
             {/* Quick Action Badges */}
             <div className="flex flex-wrap items-center justify-center gap-2 mt-3 sm:mt-4">
+              <button
+                type="button"
+                onClick={() => setIsGuideOpen(true)}
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary hover:text-primary-foreground text-xs font-semibold transition-all shadow-sm group"
+              >
+                <HelpCircle className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                <span>AI Guide & Features</span>
+              </button>
               <button
                 onClick={() => {
                   setInput('/expense ');
@@ -1159,12 +1575,22 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
               <span>Conversation Active</span>
             </span>
-            <button
-              onClick={handleClearChat}
-              className="px-2 py-0.5 rounded-lg hover:bg-surface-raised hover:text-foreground text-[11px] transition-colors"
-            >
-              Clear Conversation
-            </button>
+            <div className="flex items-center space-x-2">
+              <button
+                type="button"
+                onClick={() => setIsGuideOpen(true)}
+                className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-surface-raised hover:bg-surface border border-surface-border text-zinc-300 hover:text-white text-[11px] font-sans font-medium transition-colors"
+              >
+                <BookOpen className="w-3 h-3 text-primary" />
+                <span>AI Guide</span>
+              </button>
+              <button
+                onClick={handleClearChat}
+                className="px-2 py-0.5 rounded-lg hover:bg-surface-raised hover:text-foreground text-[11px] transition-colors"
+              >
+                Clear Conversation
+              </button>
+            </div>
           </div>
 
           {/* Messages Stream */}
@@ -1405,6 +1831,9 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
           </div>
         </div>
       )}
+
+      {/* Interactive AI Guide & Cheatsheet Modal */}
+      {renderGuideModal()}
     </div>
   );
 };
