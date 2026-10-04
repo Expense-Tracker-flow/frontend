@@ -283,7 +283,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
         if (a.type !== 'EXPENSE' && b.type === 'EXPENSE') return 1;
       }
       return a.name.localeCompare(b.name);
-    }).slice(0, 8);
+    }).slice(0, 12);
   }, [categoryTriggerMatch, categories, input]);
 
   useEffect(() => {
@@ -329,12 +329,12 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     }
 
     if (!isSlashActive && categoryTriggerMatch && filteredCategories.length > 0 && !isCategoryDismissed) {
-      if (e.key === 'ArrowDown') {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault();
         setSelectedCategoryIndex((prev) => (prev + 1) % filteredCategories.length);
         return;
       }
-      if (e.key === 'ArrowUp') {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault();
         setSelectedCategoryIndex((prev) => (prev - 1 + filteredCategories.length) % filteredCategories.length);
         return;
@@ -451,23 +451,13 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     }
 
     return (
-      <div className="absolute bottom-full mb-2.5 left-0 right-0 sm:left-1 sm:right-1 bg-surface/95 backdrop-blur-xl border border-surface-border rounded-2xl shadow-2xl overflow-hidden p-1.5 z-40 text-left transition-all animate-in fade-in slide-in-from-bottom-2 duration-150">
-        <div className="flex items-center justify-between px-3 py-1.5 border-b border-surface-border/60 mb-1">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 flex items-center space-x-1.5 font-semibold">
+      <div className="absolute bottom-full mb-2 left-0 right-0 z-40 animate-in fade-in slide-in-from-bottom-1 duration-150">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 px-1.5 bg-surface/95 backdrop-blur-xl border border-surface-border rounded-2xl shadow-lg">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 pl-1.5 pr-0.5 flex-shrink-0 flex items-center gap-1 select-none font-semibold">
             <Tag className="w-3 h-3 text-primary" />
-            <span>Suggested Categories</span>
-            {categoryTriggerMatch.query && (
-              <span className="text-primary font-normal">
-                (for &quot;{categoryTriggerMatch.query}&quot;)
-              </span>
-            )}
+            <span>Category:</span>
           </span>
-          <span className="text-[10px] font-mono text-zinc-500">
-            {filteredCategories.length} available
-          </span>
-        </div>
 
-        <div className="max-h-56 overflow-y-auto space-y-0.5">
           {filteredCategories.map((cat, idx) => {
             const isSelected = idx === selectedCategoryIndex;
             return (
@@ -479,47 +469,22 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                   selectCategorySuggestion(cat);
                 }}
                 onMouseEnter={() => setSelectedCategoryIndex(idx)}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all text-xs ${
+                className={`flex-shrink-0 flex items-center space-x-1.5 px-2.5 py-1 rounded-xl text-xs font-medium transition-all ${
                   isSelected
-                    ? 'bg-primary/15 border border-primary/35 text-foreground shadow-xs'
-                    : 'border border-transparent text-zinc-400 hover:text-foreground hover:bg-surface-raised'
+                    ? 'bg-primary text-white shadow-sm shadow-primary/25 scale-[1.02]'
+                    : 'bg-surface-raised border border-surface-border text-zinc-400 hover:text-foreground hover:border-primary/40'
                 }`}
               >
-                <div className="flex items-center space-x-2.5 min-w-0">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-xs"
-                    style={{ backgroundColor: cat.color || (cat.type === 'INCOME' ? '#10b981' : '#f43f5e') }}
-                  />
-                  <span className="font-medium text-foreground text-xs truncate">
-                    {cat.name}
-                  </span>
-                </div>
-
-                <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
-                  <span
-                    className={`text-[9px] font-mono font-semibold px-2 py-0.5 rounded-md border ${
-                      cat.type === 'INCOME'
-                        ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/25'
-                        : 'bg-rose-500/10 text-rose-500 border-rose-500/25'
-                    }`}
-                  >
-                    {cat.type}
-                  </span>
-                  {isSelected && (
-                    <span className="hidden sm:inline-block text-[10px] font-mono text-primary font-bold">
-                      ↵
-                    </span>
-                  )}
-                </div>
+                <span
+                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                  style={{
+                    backgroundColor: isSelected ? '#ffffff' : (cat.color || (cat.type === 'INCOME' ? '#10b981' : '#f43f5e'))
+                  }}
+                />
+                <span>{cat.name}</span>
               </button>
             );
           })}
-        </div>
-
-        <div className="px-3 py-1.5 border-t border-surface-border/60 mt-1 flex items-center justify-between text-[9px] font-mono text-zinc-500">
-          <span>Use <strong className="text-zinc-400">↑ ↓</strong> to navigate</span>
-          <span><strong className="text-zinc-400">Tab</strong> or <strong className="text-zinc-400">Enter</strong> to select</span>
-          <span><strong className="text-zinc-400">Esc</strong> to dismiss</span>
         </div>
       </div>
     );
