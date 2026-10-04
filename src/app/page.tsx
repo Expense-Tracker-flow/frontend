@@ -580,16 +580,9 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen w-full bg-background flex items-center justify-center">
         <div className="flex flex-col items-center space-y-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-md shadow-blue-500/30 animate-pulse">
-              <Zap className="w-5 h-5 fill-white text-white" />
-            </div>
-            <span className="brand-finxl text-xl">
-              <span className="fin-text">FIN</span>
-              <span className="dash-text">-</span>
-              <span className="xl-text">XL</span>
-            </span>
-          </div>
+          <span className="text-2xl font-bold tracking-tight text-foreground select-none">
+            FIN-XL
+          </span>
           <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
         </div>
       </div>
@@ -613,15 +606,10 @@ export default function DashboardPage() {
               setShowAuthForm(false);
               setAuthError(null);
             }} 
-            className="flex items-center gap-2.5 cursor-pointer group"
+            className="cursor-pointer select-none"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-sm shadow-blue-500/30 group-hover:scale-105 transition-all">
-              <Zap className="w-4 h-4 fill-white text-white" />
-            </div>
-            <span className="brand-finxl text-base">
-              <span className="fin-text">FIN</span>
-              <span className="dash-text">-</span>
-              <span className="xl-text">XL</span>
+            <span className="text-xl font-bold tracking-tight text-foreground hover:opacity-85 transition-opacity">
+              FIN-XL
             </span>
           </div>
 

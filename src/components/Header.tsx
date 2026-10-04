@@ -61,15 +61,10 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Brand Logo */}
         <div 
           onClick={() => onTabChange?.('home')}
-          className="flex items-center gap-2.5 cursor-pointer select-none group"
+          className="cursor-pointer select-none"
         >
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-sm shadow-blue-500/30 group-hover:scale-105 group-hover:shadow-blue-500/40 transition-all">
-            <Zap className="w-4 h-4 fill-white text-white" />
-          </div>
-          <span className="brand-finxl text-base">
-            <span className="fin-text">FIN</span>
-            <span className="dash-text">-</span>
-            <span className="xl-text">XL</span>
+          <span className="text-xl font-bold tracking-tight text-foreground hover:opacity-85 transition-opacity">
+            FIN-XL
           </span>
         </div>
 
