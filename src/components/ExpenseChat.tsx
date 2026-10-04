@@ -1831,8 +1831,8 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
               </button>
             </form>
 
-            {/* Unified beautiful colorful link to open traditional modal */}
-            <div className="flex items-center justify-center mt-3">
+            {/* Unified beautiful colorful link to open traditional modal (desktop only, hidden on mobile phone view) */}
+            <div className="hidden sm:flex items-center justify-center mt-3">
               <button
                 type="button"
                 onClick={onOpenExpenseModal}
