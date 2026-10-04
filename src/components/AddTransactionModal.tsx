@@ -656,7 +656,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                 </div>
 
                 {/* 3. Category with Quick 1-Tap Chips */}
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 relative z-20">
                   <div className="flex items-center justify-between">
                     <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-bold text-zinc-400 tracking-wider">
                       Category
@@ -687,7 +687,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                 </div>
 
                 {/* 4. Payment Method & Description/Notes */}
-                <div className="space-y-3">
+                <div className="space-y-3 relative z-10">
                   {/* Payment Method */}
                   <div className="space-y-1">
                     <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-bold text-zinc-400 tracking-wider">

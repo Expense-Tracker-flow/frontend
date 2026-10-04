@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Search, Check, X } from 'lucide-react';
 
@@ -39,13 +40,91 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [mounted, setMounted] = useState(false);
+  const [menuPosition, setMenuPosition] = useState<{
+    top?: number;
+    bottom?: number;
+    left: number;
+    width: number;
+    maxHeight: number;
+  } | null>(null);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const updatePosition = useCallback(() => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+
+    if (rect.width === 0 && rect.height === 0) {
+      return;
+    }
+
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    const spaceBelow = viewportHeight - rect.bottom - 12;
+    const spaceAbove = rect.top - 12;
+
+    // Prefer opening downwards unless space below is tight and space above is greater
+    const shouldOpenUp = spaceBelow < 200 && spaceAbove > spaceBelow;
+
+    // Keep horizontal bounds within screen
+    const left = Math.max(8, Math.min(rect.left, viewportWidth - rect.width - 8));
+
+    if (shouldOpenUp) {
+      setMenuPosition({
+        bottom: Math.round(viewportHeight - rect.top + 6),
+        left: Math.round(left),
+        width: Math.round(rect.width),
+        maxHeight: Math.min(320, Math.max(150, spaceAbove)),
+      });
+    } else {
+      setMenuPosition({
+        top: Math.round(rect.bottom + 6),
+        left: Math.round(left),
+        width: Math.round(rect.width),
+        maxHeight: Math.min(320, Math.max(150, spaceBelow)),
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    updatePosition();
+
+    const handleScrollOrResize = (e: Event) => {
+      // Do not reposition if scrolling inside the options list itself
+      if (menuRef.current && menuRef.current.contains(e.target as Node)) {
+        return;
+      }
+      updatePosition();
+    };
+
+    window.addEventListener('resize', handleScrollOrResize);
+    window.addEventListener('scroll', handleScrollOrResize, true);
+
+    return () => {
+      window.removeEventListener('resize', handleScrollOrResize);
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+    };
+  }, [isOpen, updatePosition]);
 
   // Close on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(target) &&
+        menuRef.current &&
+        !menuRef.current.contains(target)
+      ) {
         setIsOpen(false);
         setSearch('');
       }
@@ -113,6 +192,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     <div ref={dropdownRef} className={`relative w-full text-left ${className}`} id={id}>
       {/* Trigger Button */}
       <button
+        ref={triggerRef}
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setIsOpen((prev) => !prev)}
@@ -151,90 +231,111 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
         />
       </button>
 
-      {/* Dropdown Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -4, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -4, scale: 0.98 }}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="absolute left-0 right-0 z-50 mt-1.5 bg-surface border border-surface-border rounded-2xl shadow-xl overflow-hidden backdrop-blur-md"
-          >
-            {/* Search Input */}
-            {shouldShowSearch && (
-              <div className="p-2 border-b border-surface-border bg-surface-raised/40">
-                <div className="relative flex items-center">
-                  <Search className="w-3.5 h-3.5 absolute left-2.5 text-zinc-400 pointer-events-none" />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder={searchPlaceholder}
-                    className="w-full bg-surface-raised border border-surface-border rounded-xl pl-8 pr-7 py-1.5 text-xs text-foreground placeholder-zinc-400 focus:outline-none focus:border-primary transition-all"
-                  />
-                  {search && (
-                    <button
-                      type="button"
-                      onClick={() => setSearch('')}
-                      className="absolute right-2 text-zinc-400 hover:text-foreground p-0.5"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
+      {/* Dropdown Menu Portaled to Document Body for Superior Z-Index & No Stacking/Overflow Clipping */}
+      {mounted && typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {isOpen && menuPosition && (
+            <motion.div
+              ref={menuRef}
+              initial={{
+                opacity: 0,
+                y: menuPosition.top !== undefined ? -6 : 6,
+                scale: 0.98,
+              }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{
+                opacity: 0,
+                y: menuPosition.top !== undefined ? -4 : 4,
+                scale: 0.98,
+              }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
+              style={{
+                position: 'fixed',
+                top: menuPosition.top,
+                bottom: menuPosition.bottom,
+                left: menuPosition.left,
+                width: menuPosition.width,
+                maxHeight: menuPosition.maxHeight,
+                zIndex: 99999,
+              }}
+              className="bg-surface border border-surface-border rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl flex flex-col"
+            >
+              {/* Search Input */}
+              {shouldShowSearch && (
+                <div className="p-2 border-b border-surface-border bg-surface-raised/40 flex-shrink-0">
+                  <div className="relative flex items-center">
+                    <Search className="w-3.5 h-3.5 absolute left-2.5 text-zinc-400 pointer-events-none" />
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder={searchPlaceholder}
+                      className="w-full bg-surface-raised border border-surface-border rounded-xl pl-8 pr-7 py-1.5 text-xs text-foreground placeholder-zinc-400 focus:outline-none focus:border-primary transition-all"
+                    />
+                    {search && (
+                      <button
+                        type="button"
+                        onClick={() => setSearch('')}
+                        className="absolute right-2 text-zinc-400 hover:text-foreground p-0.5 cursor-pointer"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Options List */}
-            <div className="max-h-56 overflow-y-auto p-1.5 space-y-0.5">
-              {filteredOptions.length === 0 ? (
-                <div className="py-4 text-center text-xs text-zinc-400 font-mono">
-                  No matching options
-                </div>
-              ) : (
-                filteredOptions.map((opt) => {
-                  const isSelected = opt.value === value;
-                  return (
-                    <div
-                      key={opt.value}
-                      onClick={() => handleSelect(opt.value)}
-                      className={`px-3 py-2 rounded-xl text-xs flex items-center justify-between gap-2 cursor-pointer transition-colors ${
-                        isSelected
-                          ? 'bg-primary/15 text-primary font-semibold'
-                          : 'text-foreground hover:bg-surface-raised'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        {opt.icon && (
-                          <span className="flex-shrink-0 text-zinc-400">{opt.icon}</span>
-                        )}
-                        {opt.color && (
-                          <span
-                            className="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-xs"
-                            style={{ backgroundColor: opt.color }}
-                          />
-                        )}
-                        <span className="truncate">{opt.label}</span>
-                        {opt.badge && (
-                          <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-primary/10 border border-primary/20 text-primary font-semibold flex-shrink-0">
-                            {opt.badge}
-                          </span>
+              {/* Options List */}
+              <div className="overflow-y-auto p-1.5 space-y-0.5 flex-1 min-h-0">
+                {filteredOptions.length === 0 ? (
+                  <div className="py-4 text-center text-xs text-zinc-400 font-mono">
+                    No matching options
+                  </div>
+                ) : (
+                  filteredOptions.map((opt) => {
+                    const isSelected = opt.value === value;
+                    return (
+                      <div
+                        key={opt.value}
+                        onClick={() => handleSelect(opt.value)}
+                        className={`px-3 py-2 rounded-xl text-xs flex items-center justify-between gap-2 cursor-pointer transition-colors ${
+                          isSelected
+                            ? 'bg-primary/15 text-primary font-semibold'
+                            : 'text-foreground hover:bg-surface-raised'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          {opt.icon && (
+                            <span className="flex-shrink-0 text-zinc-400">{opt.icon}</span>
+                          )}
+                          {opt.color && (
+                            <span
+                              className="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-xs"
+                              style={{ backgroundColor: opt.color }}
+                            />
+                          )}
+                          <span className="truncate">{opt.label}</span>
+                          {opt.badge && (
+                            <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-primary/10 border border-primary/20 text-primary font-semibold flex-shrink-0">
+                              {opt.badge}
+                            </span>
+                          )}
+                        </div>
+
+                        {isSelected && (
+                          <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                         )}
                       </div>
-
-                      {isSelected && (
-                        <Check className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                      )}
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                    );
+                  })
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 };
