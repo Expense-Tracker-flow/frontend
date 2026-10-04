@@ -373,7 +373,7 @@ export default function DashboardPage() {
       setIsLoading(true);
       const [summaryRes, txRes, catRes] = await Promise.all([
         api.getDashboardSummary(),
-        api.getTransactions({ size: 100 }),
+        api.getTransactions({ size: 500 }),
         api.getCategories(),
       ]);
 

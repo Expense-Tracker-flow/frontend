@@ -1,9 +1,22 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Transaction, Category } from '../lib/types';
-import { Trash2, Search, ArrowDownRight, ArrowUpRight, RotateCcw, Pencil, Sparkles, Filter, X } from 'lucide-react';
+import { Trash2, Search, ArrowDownRight, ArrowUpRight, RotateCcw, Pencil, Sparkles, Filter, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SearchableSelect, SelectOption } from './SearchableSelect';
+
+const getPageNumbers = (current: number, total: number): (number | string)[] => {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+  if (current <= 4) {
+    return [1, 2, 3, 4, 5, '...', total];
+  }
+  if (current >= total - 3) {
+    return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+  }
+  return [1, '...', current - 1, current, current + 1, '...', total];
+};
 
 interface ActivityTimelineProps {
   transactions: Transaction[];
@@ -32,12 +45,22 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
   const [fromDate, setFromDate] = useState<string>(defaultFrom);
   const [toDate, setToDate] = useState<string>(defaultTo);
 
+  // Pagination: 30 transactions per page
+  const PAGE_SIZE = 30;
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  // Reset to page 1 whenever any filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterType, selectedCategory, fromDate, toDate, search]);
+
   const handleResetToCurrentMonth = () => {
     setFromDate(defaultFrom);
     setToDate(defaultTo);
     setSelectedCategory('ALL');
     setFilterType('ALL');
     setSearch('');
+    setCurrentPage(1);
   };
 
   // Build category options list for SearchableSelect
@@ -123,14 +146,27 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
     });
   }, [filtered]);
 
-  // Group by date keeping exact date order (latest date first)
+  // Pagination calculations
+  const totalCount = sortedFiltered.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+
+  const paginatedTransactions = useMemo(() => {
+    const startIndex = (safeCurrentPage - 1) * PAGE_SIZE;
+    return sortedFiltered.slice(startIndex, startIndex + PAGE_SIZE);
+  }, [sortedFiltered, safeCurrentPage]);
+
+  const startItem = totalCount === 0 ? 0 : (safeCurrentPage - 1) * PAGE_SIZE + 1;
+  const endItem = Math.min(safeCurrentPage * PAGE_SIZE, totalCount);
+
+  // Group by date keeping exact date order (latest date first) for active page
   const dateGroups = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
     const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 
     const groupMap = new Map<string, { label: string; items: Transaction[] }>();
 
-    sortedFiltered.forEach((item) => {
+    paginatedTransactions.forEach((item) => {
       const rawDate = item.transactionDate ? item.transactionDate.split('T')[0] : '1970-01-01';
       let label = rawDate;
       if (rawDate === today) label = 'Today';
@@ -158,7 +194,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
         label: group.label,
         items: group.items,
       }));
-  }, [sortedFiltered]);
+  }, [paginatedTransactions]);
 
   return (
     <div className="w-full rounded-2xl sm:rounded-3xl bg-surface border border-surface-border p-4 sm:p-6 space-y-5 sm:space-y-6 shadow-sm text-foreground">
@@ -182,7 +218,8 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
               )}
             </div>
             <p className="text-[11px] sm:text-xs text-zinc-500 font-mono mt-0.5">
-              {filtered.length} {filtered.length === 1 ? 'transaction' : 'transactions'} found
+              {totalCount} {totalCount === 1 ? 'transaction' : 'transactions'} found
+              {totalPages > 1 && ` • Page ${safeCurrentPage} of ${totalPages}`}
             </p>
           </div>
         </div>
@@ -381,6 +418,67 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination Footer */}
+      {totalCount > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-surface-border">
+          <div className="text-xs text-zinc-400 font-mono text-center sm:text-left">
+            Showing <span className="font-semibold text-foreground">{startItem}</span>–<span className="font-semibold text-foreground">{endItem}</span> of{' '}
+            <span className="font-semibold text-foreground">{totalCount}</span> transactions
+            {totalPages > 1 && <span className="text-zinc-500 ml-1.5">(30 per page)</span>}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1.5 flex-wrap justify-center">
+              <button
+                onClick={() => {
+                  setCurrentPage((p) => Math.max(1, p - 1));
+                }}
+                disabled={safeCurrentPage <= 1}
+                className="px-2.5 py-1.5 rounded-xl border border-surface-border bg-surface-raised hover:bg-surface disabled:opacity-40 disabled:cursor-not-allowed text-xs font-medium text-foreground transition-all flex items-center gap-1"
+                aria-label="Previous page"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Prev</span>
+              </button>
+
+              {getPageNumbers(safeCurrentPage, totalPages).map((p, idx) =>
+                p === '...' ? (
+                  <span key={`ellipsis-${idx}`} className="px-1.5 py-1 text-xs text-zinc-500 font-mono">
+                    ...
+                  </span>
+                ) : (
+                  <button
+                    key={`page-${p}`}
+                    onClick={() => {
+                      setCurrentPage(p as number);
+                    }}
+                    className={`min-w-[28px] h-7 sm:min-w-[32px] sm:h-8 px-2 rounded-xl text-xs font-mono font-medium transition-all ${
+                      safeCurrentPage === p
+                        ? 'bg-primary text-white shadow-sm font-bold'
+                        : 'border border-surface-border bg-surface-raised hover:bg-surface text-foreground'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                )
+              )}
+
+              <button
+                onClick={() => {
+                  setCurrentPage((p) => Math.min(totalPages, p + 1));
+                }}
+                disabled={safeCurrentPage >= totalPages}
+                className="px-2.5 py-1.5 rounded-xl border border-surface-border bg-surface-raised hover:bg-surface disabled:opacity-40 disabled:cursor-not-allowed text-xs font-medium text-foreground transition-all flex items-center gap-1"
+                aria-label="Next page"
+              >
+                <span className="hidden sm:inline">Next</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
