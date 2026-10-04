@@ -1918,7 +1918,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       const catDisplayName = confirmedTransaction.category?.name || matchedCategory?.name || 'General';
 
       return {
-        text: `✅ **${actionName}**: **${formattedAmt}** for **"${title}"**\n📁 Category: **${catDisplayName}** • 📅 Date: **${cleanDateDisplay}**`,
+        text: '',
         widget: {
           type: 'TRANSACTION_CONFIRMATION',
           transaction: confirmedTransaction,
@@ -2130,11 +2130,13 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                       : 'rounded-2xl rounded-tl-xs bg-surface dark:bg-[#181B26] border border-surface-border text-foreground shadow-sm max-w-[88%] sm:max-w-[80%] px-3.5 py-2.5'
                   }`}
                 >
-                  <p className="whitespace-pre-line">{msg.text}</p>
+                  {msg.text && msg.widget?.type !== 'TRANSACTION_CONFIRMATION' && (
+                    <p className="whitespace-pre-line">{msg.text}</p>
+                  )}
 
                   {/* 1. WIDGET: Single Transaction Confirmation Card */}
                   {msg.widget?.type === 'TRANSACTION_CONFIRMATION' && msg.widget.transaction && (
-                    <div className="mt-2.5 p-3 rounded-2xl bg-zinc-50 dark:bg-[#151822] border border-surface-border shadow-xs space-y-2.5">
+                    <div className="p-3 rounded-2xl bg-zinc-50 dark:bg-[#151822] border border-surface-border shadow-xs space-y-2.5">
                       {/* Top Header: Badge + Amount */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
