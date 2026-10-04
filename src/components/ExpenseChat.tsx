@@ -1738,11 +1738,11 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
   };
 
   return (
-    <div className="w-full flex-1 flex flex-col justify-between h-[calc(100dvh-10rem)] md:h-[calc(100vh-8.5rem)]">
+    <div className="w-full flex-1 flex flex-col justify-between h-full min-h-0 overflow-hidden">
       {/* Unified WhatsApp / Instagram DM Chat Structure */}
-      <div className="flex-1 flex flex-col overflow-hidden max-w-2xl w-full mx-auto px-2 sm:px-4 pb-2">
-        {/* WhatsApp / Instagram DM Style Top App Bar */}
-        <div className="sticky top-0 z-20 bg-surface/95 dark:bg-[#12141C]/95 backdrop-blur-xl flex items-center justify-between px-3 sm:px-4 py-2 border-b border-surface-border rounded-2xl sm:rounded-3xl shadow-xs mb-2">
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden max-w-2xl w-full mx-auto px-0 sm:px-4">
+        {/* WhatsApp / Instagram DM Style Top App Bar (Always Frozen at Top) */}
+        <div className="flex-shrink-0 z-30 bg-surface/95 dark:bg-[#12141C]/95 backdrop-blur-xl flex items-center justify-between px-3.5 sm:px-4 py-2.5 border-b border-surface-border shadow-xs w-full">
           <div className="flex items-center space-x-2.5">
             {/* MonAI Avatar with Online Indicator */}
             <div className="relative">
@@ -1786,8 +1786,8 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
           </div>
         </div>
 
-        {/* Messages Stream */}
-        <div className="flex-1 space-y-3 sm:space-y-4 py-2 sm:py-3 overflow-y-auto px-0.5 custom-scrollbar">
+        {/* Messages Stream (Independently scrollable message area) */}
+        <div className="flex-1 min-h-0 space-y-3 sm:space-y-4 py-2 sm:py-3 overflow-y-auto px-2 sm:px-3 custom-scrollbar overscroll-contain">
           {/* WhatsApp Style Date Divider */}
           <div className="flex justify-center my-1.5">
             <span className="px-3 py-0.5 rounded-full bg-surface-raised/90 dark:bg-surface-raised/60 border border-surface-border/70 text-[10px] font-medium text-zinc-400 shadow-2xs">
@@ -2073,8 +2073,8 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
             <div ref={messagesEndRef} />
           </div>
 
-          {/* WhatsApp / Instagram DM Sticky Bottom Bar */}
-          <div className="sticky bottom-2 sm:bottom-4 z-40 w-full pt-1">
+          {/* WhatsApp / Instagram DM Sticky Bottom Bar (Always Frozen at Bottom) */}
+          <div className="flex-shrink-0 z-30 w-full pt-1.5 pb-2 px-2 sm:px-0 bg-surface/95 dark:bg-[#12141C]/95 backdrop-blur-xl border-t border-surface-border/70 sm:border-t-0">
             {/* Quick Reply Chips Row - WhatsApp / Instagram Style */}
             <div className="flex items-center justify-center gap-2 mb-1.5">
               <button

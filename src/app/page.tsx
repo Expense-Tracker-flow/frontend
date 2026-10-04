@@ -946,12 +946,16 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-5 sm:space-y-6 pb-24 md:pb-8">
+      <main className={`flex-1 max-w-7xl w-full mx-auto ${
+        activeTab === 'home' 
+          ? 'p-0 sm:px-6 lg:px-8 sm:py-4 h-[calc(100dvh-8rem)] sm:h-[calc(100vh-8.5rem)] overflow-hidden flex flex-col' 
+          : 'px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-5 sm:space-y-6 pb-24 md:pb-8'
+      }`}>
         {/* ============================================================== */}
-        {/* 🏠 TAB 1: HOME (ChatGPT-Style Center Conversational Canvas)   */}
+        {/* 🏠 TAB 1: CHAT (MonAI WhatsApp / Instagram DM Assistant)       */}
         {/* ============================================================== */}
         {activeTab === 'home' && (
-          <div className="w-full">
+          <div className="w-full h-full flex-1 flex flex-col overflow-hidden">
             <ExpenseChat
               userName={user.fullName.split(' ')[0]}
               currencySymbol={currencySymbol}
