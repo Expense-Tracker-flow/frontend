@@ -533,19 +533,21 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     );
   };
 
-  const renderSuggestionsBar = () => {
+  const renderSuggestionsDropdown = (placement: 'down' | 'up' = 'down') => {
     if (isSlashActive) return null;
+
+    const positionClasses =
+      placement === 'down'
+        ? 'top-full mt-2 animate-in fade-in slide-in-from-top-1 duration-150'
+        : 'bottom-full mb-2 animate-in fade-in slide-in-from-bottom-1 duration-150';
 
     // 1. Payment suggestions (triggered when typing "by " or "via ")
     if (paymentTriggerMatch && filteredPaymentMethods.length > 0 && !isPaymentDismissed) {
       return (
-        <div className="absolute bottom-full mb-2 left-0 right-0 z-40 animate-in fade-in slide-in-from-bottom-1 duration-150">
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 px-1.5 bg-surface/95 backdrop-blur-xl border border-surface-border rounded-2xl shadow-lg">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 pl-1.5 pr-0.5 flex-shrink-0 flex items-center gap-1 select-none font-semibold">
-              <Wallet className="w-3 h-3 text-emerald-500" />
-              <span>Payment:</span>
-            </span>
-
+        <div
+          className={`absolute ${positionClasses} left-0 right-0 sm:left-2 sm:right-auto sm:w-72 max-w-sm bg-surface/95 dark:bg-[#12141C]/95 backdrop-blur-xl border border-surface-border dark:border-[#262A3B] rounded-2xl shadow-2xl p-1.5 z-50 text-left transition-all`}
+        >
+          <div className="max-h-56 overflow-y-auto space-y-0.5 custom-scrollbar">
             {filteredPaymentMethods.map((p, idx) => {
               const isSelected = idx === selectedPaymentIndex;
               return (
@@ -557,17 +559,24 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                     selectPaymentSuggestion(p);
                   }}
                   onMouseEnter={() => setSelectedPaymentIndex(idx)}
-                  className={`flex-shrink-0 flex items-center space-x-1.5 px-2.5 py-1 rounded-xl text-xs font-medium transition-all ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all text-xs ${
                     isSelected
-                      ? 'bg-primary text-white shadow-sm shadow-primary/25 scale-[1.02]'
-                      : 'bg-surface-raised border border-surface-border text-zinc-400 hover:text-foreground hover:border-primary/40'
+                      ? 'bg-primary/15 border border-primary/30 text-primary font-medium shadow-2xs'
+                      : 'border border-transparent text-zinc-600 dark:text-zinc-300 hover:text-foreground hover:bg-surface-raised'
                   }`}
                 >
-                  <span
-                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: isSelected ? '#ffffff' : p.color }}
-                  />
-                  <span>{p.label}</span>
+                  <div className="flex items-center space-x-2.5 min-w-0">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: p.color }}
+                    />
+                    <span className="truncate">{p.label}</span>
+                  </div>
+                  {isSelected && (
+                    <span className="text-[10px] font-mono text-primary font-bold flex-shrink-0">
+                      ↵
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -579,15 +588,13 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     // 2. Category suggestions (triggered when typing "for " or "on ")
     if (categoryTriggerMatch && filteredCategories.length > 0 && !isCategoryDismissed) {
       return (
-        <div className="absolute bottom-full mb-2 left-0 right-0 z-40 animate-in fade-in slide-in-from-bottom-1 duration-150">
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 px-1.5 bg-surface/95 backdrop-blur-xl border border-surface-border rounded-2xl shadow-lg">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 pl-1.5 pr-0.5 flex-shrink-0 flex items-center gap-1 select-none font-semibold">
-              <Tag className="w-3 h-3 text-primary" />
-              <span>Category:</span>
-            </span>
-
+        <div
+          className={`absolute ${positionClasses} left-0 right-0 sm:left-2 sm:right-auto sm:w-72 max-w-sm bg-surface/95 dark:bg-[#12141C]/95 backdrop-blur-xl border border-surface-border dark:border-[#262A3B] rounded-2xl shadow-2xl p-1.5 z-50 text-left transition-all`}
+        >
+          <div className="max-h-56 overflow-y-auto space-y-0.5 custom-scrollbar">
             {filteredCategories.map((cat, idx) => {
               const isSelected = idx === selectedCategoryIndex;
+              const dotColor = cat.color || (cat.type === 'INCOME' ? '#10b981' : '#f43f5e');
               return (
                 <button
                   key={cat.id}
@@ -597,19 +604,35 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                     selectCategorySuggestion(cat);
                   }}
                   onMouseEnter={() => setSelectedCategoryIndex(idx)}
-                  className={`flex-shrink-0 flex items-center space-x-1.5 px-2.5 py-1 rounded-xl text-xs font-medium transition-all ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all text-xs ${
                     isSelected
-                      ? 'bg-primary text-white shadow-sm shadow-primary/25 scale-[1.02]'
-                      : 'bg-surface-raised border border-surface-border text-zinc-400 hover:text-foreground hover:border-primary/40'
+                      ? 'bg-primary/15 border border-primary/30 text-primary font-medium shadow-2xs'
+                      : 'border border-transparent text-zinc-600 dark:text-zinc-300 hover:text-foreground hover:bg-surface-raised'
                   }`}
                 >
-                  <span
-                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                    style={{
-                      backgroundColor: isSelected ? '#ffffff' : (cat.color || (cat.type === 'INCOME' ? '#10b981' : '#f43f5e'))
-                    }}
-                  />
-                  <span>{cat.name}</span>
+                  <div className="flex items-center space-x-2.5 min-w-0">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: dotColor }}
+                    />
+                    <span className="truncate">{cat.name}</span>
+                  </div>
+                  <div className="flex items-center space-x-1.5 flex-shrink-0 ml-2">
+                    <span
+                      className={`text-[9px] font-mono px-1.5 py-0.5 rounded-md ${
+                        cat.type === 'INCOME'
+                          ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                          : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
+                      }`}
+                    >
+                      {cat.type === 'INCOME' ? 'Income' : 'Expense'}
+                    </span>
+                    {isSelected && (
+                      <span className="text-[10px] font-mono text-primary font-bold">
+                        ↵
+                      </span>
+                    )}
+                  </div>
                 </button>
               );
             })}
@@ -1699,16 +1722,16 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
           </div>
 
           {/* Centered ChatGPT-style Chat Bar */}
-          <div className="w-full max-w-2xl">
+          <div className="w-full max-w-2xl relative z-30">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSendMessage();
               }}
-              className="relative flex items-center bg-surface border border-surface-border focus-within:border-primary/80 rounded-3xl p-1.5 sm:p-2 shadow-xl transition-all"
+              className="relative flex items-center bg-surface border border-surface-border focus-within:border-primary/80 rounded-3xl p-1.5 sm:p-2 shadow-xl transition-all z-40"
             >
               {renderSlashCommandPalette()}
-              {renderSuggestionsBar()}
+              {renderSuggestionsDropdown('down')}
 
               {/* Quick Mode Pills directly WITHIN the chat bar */}
               <div className="flex items-center space-x-1.5 pl-1.5 sm:pl-2 flex-shrink-0">
@@ -2049,16 +2072,16 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
           </div>
 
           {/* Sticky Bottom ChatGPT Input Bar */}
-          <div className="sticky bottom-4 z-20 w-full pt-2">
+          <div className="sticky bottom-4 z-40 w-full pt-2">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSendMessage();
               }}
-              className="relative flex items-center bg-surface/90 backdrop-blur-md border border-surface-border focus-within:border-primary/80 rounded-3xl p-1.5 shadow-xl transition-all"
+              className="relative flex items-center bg-surface/90 backdrop-blur-md border border-surface-border focus-within:border-primary/80 rounded-3xl p-1.5 shadow-xl transition-all z-40"
             >
               {renderSlashCommandPalette()}
-              {renderSuggestionsBar()}
+              {renderSuggestionsDropdown('up')}
 
               {/* Quick Mode Pills directly WITHIN the chat bar */}
               <div className="flex items-center space-x-1.5 pl-1.5 sm:pl-2 flex-shrink-0">
