@@ -12,13 +12,12 @@ import {
   History, 
   Settings as SettingsIcon, 
   ChevronDown,
-  Tags,
   Download,
   Smartphone
 } from 'lucide-react';
 import { UserProfile } from '../lib/types';
 
-export type DashboardTab = 'home' | 'summary' | 'categories' | 'automate' | 'history' | 'profile' | 'settings';
+export type DashboardTab = 'home' | 'summary' | 'automate' | 'history' | 'profile' | 'settings';
 
 interface HeaderProps {
   user: UserProfile | null;
@@ -134,18 +133,6 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <PieChart className="w-3.5 h-3.5" />
               <span>Summary</span>
-            </button>
-
-            <button
-              onClick={() => onTabChange('categories')}
-              className={`flex items-center space-x-2 px-4 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                activeTab === 'categories'
-                  ? 'bg-primary text-white shadow-md shadow-primary/25'
-                  : 'text-zinc-500 hover:text-foreground'
-              }`}
-            >
-              <Tags className="w-3.5 h-3.5" />
-              <span>Categories</span>
             </button>
 
             <button

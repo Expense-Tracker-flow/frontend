@@ -4,11 +4,10 @@ import React from 'react';
 import { 
   MessageSquare, 
   PieChart, 
-  Zap,
+  Zap, 
   History, 
   Settings as SettingsIcon, 
-  Plus,
-  Tags
+  Plus
 } from 'lucide-react';
 import { DashboardTab } from './Header';
 
@@ -50,19 +49,6 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         >
           <PieChart className="w-4 h-4 mb-0.5" />
           <span className="text-[8px] sm:text-[9px] tracking-tight">Summary</span>
-        </button>
-
-        {/* 3. Categories Tab */}
-        <button
-          onClick={() => onTabChange('categories')}
-          className={`flex flex-col items-center justify-center flex-1 py-1 transition-all ${
-            activeTab === 'categories'
-              ? 'text-primary font-bold scale-105'
-              : 'text-zinc-400 hover:text-foreground'
-          }`}
-        >
-          <Tags className="w-4 h-4 mb-0.5" />
-          <span className="text-[8px] sm:text-[9px] tracking-tight">Categories</span>
         </button>
 
         {/* Center Quick Add Floating Trigger */}
