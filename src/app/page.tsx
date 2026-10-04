@@ -987,19 +987,9 @@ export default function DashboardPage() {
         {/* 📊 TAB 2: SUMMARY (Executive Financial Overview & Analytics) */}
         {/* ============================================================== */}
         {activeTab === 'summary' && (
-          <div className="space-y-6 max-w-6xl mx-auto">
-            {/* Top Bar: Title & From/To Date Range Filter */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              <div>
-                <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-widest">
-                  Financial Intelligence
-                </span>
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-                  Cashflow & Category Summary
-                </h1>
-              </div>
-
-              {/* From & To Date Range Filter */}
+          <div className="space-y-4 sm:space-y-6 max-w-6xl mx-auto">
+            {/* From & To Date Range Filter */}
+            <div className="flex justify-end w-full">
               <DateRangeFilter
                 fromDate={summaryFromDate}
                 toDate={summaryToDate}
