@@ -8,6 +8,7 @@ import { ProfileScreen } from '../components/ProfileScreen';
 import { SettingsScreen } from '../components/SettingsScreen';
 import { MoneyOrbit } from '../components/MoneyOrbit';
 import { MoneyPulse } from '../components/MoneyPulse';
+import { CategoryCircleChart } from '../components/CategoryCircleChart';
 import { ActivityTimeline } from '../components/ActivityTimeline';
 import { AutomationsScreen } from '../components/AutomationsScreen';
 import { AddTransactionModal } from '../components/AddTransactionModal';
@@ -1070,60 +1071,19 @@ export default function DashboardPage() {
 
             {/* 2. Side-by-Side Analytics Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
-              {/* Category Breakdown Card */}
+              {/* Category Breakdown Card with Circle Donut Chart */}
               <div className="lg:col-span-6 bg-surface border border-surface-border rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between mb-3 sm:mb-4">
-                    <div>
-                      <h2 className="text-sm font-bold text-foreground">Category Distribution</h2>
-                      <p className="text-[11px] text-zinc-400">Filtered expense breakdown</p>
-                    </div>
-                    <span className="px-2.5 py-1 rounded-xl text-[10px] font-mono font-semibold bg-surface-raised border border-surface-border text-zinc-500">
-                      {activeCategories.length} Categories
-                    </span>
+                  <div className="mb-3 sm:mb-4">
+                    <h2 className="text-sm font-bold text-foreground">Category Distribution</h2>
+                    <p className="text-[11px] text-zinc-400">Filtered expense breakdown</p>
                   </div>
 
-                  {activeCategories.length === 0 ? (
-                    <div className="py-8 sm:py-12 text-center text-xs text-zinc-400 font-mono">
-                      No categorized expenses recorded in this date range.
-                    </div>
-                  ) : (
-                    <div className="space-y-3 sm:space-y-3.5">
-                      {activeCategories.map((cat, idx) => {
-                        const name = cat.name || (cat as any).categoryName || 'General';
-                        const amount = Number(cat.amount ?? (cat as any).totalAmount ?? 0);
-                        const percentage = Number(cat.percentage ?? 0);
-                        return (
-                          <div key={idx} className="space-y-1.5">
-                            <div className="flex items-center justify-between text-xs">
-                              <div className="flex items-center space-x-2 min-w-0 pr-2">
-                                <span
-                                  className="w-2 h-2 rounded-full flex-shrink-0"
-                                  style={{ backgroundColor: cat.color || '#6366F1' }}
-                                />
-                                <span className="font-semibold text-foreground truncate">{name}</span>
-                              </div>
-                              <div className="flex items-center space-x-2 font-mono flex-shrink-0">
-                                <span className="text-zinc-600 dark:text-zinc-400 font-medium">
-                                  {currencySymbol}{amount.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
-                                </span>
-                                <span className="text-zinc-400 text-[10px]">({percentage.toFixed(0)}%)</span>
-                              </div>
-                            </div>
-                            <div className="w-full h-1.5 sm:h-2 rounded-full bg-surface-raised overflow-hidden">
-                              <div
-                                className="h-full rounded-full transition-all duration-500"
-                                style={{
-                                  backgroundColor: cat.color || '#6366F1',
-                                  width: `${Math.min(100, Math.max(5, percentage))}%`,
-                                }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                  <CategoryCircleChart
+                    categories={activeCategories}
+                    currencySymbol={currencySymbol}
+                    totalExpense={activeExpense}
+                  />
                 </div>
               </div>
 
