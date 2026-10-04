@@ -1149,6 +1149,19 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       return { dateStr: toIso(y, m, d), label: formatLabel(y, m, d) };
     }
 
+    // 4.5. MM-DD-YYYY or MM/DD/YYYY when Day > 12 (e.g. 12/25/2026)
+    const mdyMatch = lower.match(/\b(0?[1-9]|1[0-2])[-/.]([12]\d|3[01])(?:[-/.](20\d{2}|\d{2}))?\b/);
+    if (mdyMatch) {
+      const m = parseInt(mdyMatch[1], 10) - 1;
+      const d = parseInt(mdyMatch[2], 10);
+      let y = currentYear;
+      if (mdyMatch[3]) {
+        y = parseInt(mdyMatch[3], 10);
+        if (y < 100) y += 2000;
+      }
+      return { dateStr: toIso(y, m, d), label: formatLabel(y, m, d) };
+    }
+
     // Month map for name-based parsing
     const monthNames: { [key: string]: number } = {
       jan: 0, january: 0,
@@ -1268,18 +1281,23 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       if (!isNaN(val) && val > 0) return val * 1000;
     }
 
-    // 3. Fallback to any standalone number - strip out dates first so dates like "02/10" or "2026" or "2nd" are not picked
+    // 3. Fallback to any standalone number - thoroughly strip out dates & years first so date numbers like "12", "2026", "2nd" are not picked
     const sanitizedForAmount = text
-      .replace(/\b(?:20\d{2}[-/.]\d{1,2}[-/.]\d{1,2}|\d{1,2}[-/.]\d{1,2}[-/.]20\d{2})\b/g, ' ')
-      .replace(/\b\d{1,2}[-/.]\d{1,2}\b/g, ' ')
+      // ISO dates: 2026-12-12, 2026/12/12
+      .replace(/\b\d{4}[-/.]\d{1,2}[-/.]\d{1,2}\b/g, ' ')
+      // Standard dates: 12/12/2026, 12-12-2026, 12/12/26, 12/12
+      .replace(/\b\d{1,2}[-/.]\d{1,2}(?:[-/.]\d{2,4})?\b/g, ' ')
+      // Named dates with optional year: 12 Dec 2026, 12th December 2026, Dec 12 2026
+      .replace(/\b\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)(?:\s*,?\s*\d{2,4})?\b/gi, ' ')
+      .replace(/\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+\d{1,2}(?:st|nd|rd|th)?(?:\s*,?\s*\d{2,4})?\b/gi, ' ')
+      // Ordinals: 1st, 2nd, 3rd, 12th
       .replace(/\b\d{1,2}(?:st|nd|rd|th)\b/gi, ' ')
-      .replace(/\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+\d{1,2}\b/gi, ' ')
-      .replace(/\b\d{1,2}\s+(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\b/gi, ' ');
+      // Any remaining standalone 4-digit year: e.g. 2024, 2025, 2026, 2027
+      .replace(/\b(?:19|20)\d{2}\b/g, ' ');
 
     const numMatches = sanitizedForAmount.match(/\b\d+(?:,\d+)*(?:\.\d+)?\b/g);
     if (numMatches && numMatches.length > 0) {
-      // If there are multiple numbers (e.g. "2 shirts for 1500"), pick the highest value as price
-      const numbers = numMatches.map(n => parseFloat(n.replace(/,/g, ''))).filter(n => !isNaN(n));
+      const numbers = numMatches.map(n => parseFloat(n.replace(/,/g, ''))).filter(n => !isNaN(n) && n > 0);
       if (numbers.length > 0) {
         return Math.max(...numbers);
       }
@@ -1309,31 +1327,114 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       if (matched) return matched.name;
     }
 
+    // 1. Direct match with active categories list (exact name or token word match)
+    // E.g. user typed "500 food 12/12/2026", "food" matches "Food & Dining"
+    const matchingAvailableCat = categories.find((c) => {
+      if (c.type !== type) return false;
+      const catLower = c.name.toLowerCase();
+      if (lower.includes(catLower)) return true;
+      const words = catLower.split(/[\s&/,]+/).filter(w => w.length >= 3 && !['and', 'for', 'the', 'other'].includes(w));
+      return words.some(w => {
+        const regex = new RegExp(`\\b${w}\\b`, 'i');
+        return regex.test(lower);
+      });
+    });
+    if (matchingAvailableCat) return matchingAvailableCat.name;
+
+    // 2. Comprehensive semantic rules mapped to seeded categories
     if (type === 'INCOME') {
-      if (lower.includes('freelance') || lower.includes('project') || lower.includes('client') || lower.includes('contract')) return 'Freelance';
-      if (lower.includes('dividend') || lower.includes('stock') || lower.includes('interest') || lower.includes('crypto')) return 'Investments';
-      if (lower.includes('refund') || lower.includes('cashback') || lower.includes('reward')) return 'Refunds & Rewards';
-      if (lower.includes('bonus') || lower.includes('gift')) return 'Bonus & Gifts';
-      return 'Salary & Inflows';
+      if (/\b(?:salary|stipend|wage|wages|paycheck|payroll|job|office|company|inflow)\b/i.test(lower)) return 'Salary';
+      if (/\b(?:freelance|freelancing|project|client|contract|consulting|gig|upwork|fiverr)\b/i.test(lower)) return 'Freelance';
+      if (/\b(?:dividend|dividends|stock|stocks|shares|crypto|bitcoin|mutual\s*fund|trading|profit|interest|fd|investment|investments)\b/i.test(lower)) return 'Investments';
+      if (/\b(?:refund|refunds|cashback|reimbursement|reimbursed|returned\s*money|reward|rewards)\b/i.test(lower)) return 'Refunds';
+      if (/\b(?:bonus|gift|gifts|allowance|pocket\s*money)\b/i.test(lower)) return 'Other Income';
+      return 'Salary';
     }
 
     const rules = [
-      { cat: 'Food & Dining', words: ['coffee', 'tea', 'lunch', 'dinner', 'breakfast', 'pizza', 'burger', 'swiggy', 'zomato', 'snack', 'cafe', 'restaurant', 'mcdonalds', 'kfc', 'starbucks', 'drink', 'beer', 'bar'] },
-      { cat: 'Transportation', words: ['uber', 'ola', 'cab', 'metro', 'petrol', 'diesel', 'fuel', 'flight', 'train', 'bus', 'auto', 'parking', 'toll', 'fare'] },
-      { cat: 'Groceries', words: ['grocery', 'groceries', 'supermarket', 'blinkit', 'zepto', 'instamart', 'vegetables', 'fruits', 'milk', 'bread', 'eggs', 'provisions'] },
-      { cat: 'Housing & Bills', words: ['rent', 'electricity', 'wifi', 'broadband', 'water', 'bill', 'maintenance', 'gas', 'cylinder', 'recharge', 'mobile bill'] },
-      { cat: 'Entertainment', words: ['movie', 'cinema', 'theatre', 'netflix', 'spotify', 'prime', 'hotstar', 'concert', 'gaming', 'steam', 'game'] },
-      { cat: 'Healthcare', words: ['doctor', 'medicine', 'pharmacy', 'hospital', 'clinic', 'tablet', 'medical', 'dentist', 'health', 'gym', 'fitness'] },
-      { cat: 'Shopping', words: ['shirt', 'shoes', 'clothes', 'amazon', 'flipkart', 'myntra', 'zara', 'h&m', 'electronics', 'gadget', 'laptop', 'phone', 'watch'] },
+      {
+        cat: 'Food & Dining',
+        words: [
+          'food', 'dining', 'dine', 'eat', 'eating', 'meal', 'meals', 'lunch', 'dinner', 'breakfast', 'brunch',
+          'snack', 'snacks', 'coffee', 'tea', 'chai', 'pizza', 'burger', 'swiggy', 'zomato', 'cafe', 'restaurant',
+          'hotel', 'mcdonalds', 'kfc', 'starbucks', 'dominos', 'subway', 'bakery', 'cake', 'dessert', 'ice cream',
+          'drink', 'drinks', 'beer', 'bar', 'pub', 'juice', 'biryani', 'shawarma', 'sandwich', 'pasta'
+        ]
+      },
+      {
+        cat: 'Groceries',
+        words: [
+          'grocery', 'groceries', 'supermarket', 'blinkit', 'zepto', 'instamart', 'bigbasket', 'vegetables', 'veggies',
+          'fruits', 'milk', 'bread', 'eggs', 'paneer', 'chicken', 'meat', 'fish', 'rice', 'dal', 'atta', 'oil',
+          'spices', 'provisions', 'mart', 'market'
+        ]
+      },
+      {
+        cat: 'Transportation',
+        words: [
+          'transport', 'transportation', 'uber', 'ola', 'cab', 'taxi', 'auto', 'rickshaw', 'metro', 'petrol', 'diesel',
+          'fuel', 'cng', 'bus', 'train', 'irctc', 'railway', 'parking', 'toll', 'fastag', 'bike', 'scooter', 'rapido',
+          'fare', 'commute'
+        ]
+      },
+      {
+        cat: 'Travel',
+        words: [
+          'travel', 'flight', 'flights', 'airline', 'airport', 'trip', 'vacation', 'holiday', 'hotel booking',
+          'airbnb', 'resort', 'tour', 'visa', 'makemytrip', 'cleartrip', 'indigo', 'boarding'
+        ]
+      },
+      {
+        cat: 'Bills & Utilities',
+        words: [
+          'bill', 'bills', 'utility', 'utilities', 'rent', 'house rent', 'electricity', 'power', 'water', 'wifi',
+          'internet', 'broadband', 'recharge', 'mobile bill', 'dth', 'gas', 'cylinder', 'lpg', 'maintenance',
+          'society', 'emi', 'loan'
+        ]
+      },
+      {
+        cat: 'Entertainment',
+        words: [
+          'entertainment', 'movie', 'movies', 'cinema', 'theatre', 'film', 'pvr', 'inox', 'netflix', 'spotify',
+          'prime', 'hotstar', 'youtube', 'concert', 'gaming', 'games', 'steam', 'playstation', 'xbox', 'party',
+          'club', 'show'
+        ]
+      },
+      {
+        cat: 'Health & Medical',
+        words: [
+          'health', 'medical', 'medicine', 'medicines', 'meds', 'pharmacy', 'apollo', 'doctor', 'hospital',
+          'clinic', 'tablet', 'tablets', 'pills', 'dentist', 'eye', 'gym', 'fitness', 'workout', 'checkup',
+          'lab test'
+        ]
+      },
+      {
+        cat: 'Shopping',
+        words: [
+          'shopping', 'clothes', 'clothing', 'shirt', 'shirts', 'tshirt', 'pant', 'pants', 'jeans', 'dress',
+          'shoes', 'footwear', 'sneakers', 'amazon', 'flipkart', 'myntra', 'zara', 'h&m', 'ajio', 'electronics',
+          'gadget', 'laptop', 'phone', 'mobile', 'iphone', 'watch', 'bag'
+        ]
+      },
+      {
+        cat: 'Education',
+        words: [
+          'education', 'course', 'book', 'books', 'tuition', 'school', 'college', 'fees', 'exam', 'udemy',
+          'coursera', 'stationery', 'study', 'class', 'training'
+        ]
+      },
     ];
 
     for (const rule of rules) {
-      if (rule.words.some(w => lower.includes(w))) {
+      if (rule.words.some(w => {
+        const regex = new RegExp(`\\b${w}\\b`, 'i');
+        return regex.test(lower);
+      })) {
         return rule.cat;
       }
     }
 
-    return 'General';
+    return 'Other Expense';
   };
 
   // Helper 5: Clean Description Title with Proper Spacing
@@ -1341,7 +1442,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     let title = rawText
       // 0. Remove slash commands e.g. /income, /expense, /inflow, /spent
       .replace(/^\s*\/(?:income|expense|inflow|spent|add|log|inc|exp)\s*/i, ' ')
-      // 1. Remove all date expressions (relative, formatted, and named)
+      // 1. Remove all date expressions (relative, formatted, named, and ordinals)
       .replace(/\b(?:yesterday|today|tomorrow|day before yesterday|\d+\s*days?\s*ago)\b/gi, ' ')
       .replace(/\b(?:last|this|past)\s+(?:sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/gi, ' ')
       .replace(/\b(?:on\s+)?(?:sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/gi, ' ')
@@ -1351,15 +1452,16 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       .replace(/\b(?:on\s+)?(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+(?:the\s+)?\d{1,2}(?:st|nd|rd|th)?(?:\s+\d{4})?\b/gi, ' ')
       .replace(/\b(?:on\s+)(?:the\s+)?\d{1,2}(?:st|nd|rd|th)\b/gi, ' ')
       .replace(/\b(?:date:\s*[^,\n;]+)\b/gi, ' ')
+      .replace(/\b(?:19|20)\d{2}\b/g, ' ')
       // 2. Remove currency amounts with strict non-empty digit match
       .replace(/(?:₹|\$|€|£|rs\.?|inr)?\s*(?:\b\d+(?:,\d+)*(?:\.\d+)?\s*(?:k|thousand)?|\b\d+k\b)/gi, ' ')
       // 3. Remove payment methods (including "by ...")
       .replace(/\b(?:by|via|with|using|through)\s+(?:upi|cash|credit\s*card|debit\s*card|card|gpay|paytm|phonepe|netbanking|bank\s*transfer)\b/gi, ' ')
       .replace(/\b(?:upi|cash|credit\s*card|debit\s*card|card|gpay|paytm|phonepe|netbanking|bank\s*transfer)\b/gi, ' ')
-      // 3.5 Remove "for <category>" explicitly from title so description stays neat
-      .replace(/\b(?:for|on)\s+[^,.;\n]+?(?=\s+(?:by|via|with|using|through)\b|$)/gi, ' ')
       // 4. Remove leading verbs and keywords
       .replace(/^\s*(?:i\s+)?(?:spent|paid|bought|received|got|added|recorded|purchase|purchased|income|expense|inflow)\s+(?:on|for|a|an|from|of)?\s*/i, ' ')
+      // 4.5 Remove leading prepositions "for", "on" (e.g. "for food" -> "food", "for pizza" -> "pizza")
+      .replace(/^\s*(?:for|on)\s+/i, ' ')
       // 5. Remove trailing prepositions
       .replace(/\b(?:for|on|at|in|to|from|by)\s*$/gi, ' ')
       // 6. Collapse spaces cleanly
@@ -1699,7 +1801,12 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
           const subCat = resolveCategory(part, subType);
           const subTitle = cleanTitle(part, subCat);
           const { dateStr } = extractDate(queryText);
-          const matchedCategory = categories.find((c) => c.name.toLowerCase() === subCat.toLowerCase()) || categories[0];
+          const matchedCategory =
+            categories.find((c) => c.name.toLowerCase() === subCat.toLowerCase() && c.type === subType) ||
+            categories.find((c) => c.name.toLowerCase() === subCat.toLowerCase()) ||
+            categories.find((c) => c.type === subType && (c.name.toLowerCase().includes(subCat.toLowerCase()) || subCat.toLowerCase().includes(c.name.toLowerCase()))) ||
+            categories.find((c) => c.type === subType) ||
+            categories[0];
 
           const res = await api.createTransaction({
             amount: subAmt,
@@ -1710,7 +1817,10 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
             paymentMethod: 'CASH',
           });
           if (res.success && res.data) {
-            createdList.push(res.data);
+            createdList.push({
+              ...res.data,
+              category: res.data.category || matchedCategory,
+            });
           }
         }
       }
@@ -1772,15 +1882,19 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     else if (q.includes('credit') || q.includes('card')) paymentMethod = 'CREDIT_CARD';
     else if (q.includes('bank') || q.includes('transfer') || q.includes('netbanking')) paymentMethod = 'BANK_TRANSFER';
 
-    const generalCat = categories.find((c) => c.name.toLowerCase() === 'general' && c.type === type) ||
-      categories.find((c) => c.name.toLowerCase() === 'general');
+    const defaultFallbackCat =
+      categories.find((c) => c.type === type && (c.name.toLowerCase() === (type === 'INCOME' ? 'other income' : 'other expense') || c.name.toLowerCase() === 'general')) ||
+      categories.find((c) => c.name.toLowerCase() === (type === 'INCOME' ? 'other income' : 'other expense')) ||
+      categories.find((c) => c.type === type && c.name.toLowerCase().includes('other')) ||
+      categories.find((c) => c.type === type) ||
+      categories[0];
 
     const matchedCategory =
       categories.find((c) => c.name.toLowerCase() === categoryName.toLowerCase() && c.type === type) ||
       categories.find((c) => c.name.toLowerCase() === categoryName.toLowerCase()) ||
-      generalCat ||
-      categories.find((c) => c.type === type) ||
-      categories[0];
+      categories.find((c) => c.type === type && (c.name.toLowerCase().includes(categoryName.toLowerCase()) || categoryName.toLowerCase().includes(c.name.toLowerCase()))) ||
+      categories.find((c) => c.name.toLowerCase().includes(categoryName.toLowerCase()) || categoryName.toLowerCase().includes(c.name.toLowerCase())) ||
+      defaultFallbackCat;
 
     const res = await api.createTransaction({
       amount,
@@ -1792,14 +1906,18 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     });
 
     if (res.success && res.data) {
-      onTransactionAdded(res.data);
+      const confirmedTransaction: Transaction = {
+        ...res.data,
+        category: res.data.category || matchedCategory,
+      };
+      onTransactionAdded(confirmedTransaction);
       const dateText = dateLabel !== 'Today' ? ` on ${dateLabel} (${dateStr})` : '';
-      const catDisplayName = matchedCategory?.name || 'General';
+      const catDisplayName = confirmedTransaction.category?.name || matchedCategory?.name || 'General';
       return {
         text: `Recorded **${type === 'INCOME' ? 'income' : 'expense'}** of **${currencySymbol}${amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}** for "${title}"${dateText} • Categorized by MonAI under **${catDisplayName}**.`,
         widget: {
           type: 'TRANSACTION_CONFIRMATION',
-          transaction: res.data,
+          transaction: confirmedTransaction,
           currencySymbol,
         }
       };
