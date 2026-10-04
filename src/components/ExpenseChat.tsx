@@ -163,6 +163,8 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
   const [selectedSlashIndex, setSelectedSlashIndex] = useState(0);
   const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(0);
   const [isCategoryDismissed, setIsCategoryDismissed] = useState(false);
+  const [selectedPaymentIndex, setSelectedPaymentIndex] = useState(0);
+  const [isPaymentDismissed, setIsPaymentDismissed] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [guideTab, setGuideTab] = useState<'slash' | 'nlp' | 'auto' | 'query'>('slash');
   const [copiedPrompt, setCopiedPrompt] = useState<string | null>(null);
@@ -246,15 +248,59 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     }, 10);
   };
 
-  // Category suggestions state & filtering (triggered when typing "for " or "on ")
-  const categoryTriggerMatch = useMemo(() => {
+  // Payment suggestions state & filtering (triggered when typing "by " or "via ")
+  const PAYMENT_SUGGESTIONS = useMemo(() => [
+    { label: 'Cash', value: 'CASH', color: '#10B981' },
+    { label: 'UPI', value: 'UPI', color: '#3B82F6' },
+    { label: 'Credit Card', value: 'CREDIT_CARD', color: '#8B5CF6' },
+    { label: 'Debit Card', value: 'DEBIT_CARD', color: '#F59E0B' },
+    { label: 'Bank Transfer', value: 'BANK_TRANSFER', color: '#6366F1' },
+  ], []);
+
+  const paymentTriggerMatch = useMemo(() => {
     if (isSlashActive) return null;
-    const match = input.match(/(?:^|\s)(for|on)(?:\s+([a-zA-Z0-9\-_& ]*))?$/i);
+    const match = input.match(/(?:^|\s)(by|via)(?:\s+([a-zA-Z0-9\-_ ]*))?$/i);
     if (!match) return null;
     const keyword = match[1];
     const query = (match[2] || '').trim().toLowerCase();
     return { keyword, query };
   }, [input, isSlashActive]);
+
+  const filteredPaymentMethods = useMemo(() => {
+    if (!paymentTriggerMatch) return [];
+    const q = paymentTriggerMatch.query;
+    if (!q) return PAYMENT_SUGGESTIONS;
+    return PAYMENT_SUGGESTIONS.filter((p) => p.label.toLowerCase().includes(q));
+  }, [paymentTriggerMatch, PAYMENT_SUGGESTIONS]);
+
+  useEffect(() => {
+    setIsPaymentDismissed(false);
+    setSelectedPaymentIndex(0);
+  }, [paymentTriggerMatch?.query, paymentTriggerMatch?.keyword]);
+
+  const selectPaymentSuggestion = (payment: { label: string; value: string }) => {
+    if (!paymentTriggerMatch) return;
+    const { keyword } = paymentTriggerMatch;
+    const regex = new RegExp(`(\\b${keyword}\\b)(?:\\s+[a-zA-Z0-9\\-_ ]*)?$`, 'i');
+    const newInput = input.replace(regex, `$1 ${payment.label} `);
+    setInput(newInput);
+    setIsPaymentDismissed(true);
+    setTimeout(() => {
+      inputRef.current?.focus();
+      activeInputRef.current?.focus();
+    }, 20);
+  };
+
+  // Category suggestions state & filtering (triggered when typing "for " or "on ")
+  const categoryTriggerMatch = useMemo(() => {
+    if (isSlashActive || paymentTriggerMatch) return null;
+    const match = input.match(/(?:^|\s)(for|on)(?:\s+([a-zA-Z0-9\-_& ]*))?$/i);
+    if (!match) return null;
+    if (/\b(by|via)\b/i.test(match[2] || '')) return null;
+    const keyword = match[1];
+    const query = (match[2] || '').trim().toLowerCase();
+    return { keyword, query };
+  }, [input, isSlashActive, paymentTriggerMatch]);
 
   const filteredCategories = useMemo(() => {
     if (!categoryTriggerMatch) return [];
@@ -267,7 +313,22 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       lowerInput.includes('earned') ||
       lowerInput.includes('income');
 
+    const targetType: TransactionType = isIncomeHint ? 'INCOME' : 'EXPENSE';
+
     let list = categories;
+    const hasGeneral = list.some((c) => c.name.toLowerCase() === 'general');
+    if (!hasGeneral) {
+      const fallbackGeneral: Category = {
+        id: `general-${targetType.toLowerCase()}`,
+        name: 'General',
+        color: '#64748B',
+        icon: 'tag',
+        type: targetType,
+        isSystem: true,
+      };
+      list = [fallbackGeneral, ...list];
+    }
+
     if (q) {
       list = list.filter((c) =>
         c.name.toLowerCase().includes(q)
@@ -275,6 +336,10 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     }
 
     return [...list].sort((a, b) => {
+      // General always at top of options
+      if (a.name.toLowerCase() === 'general') return -1;
+      if (b.name.toLowerCase() === 'general') return 1;
+
       if (isIncomeHint) {
         if (a.type === 'INCOME' && b.type !== 'INCOME') return -1;
         if (a.type !== 'INCOME' && b.type === 'INCOME') return 1;
@@ -324,6 +389,29 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       if (e.key === 'Escape') {
         e.preventDefault();
         setInput('');
+        return;
+      }
+    }
+
+    if (!isSlashActive && paymentTriggerMatch && filteredPaymentMethods.length > 0 && !isPaymentDismissed) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedPaymentIndex((prev) => (prev + 1) % filteredPaymentMethods.length);
+        return;
+      }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedPaymentIndex((prev) => (prev - 1 + filteredPaymentMethods.length) % filteredPaymentMethods.length);
+        return;
+      }
+      if (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey)) {
+        e.preventDefault();
+        selectPaymentSuggestion(filteredPaymentMethods[selectedPaymentIndex]);
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setIsPaymentDismissed(true);
         return;
       }
     }
@@ -445,49 +533,92 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     );
   };
 
-  const renderCategorySuggestionsPalette = () => {
-    if (isSlashActive || !categoryTriggerMatch || filteredCategories.length === 0 || isCategoryDismissed) {
-      return null;
+  const renderSuggestionsBar = () => {
+    if (isSlashActive) return null;
+
+    // 1. Payment suggestions (triggered when typing "by " or "via ")
+    if (paymentTriggerMatch && filteredPaymentMethods.length > 0 && !isPaymentDismissed) {
+      return (
+        <div className="absolute bottom-full mb-2 left-0 right-0 z-40 animate-in fade-in slide-in-from-bottom-1 duration-150">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 px-1.5 bg-surface/95 backdrop-blur-xl border border-surface-border rounded-2xl shadow-lg">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 pl-1.5 pr-0.5 flex-shrink-0 flex items-center gap-1 select-none font-semibold">
+              <Wallet className="w-3 h-3 text-emerald-500" />
+              <span>Payment:</span>
+            </span>
+
+            {filteredPaymentMethods.map((p, idx) => {
+              const isSelected = idx === selectedPaymentIndex;
+              return (
+                <button
+                  key={p.value}
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    selectPaymentSuggestion(p);
+                  }}
+                  onMouseEnter={() => setSelectedPaymentIndex(idx)}
+                  className={`flex-shrink-0 flex items-center space-x-1.5 px-2.5 py-1 rounded-xl text-xs font-medium transition-all ${
+                    isSelected
+                      ? 'bg-primary text-white shadow-sm shadow-primary/25 scale-[1.02]'
+                      : 'bg-surface-raised border border-surface-border text-zinc-400 hover:text-foreground hover:border-primary/40'
+                  }`}
+                >
+                  <span
+                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: isSelected ? '#ffffff' : p.color }}
+                  />
+                  <span>{p.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      );
     }
 
-    return (
-      <div className="absolute bottom-full mb-2 left-0 right-0 z-40 animate-in fade-in slide-in-from-bottom-1 duration-150">
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 px-1.5 bg-surface/95 backdrop-blur-xl border border-surface-border rounded-2xl shadow-lg">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 pl-1.5 pr-0.5 flex-shrink-0 flex items-center gap-1 select-none font-semibold">
-            <Tag className="w-3 h-3 text-primary" />
-            <span>Category:</span>
-          </span>
+    // 2. Category suggestions (triggered when typing "for " or "on ")
+    if (categoryTriggerMatch && filteredCategories.length > 0 && !isCategoryDismissed) {
+      return (
+        <div className="absolute bottom-full mb-2 left-0 right-0 z-40 animate-in fade-in slide-in-from-bottom-1 duration-150">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 px-1.5 bg-surface/95 backdrop-blur-xl border border-surface-border rounded-2xl shadow-lg">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 pl-1.5 pr-0.5 flex-shrink-0 flex items-center gap-1 select-none font-semibold">
+              <Tag className="w-3 h-3 text-primary" />
+              <span>Category:</span>
+            </span>
 
-          {filteredCategories.map((cat, idx) => {
-            const isSelected = idx === selectedCategoryIndex;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  selectCategorySuggestion(cat);
-                }}
-                onMouseEnter={() => setSelectedCategoryIndex(idx)}
-                className={`flex-shrink-0 flex items-center space-x-1.5 px-2.5 py-1 rounded-xl text-xs font-medium transition-all ${
-                  isSelected
-                    ? 'bg-primary text-white shadow-sm shadow-primary/25 scale-[1.02]'
-                    : 'bg-surface-raised border border-surface-border text-zinc-400 hover:text-foreground hover:border-primary/40'
-                }`}
-              >
-                <span
-                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                  style={{
-                    backgroundColor: isSelected ? '#ffffff' : (cat.color || (cat.type === 'INCOME' ? '#10b981' : '#f43f5e'))
+            {filteredCategories.map((cat, idx) => {
+              const isSelected = idx === selectedCategoryIndex;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    selectCategorySuggestion(cat);
                   }}
-                />
-                <span>{cat.name}</span>
-              </button>
-            );
-          })}
+                  onMouseEnter={() => setSelectedCategoryIndex(idx)}
+                  className={`flex-shrink-0 flex items-center space-x-1.5 px-2.5 py-1 rounded-xl text-xs font-medium transition-all ${
+                    isSelected
+                      ? 'bg-primary text-white shadow-sm shadow-primary/25 scale-[1.02]'
+                      : 'bg-surface-raised border border-surface-border text-zinc-400 hover:text-foreground hover:border-primary/40'
+                  }`}
+                >
+                  <span
+                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{
+                      backgroundColor: isSelected ? '#ffffff' : (cat.color || (cat.type === 'INCOME' ? '#10b981' : '#f43f5e'))
+                    }}
+                  />
+                  <span>{cat.name}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+
+    return null;
   };
 
   const renderGuideModal = () => {
@@ -1231,7 +1362,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
         dayOfMonth,
         categoryId: matchedCat?.id,
         categoryName: matchedCat?.name || (autoType === 'INCOME' ? 'Salary & Inflow' : 'General'),
-        paymentMethod: 'UPI',
+        paymentMethod: 'CASH',
         isActive: true,
         autoLog: true,
         nextExecutionDate: nextDate,
@@ -1409,7 +1540,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
             description: subTitle,
             categoryId: matchedCategory?.id,
             transactionDate: dateStr,
-            paymentMethod: 'UPI',
+            paymentMethod: 'CASH',
           });
           if (res.success && res.data) {
             createdList.push(res.data);
@@ -1460,14 +1591,20 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     const title = cleanTitle(queryText, categoryName);
     const { dateStr, label: dateLabel } = extractDate(queryText);
 
-    let paymentMethod = 'UPI';
-    if (q.includes('cash')) paymentMethod = 'CASH';
-    else if (q.includes('card') || q.includes('credit') || q.includes('debit')) paymentMethod = 'CREDIT_CARD';
+    let paymentMethod = 'CASH';
+    if (q.includes('upi') || q.includes('gpay') || q.includes('phonepe') || q.includes('paytm')) paymentMethod = 'UPI';
+    else if (q.includes('debit')) paymentMethod = 'DEBIT_CARD';
+    else if (q.includes('card') || q.includes('credit')) paymentMethod = 'CREDIT_CARD';
     else if (q.includes('bank') || q.includes('transfer') || q.includes('netbanking')) paymentMethod = 'BANK_TRANSFER';
+    else if (q.includes('cash')) paymentMethod = 'CASH';
+
+    const generalCat = categories.find((c) => c.name.toLowerCase() === 'general' && c.type === type) ||
+      categories.find((c) => c.name.toLowerCase() === 'general');
 
     const matchedCategory =
       categories.find((c) => c.name.toLowerCase() === categoryName.toLowerCase() && c.type === type) ||
       categories.find((c) => c.name.toLowerCase() === categoryName.toLowerCase()) ||
+      generalCat ||
       categories.find((c) => c.type === type) ||
       categories[0];
 
@@ -1571,7 +1708,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
               className="relative flex items-center bg-surface border border-surface-border focus-within:border-primary/80 rounded-3xl p-1.5 sm:p-2 shadow-xl transition-all"
             >
               {renderSlashCommandPalette()}
-              {renderCategorySuggestionsPalette()}
+              {renderSuggestionsBar()}
 
               {/* Quick Mode Pills directly WITHIN the chat bar */}
               <div className="flex items-center space-x-1.5 pl-1.5 sm:pl-2 flex-shrink-0">
@@ -1921,7 +2058,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
               className="relative flex items-center bg-surface/90 backdrop-blur-md border border-surface-border focus-within:border-primary/80 rounded-3xl p-1.5 shadow-xl transition-all"
             >
               {renderSlashCommandPalette()}
-              {renderCategorySuggestionsPalette()}
+              {renderSuggestionsBar()}
 
               {/* Quick Mode Pills directly WITHIN the chat bar */}
               <div className="flex items-center space-x-1.5 pl-1.5 sm:pl-2 flex-shrink-0">

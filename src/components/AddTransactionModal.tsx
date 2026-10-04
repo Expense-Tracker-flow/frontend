@@ -73,7 +73,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   const [description, setDescription] = useState<string>('');
   const [categoryId, setCategoryId] = useState<string | undefined>(undefined);
   const [transactionDate, setTransactionDate] = useState<string>(getLocalDateStr());
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('UPI');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
   const [notes, setNotes] = useState<string>('');
   const [naturalInput, setNaturalInput] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -140,11 +140,11 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   const handleTypeChange = (newType: TransactionType) => {
     setType(newType);
     const matching = availableCategories.filter((c) => c.type === newType);
-    if (matching.length > 0) {
-      const currentMatches = matching.some((c) => c.id === categoryId);
-      if (!currentMatches) {
-        setCategoryId(matching[0].id);
-      }
+    const generalCat = matching.find((c) => c.name.toLowerCase() === 'general');
+    if (generalCat) {
+      setCategoryId(generalCat.id);
+    } else if (matching.length > 0) {
+      setCategoryId(matching[0].id);
     } else {
       setCategoryId(undefined);
     }
@@ -166,8 +166,12 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     if (isOpen) {
       setError(null);
       setType(initialType);
+      setPaymentMethod('CASH');
       const matchingCats = categories.filter((c) => c.type === initialType);
-      if (matchingCats.length > 0) {
+      const generalCat = matchingCats.find((c) => c.name.toLowerCase() === 'general');
+      if (generalCat) {
+        setCategoryId(generalCat.id);
+      } else if (matchingCats.length > 0) {
         setCategoryId(matchingCats[0].id);
       }
       if (initialNaturalQuery) {
@@ -360,7 +364,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
         type,
         amount: numericAmount,
         description: finalDesc,
-        categoryId: categoryId || undefined,
+        categoryId: (categoryId && !categoryId.startsWith('general-')) ? categoryId : undefined,
         transactionDate,
         paymentMethod,
         notes: notes.trim() || undefined,
@@ -375,13 +379,28 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     }
   };
 
-  const categoryOptions: SelectOption[] = availableCategories
-    .filter((c) => c.type === type)
-    .map((cat) => ({
-      value: cat.id,
-      label: cat.name,
-      color: cat.color || '#6366F1',
-    }));
+  const currentCategories = useMemo(() => {
+    const list = availableCategories.filter((c) => c.type === type);
+    const generalCat = list.find((c) => c.name.toLowerCase() === 'general');
+    if (!generalCat) {
+      const fallbackGeneral: Category = {
+        id: `general-${type.toLowerCase()}`,
+        name: 'General',
+        color: '#64748B',
+        icon: 'tag',
+        type: type,
+        isSystem: true,
+      };
+      return [fallbackGeneral, ...list];
+    }
+    return [generalCat, ...list.filter((c) => c.id !== generalCat.id)];
+  }, [availableCategories, type]);
+
+  const categoryOptions: SelectOption[] = currentCategories.map((cat) => ({
+    value: cat.id,
+    label: cat.name,
+    color: cat.color || '#6366F1',
+  }));
 
   if (!isOpen) return null;
 

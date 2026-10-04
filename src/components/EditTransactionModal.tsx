@@ -54,7 +54,7 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
       setTransactionDate(
         transaction.transactionDate ? transaction.transactionDate.split('T')[0] : new Date().toISOString().split('T')[0]
       );
-      setPaymentMethod((transaction.paymentMethod as PaymentMethod) || 'UPI');
+      setPaymentMethod((transaction.paymentMethod as PaymentMethod) || 'CASH');
       setNotes(transaction.notes || '');
     }
   }, [isOpen, transaction]);
