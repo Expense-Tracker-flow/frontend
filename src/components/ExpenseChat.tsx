@@ -31,7 +31,8 @@ import {
   ExternalLink,
   ChevronRight,
   ArrowRight,
-  Tag
+  Tag,
+  Pencil
 } from 'lucide-react';
 import { Category, Transaction, TransactionType, DashboardSummary, AutomationRule } from '../lib/types';
 import { api } from '../lib/api';
@@ -143,6 +144,7 @@ interface ExpenseChatProps {
   onAddAutomation?: (rule: AutomationRule) => void;
   onOpenExpenseModal: () => void;
   onOpenIncomeModal: () => void;
+  onEditTransaction?: (transaction: Transaction) => void;
 }
 
 // Formats chat message text cleanly: renders **bold**, `code`, and *italic* tags without raw syntax
@@ -238,6 +240,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
   onAddAutomation,
   onOpenExpenseModal,
   onOpenIncomeModal,
+  onEditTransaction,
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -254,6 +257,36 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const activeInputRef = useRef<HTMLInputElement>(null);
   const inputRef = activeInputRef;
+
+  // Real-time synchronization: update active chat transaction cards if edited via modal
+  useEffect(() => {
+    if (!transactions.length) return;
+    setMessages((prev) =>
+      prev.map((msg) => {
+        if (msg.widget?.type === 'TRANSACTION_CONFIRMATION' && msg.widget.transaction) {
+          const fresh = transactions.find((t) => t.id === msg.widget!.transaction!.id);
+          if (
+            fresh &&
+            (fresh.amount !== msg.widget.transaction.amount ||
+              fresh.description !== msg.widget.transaction.description ||
+              fresh.category?.id !== msg.widget.transaction.category?.id ||
+              fresh.category?.name !== msg.widget.transaction.category?.name ||
+              fresh.transactionDate !== msg.widget.transaction.transactionDate ||
+              fresh.paymentMethod !== msg.widget.transaction.paymentMethod)
+          ) {
+            return {
+              ...msg,
+              widget: {
+                ...msg.widget,
+                transaction: fresh,
+              },
+            };
+          }
+        }
+        return msg;
+      })
+    );
+  }, [transactions]);
 
   const handleApplyGuidePrompt = (promptText: string, autoRun = false) => {
     setIsGuideOpen(false);
@@ -2267,47 +2300,103 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                             {currencySymbol}
                             {msg.widget.transaction.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                           </div>
-                          <div className="flex items-center justify-end gap-1 text-[8px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
-                            <CheckCircle2 className="w-2.5 h-2.5" />
-                            <span>Saved</span>
+                          <div className="flex items-center justify-end gap-1.5 mt-0.5">
+                            <div className="flex items-center gap-1 text-[8px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                              <CheckCircle2 className="w-2.5 h-2.5" />
+                              <span>Saved</span>
+                            </div>
+                            {onEditTransaction && (
+                              <button
+                                type="button"
+                                onClick={() => onEditTransaction(msg.widget!.transaction!)}
+                                title="Edit transaction"
+                                className="p-1 rounded-md text-zinc-400 hover:text-primary hover:bg-surface-raised border border-transparent hover:border-surface-border transition-colors cursor-pointer"
+                              >
+                                <Pencil className="w-2.5 h-2.5" />
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
 
-                      {/* Clean 2-Column Key Details Grid */}
+                      {/* Clean 2-Column Key Details Grid with Pencil Edit Actions */}
                       <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-surface-border/70 text-xs">
-                        <div className="p-2 rounded-xl bg-white dark:bg-[#1A1D28] border border-surface-border/60">
-                          <div className="text-[9px] text-zinc-400 font-mono uppercase font-semibold">Description</div>
-                          <div className="font-semibold text-foreground text-[11px] mt-0.5 truncate">
+                        <button
+                          type="button"
+                          onClick={() => onEditTransaction?.(msg.widget!.transaction!)}
+                          title="Click to edit description"
+                          className="p-2 rounded-xl bg-white dark:bg-[#1A1D28] border border-surface-border/60 hover:border-primary/50 text-left transition-all group cursor-pointer hover:shadow-2xs"
+                        >
+                          <div className="text-[9px] text-zinc-400 font-mono uppercase font-semibold flex items-center justify-between">
+                            <span>Description</span>
+                            <Pencil className="w-2.5 h-2.5 text-zinc-400 group-hover:text-primary transition-colors" />
+                          </div>
+                          <div className="font-semibold text-foreground text-[11px] mt-0.5 truncate group-hover:text-primary transition-colors">
                             {msg.widget.transaction.description || 'Transaction'}
                           </div>
-                        </div>
+                        </button>
 
-                        <div className="p-2 rounded-xl bg-white dark:bg-[#1A1D28] border border-surface-border/60">
+                        <button
+                          type="button"
+                          onClick={() => onEditTransaction?.(msg.widget!.transaction!)}
+                          title="Click to edit category"
+                          className="p-2 rounded-xl bg-white dark:bg-[#1A1D28] border border-surface-border/60 hover:border-primary/50 text-left transition-all group cursor-pointer hover:shadow-2xs"
+                        >
                           <div className="text-[9px] text-zinc-400 font-mono uppercase font-semibold flex items-center justify-between">
-                            <span>Category</span>
-                            <span className="text-[8px] text-primary font-bold">AI</span>
+                            <span className="flex items-center gap-1">
+                              <span>Category</span>
+                              <span className="text-[8px] text-primary font-bold">AI</span>
+                            </span>
+                            <Pencil className="w-2.5 h-2.5 text-zinc-400 group-hover:text-primary transition-colors" />
                           </div>
-                          <div className="font-semibold text-foreground text-[11px] mt-0.5 truncate flex items-center gap-1">
+                          <div className="font-semibold text-foreground text-[11px] mt-0.5 truncate flex items-center gap-1 group-hover:text-primary transition-colors">
                             <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
                             <span className="truncate">{msg.widget.transaction.category?.name || 'General'}</span>
                           </div>
-                        </div>
+                        </button>
 
-                        <div className="p-2 rounded-xl bg-white dark:bg-[#1A1D28] border border-surface-border/60">
-                          <div className="text-[9px] text-zinc-400 font-mono uppercase font-semibold">Date</div>
-                          <div className="font-semibold text-foreground text-[11px] mt-0.5 font-mono">
+                        <button
+                          type="button"
+                          onClick={() => onEditTransaction?.(msg.widget!.transaction!)}
+                          title="Click to edit date"
+                          className="p-2 rounded-xl bg-white dark:bg-[#1A1D28] border border-surface-border/60 hover:border-primary/50 text-left transition-all group cursor-pointer hover:shadow-2xs"
+                        >
+                          <div className="text-[9px] text-zinc-400 font-mono uppercase font-semibold flex items-center justify-between">
+                            <span>Date</span>
+                            <Pencil className="w-2.5 h-2.5 text-zinc-400 group-hover:text-primary transition-colors" />
+                          </div>
+                          <div className="font-semibold text-foreground text-[11px] mt-0.5 font-mono group-hover:text-primary transition-colors">
                             {msg.widget.transaction.transactionDate || new Date().toISOString().split('T')[0]}
                           </div>
-                        </div>
+                        </button>
 
-                        <div className="p-2 rounded-xl bg-white dark:bg-[#1A1D28] border border-surface-border/60">
-                          <div className="text-[9px] text-zinc-400 font-mono uppercase font-semibold">Payment</div>
-                          <div className="font-semibold text-foreground text-[11px] mt-0.5 uppercase tracking-wide font-mono">
+                        <button
+                          type="button"
+                          onClick={() => onEditTransaction?.(msg.widget!.transaction!)}
+                          title="Click to edit payment method"
+                          className="p-2 rounded-xl bg-white dark:bg-[#1A1D28] border border-surface-border/60 hover:border-primary/50 text-left transition-all group cursor-pointer hover:shadow-2xs"
+                        >
+                          <div className="text-[9px] text-zinc-400 font-mono uppercase font-semibold flex items-center justify-between">
+                            <span>Payment</span>
+                            <Pencil className="w-2.5 h-2.5 text-zinc-400 group-hover:text-primary transition-colors" />
+                          </div>
+                          <div className="font-semibold text-foreground text-[11px] mt-0.5 uppercase tracking-wide font-mono group-hover:text-primary transition-colors">
                             {msg.widget.transaction.paymentMethod?.replace('_', ' ') || 'CASH'}
                           </div>
-                        </div>
+                        </button>
                       </div>
+
+                      {/* Edit Details Action Button Bar */}
+                      {onEditTransaction && (
+                        <button
+                          type="button"
+                          onClick={() => onEditTransaction(msg.widget!.transaction!)}
+                          className="w-full flex items-center justify-center space-x-1.5 py-1.5 px-3 rounded-xl bg-white dark:bg-[#1A1D28] hover:bg-primary/5 border border-surface-border/80 hover:border-primary/40 text-zinc-600 dark:text-zinc-300 hover:text-primary text-[10px] sm:text-[11px] font-semibold transition-all group cursor-pointer shadow-2xs active:scale-[0.99]"
+                        >
+                          <Pencil className="w-3 h-3 text-zinc-400 group-hover:text-primary transition-colors" />
+                          <span>Edit Details</span>
+                        </button>
+                      )}
                     </div>
                   )}
 

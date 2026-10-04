@@ -968,6 +968,7 @@ export default function DashboardPage() {
               onAddAutomation={handleSaveAutomationRule}
               onOpenExpenseModal={handleOpenExpense}
               onOpenIncomeModal={handleOpenIncome}
+              onEditTransaction={handleOpenEditTransaction}
             />
           </div>
         )}
