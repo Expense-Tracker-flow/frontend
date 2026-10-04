@@ -208,35 +208,19 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
   return (
     <div className="space-y-6 text-foreground pb-12 max-w-6xl mx-auto">
       {/* 1. Header & Main Action Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border/80 pb-5">
-        <div>
-          <div className="flex items-center space-x-2">
-            <span className="text-[11px] font-mono tracking-widest text-primary font-semibold uppercase flex items-center gap-1.5">
-              <Zap className="w-3 h-3 text-primary animate-pulse" />
-              FINANCIAL AUTOPILOT
-            </span>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1 animate-ping" />
-              {activeRules.length} Active Rules
-            </span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1 text-foreground">
-            Automations & Recurring
-          </h1>
-          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
-            Automate monthly bills, SIPs, and salaries with instant execution and tracking.
-          </p>
+      <div className="flex items-center justify-between gap-3 pb-1">
+        <div className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse" />
+          <span>{activeRules.length} Active Rules</span>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={handleOpenCreate}
-            className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-xs sm:text-sm flex items-center justify-center space-x-2 transition-all shadow-md shadow-primary/25 active:scale-[0.98] w-full sm:w-auto"
-          >
-            <Plus className="w-4 h-4" />
-            <span>New Automation</span>
-          </button>
-        </div>
+        <button
+          onClick={handleOpenCreate}
+          className="px-3.5 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-xs sm:text-sm flex items-center space-x-1.5 transition-all shadow-md shadow-primary/25 active:scale-[0.98]"
+        >
+          <Plus className="w-4 h-4" />
+          <span>New Automation</span>
+        </button>
       </div>
 
       {/* 2. Top Metric & Health Pulse Cards */}
