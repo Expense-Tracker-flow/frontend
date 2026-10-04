@@ -114,7 +114,7 @@ export const MoneyOrbit: React.FC<MoneyOrbitProps> = ({
       }}
     >
       {/* Simulation Controls Bar (Top Toolbar) */}
-      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-30 flex items-center gap-1.5 bg-surface/90 backdrop-blur-md border border-surface-border px-2.5 py-1 rounded-full text-[10px] font-mono shadow-xs">
+      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-30 flex items-center gap-1.5 bg-white/95 dark:bg-[#12141C]/95 backdrop-blur-md border border-surface-border px-2.5 py-1 rounded-full text-[10px] font-mono shadow-xs">
         {/* Speed Multiplier */}
         <button
           onClick={handleToggleSpeed}

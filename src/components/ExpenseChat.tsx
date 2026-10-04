@@ -435,8 +435,8 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     if (!isSlashActive || filteredSlashCommands.length === 0) return null;
 
     return (
-      <div className="absolute bottom-full mb-2.5 left-0 right-0 sm:left-1 sm:right-1 bg-surface/95 backdrop-blur-xl border border-surface-border rounded-2xl shadow-2xl overflow-hidden p-1.5 z-40 text-left transition-all animate-in fade-in slide-in-from-bottom-2 duration-150">
-        <div className="flex items-center justify-between px-3 py-1.5 border-b border-surface-border/70 mb-1">
+      <div className="absolute bottom-full mb-2.5 left-0 right-0 sm:left-1 sm:right-1 bg-white dark:bg-[#12141C] border border-surface-border rounded-2xl shadow-2xl overflow-hidden p-1.5 z-50 text-left transition-all animate-in fade-in slide-in-from-bottom-2 duration-150">
+        <div className="flex items-center justify-between px-3 py-1.5 border-b border-surface-border/70 mb-1 bg-zinc-50 dark:bg-[#181B26] rounded-xl">
           <span className="text-[10px] font-mono uppercase tracking-wider text-foreground flex items-center space-x-1.5 font-bold">
             <Terminal className="w-3.5 h-3.5 text-primary" />
             <span>Slash Commands</span>
@@ -536,7 +536,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     if (paymentTriggerMatch && filteredPaymentMethods.length > 0 && !isPaymentDismissed) {
       return (
         <div
-          className={`absolute ${positionClasses} left-0 right-0 sm:left-2 sm:right-auto sm:w-72 max-w-sm bg-surface/95 backdrop-blur-xl border border-surface-border rounded-2xl shadow-2xl p-1.5 z-50 text-left transition-all`}
+          className={`absolute ${positionClasses} left-0 right-0 sm:left-2 sm:right-auto sm:w-72 max-w-sm bg-white dark:bg-[#12141C] border border-surface-border rounded-2xl shadow-2xl p-1.5 z-50 text-left transition-all`}
         >
           <div className="max-h-56 overflow-y-auto space-y-0.5 custom-scrollbar">
             {filteredPaymentMethods.map((p, idx) => {
@@ -580,7 +580,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     if (categoryTriggerMatch && filteredCategories.length > 0 && !isCategoryDismissed) {
       return (
         <div
-          className={`absolute ${positionClasses} left-0 right-0 sm:left-2 sm:right-auto sm:w-72 max-w-sm bg-surface/95 backdrop-blur-xl border border-surface-border rounded-2xl shadow-2xl p-1.5 z-50 text-left transition-all`}
+          className={`absolute ${positionClasses} left-0 right-0 sm:left-2 sm:right-auto sm:w-72 max-w-sm bg-white dark:bg-[#12141C] border border-surface-border rounded-2xl shadow-2xl p-1.5 z-50 text-left transition-all`}
         >
           <div className="max-h-56 overflow-y-auto space-y-0.5 custom-scrollbar">
             {filteredCategories.map((cat, idx) => {
@@ -1974,7 +1974,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       {/* Unified WhatsApp / Instagram DM Chat Structure */}
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden max-w-2xl w-full mx-auto px-0 sm:px-4">
         {/* WhatsApp / Instagram DM Style Top App Bar (Always Frozen at Top) */}
-        <div className="flex-shrink-0 z-30 bg-surface/95 dark:bg-[#12141C]/95 backdrop-blur-xl flex items-center justify-between px-3.5 sm:px-4 py-2.5 border-b border-surface-border shadow-xs w-full">
+        <div className="flex-shrink-0 z-30 bg-white dark:bg-[#12141C] flex items-center justify-between px-3.5 sm:px-4 py-2.5 border-b border-surface-border shadow-xs w-full">
           <div className="flex items-center space-x-2.5">
             {/* MonAI Avatar with Online Indicator */}
             <div className="relative">
@@ -2313,7 +2313,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
           </div>
 
           {/* WhatsApp / Instagram DM Sticky Bottom Bar (Always Frozen at Bottom) */}
-          <div className="flex-shrink-0 z-30 w-full pt-1.5 pb-2 px-2 sm:px-0 bg-surface/95 dark:bg-[#12141C]/95 backdrop-blur-xl border-t border-surface-border/70 sm:border-t-0">
+          <div className="flex-shrink-0 z-30 w-full pt-1.5 pb-2 px-2 sm:px-0 bg-white dark:bg-[#12141C] border-t border-surface-border/70 sm:border-t-0">
             {/* Quick Reply Chips Row - WhatsApp / Instagram Style */}
             <div className="flex items-center justify-center gap-2 mb-1.5">
               <button
@@ -2322,7 +2322,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                 className={`flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-mono transition-all duration-150 ${
                   input.startsWith('/expense')
                     ? 'bg-rose-500 text-white font-semibold shadow-md shadow-rose-500/30 scale-[1.02]'
-                    : 'bg-surface-raised/95 hover:bg-rose-500/10 border border-surface-border text-rose-500'
+                    : 'bg-zinc-100 dark:bg-[#1A1D28] hover:bg-rose-500/10 border border-surface-border text-rose-500'
                 }`}
                 title="Record Expense"
               >
@@ -2335,7 +2335,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                 className={`flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-mono transition-all duration-150 ${
                   input.startsWith('/income')
                     ? 'bg-emerald-500 text-white font-semibold shadow-md shadow-emerald-500/30 scale-[1.02]'
-                    : 'bg-surface-raised/95 hover:bg-emerald-500/10 border border-surface-border text-emerald-500'
+                    : 'bg-zinc-100 dark:bg-[#1A1D28] hover:bg-emerald-500/10 border border-surface-border text-emerald-500'
                 }`}
                 title="Record Income"
               >
@@ -2349,7 +2349,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                 e.preventDefault();
                 handleSendMessage();
               }}
-              className="relative flex items-center bg-surface/95 dark:bg-[#12141C]/95 backdrop-blur-xl border border-surface-border focus-within:border-primary/80 rounded-full p-1.5 shadow-xl transition-all z-40"
+              className="relative flex items-center bg-white dark:bg-[#12141C] border border-surface-border focus-within:border-primary/80 rounded-full p-1.5 shadow-xl transition-all z-40"
             >
               {renderSlashCommandPalette()}
               {renderSuggestionsDropdown('up')}

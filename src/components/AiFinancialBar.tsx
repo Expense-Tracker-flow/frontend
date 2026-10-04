@@ -28,7 +28,7 @@ export const AiFinancialBar: React.FC<AiFinancialBarProps> = ({
       {/* Search / AI Input Bar */}
       <form onSubmit={handleSubmit} className="relative group">
         <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500/20 via-primary/30 to-purple-500/20 rounded-2xl blur-sm opacity-50 group-hover:opacity-100 transition duration-300" />
-        <div className="relative flex items-center bg-surface/90 border border-surface-border rounded-2xl px-4 py-3.5 shadow-xl backdrop-blur-xl">
+        <div className="relative flex items-center bg-white dark:bg-[#12141C] border border-surface-border rounded-2xl px-4 py-3.5 shadow-xl">
           <input
             type="text"
             value={prompt}

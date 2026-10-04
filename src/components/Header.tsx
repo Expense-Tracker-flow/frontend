@@ -56,7 +56,7 @@ export const Header: React.FC<HeaderProps> = ({
   }, []);
 
   return (
-    <header className="w-full border-b border-surface-border bg-surface/80 backdrop-blur-md sticky top-0 z-30 transition-colors">
+    <header className="w-full border-b border-surface-border bg-white/90 dark:bg-[#12141C]/90 backdrop-blur-md sticky top-0 z-30 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand Logo */}
         <div 
