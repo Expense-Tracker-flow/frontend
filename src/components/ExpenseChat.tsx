@@ -30,7 +30,8 @@ import {
   Lightbulb,
   ExternalLink,
   ChevronRight,
-  ArrowRight
+  ArrowRight,
+  Tag
 } from 'lucide-react';
 import { Category, Transaction, TransactionType, DashboardSummary, AutomationRule } from '../lib/types';
 import { api } from '../lib/api';
@@ -160,6 +161,8 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedSlashIndex, setSelectedSlashIndex] = useState(0);
+  const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(0);
+  const [isCategoryDismissed, setIsCategoryDismissed] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [guideTab, setGuideTab] = useState<'slash' | 'nlp' | 'auto' | 'query'>('slash');
   const [copiedPrompt, setCopiedPrompt] = useState<string | null>(null);
@@ -243,6 +246,64 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     }, 10);
   };
 
+  // Category suggestions state & filtering (triggered when typing "for " or "on ")
+  const categoryTriggerMatch = useMemo(() => {
+    if (isSlashActive) return null;
+    const match = input.match(/(?:^|\s)(for|on)(?:\s+([a-zA-Z0-9\-_& ]*))?$/i);
+    if (!match) return null;
+    const keyword = match[1];
+    const query = (match[2] || '').trim().toLowerCase();
+    return { keyword, query };
+  }, [input, isSlashActive]);
+
+  const filteredCategories = useMemo(() => {
+    if (!categoryTriggerMatch) return [];
+    const q = categoryTriggerMatch.query;
+
+    const lowerInput = input.toLowerCase();
+    const isIncomeHint = lowerInput.startsWith('/income') ||
+      lowerInput.includes('salary') ||
+      lowerInput.includes('received') ||
+      lowerInput.includes('earned') ||
+      lowerInput.includes('income');
+
+    let list = categories;
+    if (q) {
+      list = list.filter((c) =>
+        c.name.toLowerCase().includes(q)
+      );
+    }
+
+    return [...list].sort((a, b) => {
+      if (isIncomeHint) {
+        if (a.type === 'INCOME' && b.type !== 'INCOME') return -1;
+        if (a.type !== 'INCOME' && b.type === 'INCOME') return 1;
+      } else {
+        if (a.type === 'EXPENSE' && b.type !== 'EXPENSE') return -1;
+        if (a.type !== 'EXPENSE' && b.type === 'EXPENSE') return 1;
+      }
+      return a.name.localeCompare(b.name);
+    }).slice(0, 8);
+  }, [categoryTriggerMatch, categories, input]);
+
+  useEffect(() => {
+    setIsCategoryDismissed(false);
+    setSelectedCategoryIndex(0);
+  }, [categoryTriggerMatch?.query, categoryTriggerMatch?.keyword]);
+
+  const selectCategorySuggestion = (cat: Category) => {
+    if (!categoryTriggerMatch) return;
+    const { keyword } = categoryTriggerMatch;
+    const regex = new RegExp(`(\\b${keyword}\\b)(?:\\s+[a-zA-Z0-9\\-_& ]*)?$`, 'i');
+    const newInput = input.replace(regex, `$1 ${cat.name} `);
+    setInput(newInput);
+    setIsCategoryDismissed(true);
+    setTimeout(() => {
+      inputRef.current?.focus();
+      activeInputRef.current?.focus();
+    }, 20);
+  };
+
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (isSlashActive && filteredSlashCommands.length > 0) {
       if (e.key === 'ArrowDown') {
@@ -263,6 +324,29 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       if (e.key === 'Escape') {
         e.preventDefault();
         setInput('');
+        return;
+      }
+    }
+
+    if (!isSlashActive && categoryTriggerMatch && filteredCategories.length > 0 && !isCategoryDismissed) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedCategoryIndex((prev) => (prev + 1) % filteredCategories.length);
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedCategoryIndex((prev) => (prev - 1 + filteredCategories.length) % filteredCategories.length);
+        return;
+      }
+      if (e.key === 'Tab' || (e.key === 'Enter' && !e.shiftKey)) {
+        e.preventDefault();
+        selectCategorySuggestion(filteredCategories[selectedCategoryIndex]);
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setIsCategoryDismissed(true);
         return;
       }
     }
@@ -353,6 +437,86 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
         </div>
 
         <div className="px-3 py-1.5 border-t border-[#262A3B]/60 mt-1 flex items-center justify-between text-[9px] font-mono text-zinc-500">
+          <span>Use <strong className="text-zinc-400">↑ ↓</strong> to navigate</span>
+          <span><strong className="text-zinc-400">Tab</strong> or <strong className="text-zinc-400">Enter</strong> to select</span>
+          <span><strong className="text-zinc-400">Esc</strong> to dismiss</span>
+        </div>
+      </div>
+    );
+  };
+
+  const renderCategorySuggestionsPalette = () => {
+    if (isSlashActive || !categoryTriggerMatch || filteredCategories.length === 0 || isCategoryDismissed) {
+      return null;
+    }
+
+    return (
+      <div className="absolute bottom-full mb-2.5 left-0 right-0 sm:left-1 sm:right-1 bg-surface/95 backdrop-blur-xl border border-surface-border rounded-2xl shadow-2xl overflow-hidden p-1.5 z-40 text-left transition-all animate-in fade-in slide-in-from-bottom-2 duration-150">
+        <div className="flex items-center justify-between px-3 py-1.5 border-b border-surface-border/60 mb-1">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 flex items-center space-x-1.5 font-semibold">
+            <Tag className="w-3 h-3 text-primary" />
+            <span>Suggested Categories</span>
+            {categoryTriggerMatch.query && (
+              <span className="text-primary font-normal">
+                (for &quot;{categoryTriggerMatch.query}&quot;)
+              </span>
+            )}
+          </span>
+          <span className="text-[10px] font-mono text-zinc-500">
+            {filteredCategories.length} available
+          </span>
+        </div>
+
+        <div className="max-h-56 overflow-y-auto space-y-0.5">
+          {filteredCategories.map((cat, idx) => {
+            const isSelected = idx === selectedCategoryIndex;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  selectCategorySuggestion(cat);
+                }}
+                onMouseEnter={() => setSelectedCategoryIndex(idx)}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all text-xs ${
+                  isSelected
+                    ? 'bg-primary/15 border border-primary/35 text-foreground shadow-xs'
+                    : 'border border-transparent text-zinc-400 hover:text-foreground hover:bg-surface-raised'
+                }`}
+              >
+                <div className="flex items-center space-x-2.5 min-w-0">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-xs"
+                    style={{ backgroundColor: cat.color || (cat.type === 'INCOME' ? '#10b981' : '#f43f5e') }}
+                  />
+                  <span className="font-medium text-foreground text-xs truncate">
+                    {cat.name}
+                  </span>
+                </div>
+
+                <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
+                  <span
+                    className={`text-[9px] font-mono font-semibold px-2 py-0.5 rounded-md border ${
+                      cat.type === 'INCOME'
+                        ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/25'
+                        : 'bg-rose-500/10 text-rose-500 border-rose-500/25'
+                    }`}
+                  >
+                    {cat.type}
+                  </span>
+                  {isSelected && (
+                    <span className="hidden sm:inline-block text-[10px] font-mono text-primary font-bold">
+                      ↵
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="px-3 py-1.5 border-t border-surface-border/60 mt-1 flex items-center justify-between text-[9px] font-mono text-zinc-500">
           <span>Use <strong className="text-zinc-400">↑ ↓</strong> to navigate</span>
           <span><strong className="text-zinc-400">Tab</strong> or <strong className="text-zinc-400">Enter</strong> to select</span>
           <span><strong className="text-zinc-400">Esc</strong> to dismiss</span>
@@ -1442,6 +1606,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
               className="relative flex items-center bg-surface border border-surface-border focus-within:border-primary/80 rounded-3xl p-1.5 sm:p-2 shadow-xl transition-all"
             >
               {renderSlashCommandPalette()}
+              {renderCategorySuggestionsPalette()}
 
               {/* Quick Mode Pills directly WITHIN the chat bar */}
               <div className="flex items-center space-x-1.5 pl-1.5 sm:pl-2 flex-shrink-0">
@@ -1791,6 +1956,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
               className="relative flex items-center bg-surface/90 backdrop-blur-md border border-surface-border focus-within:border-primary/80 rounded-3xl p-1.5 shadow-xl transition-all"
             >
               {renderSlashCommandPalette()}
+              {renderCategorySuggestionsPalette()}
 
               {/* Quick Mode Pills directly WITHIN the chat bar */}
               <div className="flex items-center space-x-1.5 pl-1.5 sm:pl-2 flex-shrink-0">
