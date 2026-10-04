@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Sun, Moon, DollarSign, CheckCircle2, Save, ArrowLeft, Shield, Palette, Globe, Smartphone, Download } from 'lucide-react';
+import { Settings as SettingsIcon, Sun, Moon, DollarSign, CheckCircle2, Save, ArrowLeft, Shield, Palette, Globe } from 'lucide-react';
 import { UserProfile } from '../lib/types';
 import { api } from '../lib/api';
 
@@ -25,35 +25,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [isStandalone, setIsStandalone] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
-      setIsStandalone(isStandaloneMode);
-
-      const handleBeforeInstall = (e: any) => {
-        e.preventDefault();
-        setDeferredPrompt(e);
-      };
-
-      window.addEventListener('beforeinstallprompt', handleBeforeInstall);
-      return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
-    }
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const choiceResult = await deferredPrompt.userChoice;
-      if (choiceResult.outcome === 'accepted') {
-        setDeferredPrompt(null);
-      }
-    } else {
-      alert("To install on iOS Safari: Tap the Share button (⎋) and select 'Add to Home Screen'.\n\nOn Chrome or Edge: Click the install icon in the address bar.");
-    }
-  };
 
   useEffect(() => {
     setCurrency(user.currency || 'INR');
@@ -225,48 +196,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             </div>
           </div>
 
-          {/* PWA App Installation Section */}
-          <div className="space-y-3 pt-4 border-t border-surface-border">
-            <div className="flex items-center space-x-2 text-[10px] sm:text-[11px] font-mono font-bold text-zinc-400 uppercase tracking-wider">
-              <Smartphone className="w-4 h-4 text-primary" />
-              <span>Progressive Web App</span>
-            </div>
 
-            <div className="p-4 sm:p-5 rounded-2xl border border-surface-border bg-surface-raised flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all">
-              <div className="flex items-start sm:items-center space-x-3.5">
-                <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
-                  <Smartphone className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-2">
-                    <span>FIN-XL App</span>
-                    {isStandalone && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" />
-                        Installed
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                    {isStandalone 
-                      ? 'You are running FIN-XL as an installed app.' 
-                      : 'Add PWA to your phone for easier use.'}
-                  </p>
-                </div>
-              </div>
-
-              {!isStandalone && (
-                <button
-                  type="button"
-                  onClick={handleInstallClick}
-                  className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-600 active:scale-95 text-white text-xs font-bold flex items-center justify-center space-x-2 transition-all shadow-md shadow-primary/25 flex-shrink-0 cursor-pointer"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Add to Phone</span>
-                </button>
-              )}
-            </div>
-          </div>
 
           {/* Action buttons */}
           <div className="pt-4 flex items-center justify-between border-t border-surface-border">
