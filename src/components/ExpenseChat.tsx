@@ -2311,21 +2311,9 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                             {currencySymbol}
                             {msg.widget.transaction.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                           </div>
-                          <div className="flex items-center justify-end gap-1.5 mt-0.5">
-                            <div className="flex items-center gap-1 text-[8px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
-                              <CheckCircle2 className="w-2.5 h-2.5" />
-                              <span>Saved</span>
-                            </div>
-                            {onEditTransaction && (
-                              <button
-                                type="button"
-                                onClick={() => onEditTransaction(msg.widget!.transaction!)}
-                                title="Edit transaction"
-                                className="p-1 rounded-md text-zinc-400 hover:text-primary hover:bg-surface-raised border border-transparent hover:border-surface-border transition-colors cursor-pointer"
-                              >
-                                <Pencil className="w-3 h-3" />
-                              </button>
-                            )}
+                          <div className="flex items-center justify-end gap-1 text-[8px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
+                            <CheckCircle2 className="w-2.5 h-2.5" />
+                            <span>Saved</span>
                           </div>
                         </div>
                       </div>
@@ -2364,6 +2352,18 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                           </div>
                         </div>
                       </div>
+
+                      {/* Dedicated Edit Details Button */}
+                      {onEditTransaction && (
+                        <button
+                          type="button"
+                          onClick={() => onEditTransaction(msg.widget!.transaction!)}
+                          className="w-full flex items-center justify-center space-x-1.5 py-1.5 px-3 rounded-xl bg-white dark:bg-[#1A1D28] hover:bg-primary/5 border border-surface-border/80 hover:border-primary/40 text-zinc-600 dark:text-zinc-300 hover:text-primary text-[10px] sm:text-[11px] font-semibold transition-all group cursor-pointer shadow-2xs active:scale-[0.99]"
+                        >
+                          <Pencil className="w-3 h-3 text-zinc-400 group-hover:text-primary transition-colors" />
+                          <span>Edit Details</span>
+                        </button>
+                      )}
                     </div>
                   )}
 
