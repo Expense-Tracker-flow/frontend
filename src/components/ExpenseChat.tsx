@@ -145,6 +145,88 @@ interface ExpenseChatProps {
   onOpenIncomeModal: () => void;
 }
 
+// Formats chat message text cleanly: renders **bold**, `code`, and *italic* tags without raw syntax
+const renderFormattedMessageText = (text: string, isUser: boolean) => {
+  // Strip accidental outer quotes wrapped inside/outside asterisks like **"name"** -> **name**
+  const sanitized = text
+    .replace(/\*\*["']([^"']+)["']\*\*/g, '**$1**')
+    .replace(/["']\*\*([^"']+)\*\*["']/g, '**$1**');
+
+  const lines = sanitized.split('\n');
+
+  return (
+    <div className="space-y-1.5">
+      {lines.map((line, lineIdx) => {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          return <div key={lineIdx} className="h-1.5" />;
+        }
+
+        const isBullet = trimmed.startsWith('•') || trimmed.startsWith('-');
+        const contentToFormat = isBullet ? trimmed.replace(/^[•\-]\s*/, '') : line;
+
+        // Split tokens: **bold**, `code`, *italic*
+        const parts = contentToFormat.split(/(\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)/g);
+
+        const renderedLine = parts.map((part, partIdx) => {
+          if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
+            return (
+              <strong
+                key={partIdx}
+                className={isUser ? 'font-bold text-white' : 'font-semibold text-foreground'}
+              >
+                {part.slice(2, -2)}
+              </strong>
+            );
+          }
+          if (part.startsWith('`') && part.endsWith('`') && part.length >= 2) {
+            return (
+              <code
+                key={partIdx}
+                className={`px-1.5 py-0.5 rounded text-[11px] font-mono ${
+                  isUser
+                    ? 'bg-white/20 text-white font-medium'
+                    : 'bg-surface-raised border border-surface-border text-primary font-semibold'
+                }`}
+              >
+                {part.slice(1, -1)}
+              </code>
+            );
+          }
+          if (part.startsWith('*') && part.endsWith('*') && part.length >= 2) {
+            return (
+              <em
+                key={partIdx}
+                className={isUser ? 'text-white/90 italic' : 'text-zinc-500 dark:text-zinc-400 not-italic font-medium'}
+              >
+                {part.slice(1, -1)}
+              </em>
+            );
+          }
+          return <React.Fragment key={partIdx}>{part}</React.Fragment>;
+        });
+
+        if (isBullet) {
+          return (
+            <div key={lineIdx} className="flex items-start space-x-1.5 pl-0.5">
+              <span className={`text-xs select-none mt-0.5 ${isUser ? 'text-white/70' : 'text-primary'}`}>
+                •
+              </span>
+              <div className="flex-1 leading-relaxed">{renderedLine}</div>
+            </div>
+          );
+        }
+
+        return (
+          <p key={lineIdx} className="leading-relaxed">
+            {renderedLine}
+          </p>
+        );
+      })}
+    </div>
+  );
+};
+
 export const ExpenseChat: React.FC<ExpenseChatProps> = ({
   userName,
   currencySymbol,
@@ -1524,13 +1606,22 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       const catType: TransactionType = isIncome ? 'INCOME' : 'EXPENSE';
 
       let cleanName = queryText
-        .replace(/^\/(?:category|newcategory)\s+/i, '')
-        .replace(/^(?:please\s+)?(?:create|add|new|make)\s+(?:a\s+)?(?:expense\s+|income\s+)?category\s+/i, '')
+        .replace(/^\/(?:category|newcategory)\s*/i, '')
+        .replace(/^(?:please\s+)?(?:create|add|new|make)\s+(?:a\s+)?(?:expense\s+|income\s+)?category\s*/i, '')
         .replace(/\b(?:for\s+income|for\s+expense|as\s+income|as\s+expense|type\s+income|type\s+expense)\b/gi, '')
         .replace(/\b(?:with\s+color|color)\s+#[0-9a-fA-F]{6}\b/gi, '')
+        .replace(/^["'`\s/]+|["'`\s/]+$/g, '')
         .trim();
 
-      if (!cleanName) cleanName = 'Custom Category';
+      // If user typed only "/category" or an empty name, reply with a helpful and friendly example
+      if (!cleanName || cleanName.toLowerCase() === 'category' || cleanName.toLowerCase() === 'custom category' || cleanName.startsWith('/')) {
+        return {
+          text: `Please specify a name for your new category.\n\n` +
+            `• **/category Groceries**\n` +
+            `• **/category Freelance income**`
+        };
+      }
+
       cleanName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
 
       const colorMatch = queryText.match(/#[0-9a-fA-F]{6}/);
@@ -1549,7 +1640,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       if (res.success && res.data) {
         onCategoryAdded?.(res.data);
         return {
-          text: `Created new **${catType === 'INCOME' ? 'Income' : 'Expense'}** category **"${res.data.name}"**! You can now log transactions under it.`,
+          text: `Created new **${catType === 'INCOME' ? 'Income' : 'Expense'}** category **${res.data.name}**! You can now log transactions under it.`,
           widget: {
             type: 'CATEGORY_CREATED',
             title: 'New Category Created',
@@ -1642,7 +1733,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
 
       const daySuffix = dayOfMonth === 1 ? '1st' : dayOfMonth === 2 ? '2nd' : dayOfMonth === 3 ? '3rd' : `${dayOfMonth}th`;
       return {
-        text: `Scheduled automated **${autoType === 'INCOME' ? 'Income' : 'Expense'}** rule: **"${autoTitle}"** of **${currencySymbol}${autoAmount.toLocaleString('en-IN')}** every month on the **${daySuffix}** (Next: ${nextDate}).`,
+        text: `Scheduled automated **${autoType === 'INCOME' ? 'Income' : 'Expense'}** rule: **${autoTitle}** of **${currencySymbol}${autoAmount.toLocaleString('en-IN')}** every month on the **${daySuffix}** (Next: ${nextDate}).`,
         widget: {
           type: 'BALANCE_CARD',
           title: 'Scheduled Automation Active',
@@ -2131,7 +2222,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                   }`}
                 >
                   {msg.text && msg.widget?.type !== 'TRANSACTION_CONFIRMATION' && (
-                    <p className="whitespace-pre-line">{msg.text}</p>
+                    renderFormattedMessageText(msg.text, msg.sender === 'user')
                   )}
 
                   {/* 1. WIDGET: Single Transaction Confirmation Card */}
