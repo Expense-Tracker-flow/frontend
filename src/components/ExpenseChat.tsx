@@ -1845,8 +1845,8 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
             </div>
           </div>
 
-          {/* ChatGPT-style Prompt Suggestion Grid (Top 4 Most Used) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl pt-4">
+          {/* ChatGPT-style Prompt Suggestion Grid (Top 4 Most Used, hidden on mobile phone view) */}
+          <div className="hidden sm:grid sm:grid-cols-2 gap-3 w-full max-w-2xl pt-4">
             {suggestions.map((item, idx) => (
               <button
                 key={idx}
