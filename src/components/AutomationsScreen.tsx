@@ -206,9 +206,9 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
   }, [rules, filterType, search, selectedDayFilter]);
 
   return (
-    <div className="space-y-6 text-foreground pb-12 max-w-6xl mx-auto">
+    <div className="space-y-4 sm:space-y-6 text-foreground pb-24 sm:pb-12 max-w-6xl mx-auto">
       {/* 1. Header & Main Action Bar */}
-      <div className="flex items-center justify-between gap-3 pb-1">
+      <div className="flex items-center justify-between gap-3 pb-0.5">
         <div className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse" />
           <span>{activeRules.length} Active Rules</span>
@@ -216,145 +216,151 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
 
         <button
           onClick={handleOpenCreate}
-          className="px-3.5 py-2 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-xs sm:text-sm flex items-center space-x-1.5 transition-all shadow-md shadow-primary/25 active:scale-[0.98]"
+          className="px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-xs sm:text-sm flex items-center space-x-1.5 transition-all shadow-md shadow-primary/25 active:scale-[0.98]"
         >
           <Plus className="w-4 h-4" />
           <span>New Automation</span>
         </button>
       </div>
 
-      {/* 2. Top Metric & Health Pulse Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+      {/* 2. Top Metric & Health Pulse Cards (2-col grid on mobile, 3-col on lg) */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3.5">
         {/* Scheduled Outflows */}
-        <div className="relative overflow-hidden bg-surface border border-surface-border/90 rounded-2xl p-4 sm:p-5 shadow-sm hover:border-rose-500/30 transition-all group">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400">
-              Scheduled Outflows
-            </span>
-            <div className="w-7 h-7 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center border border-rose-500/20 group-hover:scale-110 transition-transform">
-              <ArrowDownRight className="w-4 h-4" />
+        <div className="relative overflow-hidden bg-surface border border-surface-border/90 rounded-2xl p-3 sm:p-5 shadow-sm hover:border-rose-500/30 transition-all group flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+              <span className="text-[10px] sm:text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400">
+                Scheduled Out
+              </span>
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center border border-rose-500/20 group-hover:scale-110 transition-transform flex-shrink-0">
+                <ArrowDownRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl lg:text-3xl font-black font-mono text-foreground tracking-tight truncate">
+              {currencySymbol}{totalAutomatedExpenses.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black font-mono text-foreground tracking-tight">
-            {currencySymbol}{totalAutomatedExpenses.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-          </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-zinc-500 font-mono">
-            <span>{activeRules.filter((r) => r.type === 'EXPENSE').length} recurring commitments</span>
-            <span className="text-rose-500 font-semibold">Monthly Out</span>
+          <div className="mt-2 flex items-center justify-between text-[10px] sm:text-[11px] text-zinc-500 font-mono">
+            <span>{activeRules.filter((r) => r.type === 'EXPENSE').length} commitments</span>
+            <span className="text-rose-500 font-semibold hidden sm:inline">Monthly Out</span>
           </div>
         </div>
 
         {/* Scheduled Inflows */}
-        <div className="relative overflow-hidden bg-surface border border-surface-border/90 rounded-2xl p-4 sm:p-5 shadow-sm hover:border-emerald-500/30 transition-all group">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400">
-              Scheduled Inflows
-            </span>
-            <div className="w-7 h-7 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/20 group-hover:scale-110 transition-transform">
-              <ArrowUpRight className="w-4 h-4" />
+        <div className="relative overflow-hidden bg-surface border border-surface-border/90 rounded-2xl p-3 sm:p-5 shadow-sm hover:border-emerald-500/30 transition-all group flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+              <span className="text-[10px] sm:text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400">
+                Scheduled In
+              </span>
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/20 group-hover:scale-110 transition-transform flex-shrink-0">
+                <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </div>
+            </div>
+            <div className="text-lg sm:text-2xl lg:text-3xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight truncate">
+              {currencySymbol}{totalAutomatedIncome.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-tight">
-            {currencySymbol}{totalAutomatedIncome.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-          </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-zinc-500 font-mono">
-            <span>{activeRules.filter((r) => r.type === 'INCOME').length} scheduled salaries & inflows</span>
-            <span className="text-emerald-500 font-semibold">Monthly In</span>
+          <div className="mt-2 flex items-center justify-between text-[10px] sm:text-[11px] text-zinc-500 font-mono">
+            <span>{activeRules.filter((r) => r.type === 'INCOME').length} inflows</span>
+            <span className="text-emerald-500 font-semibold hidden sm:inline">Monthly In</span>
           </div>
         </div>
 
-        {/* Net Monthly Auto Pulse */}
-        <div className="relative overflow-hidden bg-surface border border-surface-border/90 rounded-2xl p-4 sm:p-5 shadow-sm hover:border-primary/40 transition-all group">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400">
+        {/* Net Monthly Auto Pulse (Spans 2 columns on mobile for a sleek balanced look) */}
+        <div className="col-span-2 lg:col-span-1 relative overflow-hidden bg-surface border border-surface-border/90 rounded-2xl p-3.5 sm:p-5 shadow-sm hover:border-primary/40 transition-all group">
+          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+            <span className="text-[10px] sm:text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400">
               Net Monthly Auto Pulse
             </span>
-            <div className="w-7 h-7 rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 group-hover:scale-110 transition-transform">
-              <Zap className="w-4 h-4" />
+            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 group-hover:scale-110 transition-transform flex-shrink-0">
+              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
-          </div>
-          <div className={`text-2xl sm:text-3xl font-black font-mono tracking-tight ${netAutomated >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-            {netAutomated >= 0 ? '+' : '-'}{currencySymbol}{Math.abs(netAutomated).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </div>
           
-          {/* Cashflow Ratio Indicator */}
-          <div className="mt-2.5 space-y-1">
-            <div className="w-full bg-surface-raised h-1.5 rounded-full overflow-hidden flex">
-              <div 
-                className="bg-rose-500 transition-all duration-500 rounded-l-full" 
-                style={{ width: `${outflowRatio}%` }} 
-              />
-              <div 
-                className="bg-emerald-500 transition-all duration-500 rounded-r-full" 
-                style={{ width: `${100 - outflowRatio}%` }} 
-              />
+          <div className="flex flex-col justify-between">
+            <div className={`text-xl sm:text-2xl lg:text-3xl font-black font-mono tracking-tight ${netAutomated >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+              {netAutomated >= 0 ? '+' : '-'}{currencySymbol}{Math.abs(netAutomated).toLocaleString('en-IN', { minimumFractionDigits: 0 })}
             </div>
-            <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400">
-              <span>{outflowRatio}% Outflow Commit</span>
-              <span>{100 - outflowRatio}% Retained</span>
+            
+            {/* Cashflow Ratio Indicator */}
+            <div className="mt-2 sm:mt-2.5 space-y-1">
+              <div className="w-full bg-surface-raised h-1.5 sm:h-2 rounded-full overflow-hidden flex">
+                <div 
+                  className="bg-rose-500 transition-all duration-500 rounded-l-full" 
+                  style={{ width: `${outflowRatio}%` }} 
+                />
+                <div 
+                  className="bg-emerald-500 transition-all duration-500 rounded-r-full" 
+                  style={{ width: `${100 - outflowRatio}%` }} 
+                />
+              </div>
+              <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400">
+                <span>{outflowRatio}% Outflow</span>
+                <span>{100 - outflowRatio}% Retained</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 3. Upcoming Schedule & Monthly Horizon Strip (Replaces bulky 31-box sterile grid) */}
-      <div className="bg-surface border border-surface-border rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
+      {/* 3. Upcoming Schedule & Monthly Horizon Strip */}
+      <div className="bg-surface border border-surface-border rounded-2xl p-3.5 sm:p-5 shadow-sm space-y-3.5 sm:space-y-4">
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-surface-border/60 pb-3">
           <div className="flex items-center space-x-2">
-            <div className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+            <div className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
               <Calendar className="w-3.5 h-3.5" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h3 className="text-xs sm:text-sm font-bold text-foreground">
                 Monthly Schedule Horizon
               </h3>
-              <p className="text-[11px] text-zinc-400">
-                {currentMonthName} {currentYear} • Click any day to filter scheduled cash flows
+              <p className="text-[10px] sm:text-[11px] text-zinc-400 truncate">
+                {currentMonthName} {currentYear} • Tap any day to filter cash flows
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 text-[10px] font-mono">
-            <span className="flex items-center gap-1.5 text-zinc-500">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          <div className="flex items-center gap-2.5 text-[10px] font-mono overflow-x-auto pb-0.5 sm:pb-0 no-scrollbar">
+            <span className="flex items-center gap-1 text-zinc-500 flex-shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               <span>Inflow</span>
             </span>
-            <span className="flex items-center gap-1.5 text-zinc-500">
-              <span className="w-2 h-2 rounded-full bg-rose-500" />
+            <span className="flex items-center gap-1 text-zinc-500 flex-shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
               <span>Outflow</span>
             </span>
-            <span className="flex items-center gap-1.5 text-primary font-bold">
-              <span className="w-2 h-2 rounded-full bg-primary" />
+            <span className="flex items-center gap-1 text-primary font-bold flex-shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
               <span>Today ({todayDate})</span>
             </span>
             {selectedDayFilter !== null && (
               <button
                 onClick={() => setSelectedDayFilter(null)}
-                className="ml-2 text-primary font-bold hover:underline"
+                className="ml-auto text-primary font-bold hover:underline flex-shrink-0"
               >
-                Clear Day Filter
+                Clear Filter
               </button>
             )}
           </div>
         </div>
 
-        {/* Sleek 31-Day Timeline Bar */}
+        {/* Sleek 31-Day Timeline Bar (Horizontal swipe on phone, full grid on desktop) */}
         <div className="relative">
-          <div className="grid grid-cols-7 sm:grid-cols-11 md:grid-cols-16 lg:grid-cols-31 gap-1 overflow-x-auto pb-1 pt-0.5">
+          <div className="flex gap-1.5 overflow-x-auto pb-2 pt-0.5 no-scrollbar sm:grid sm:grid-cols-16 lg:grid-cols-31 sm:overflow-visible">
             {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
               const dayRules = scheduledDaysMap.get(day) || [];
               const isToday = day === todayDate;
               const isSelected = selectedDayFilter === day;
               const hasExpense = dayRules.some((r) => r.type === 'EXPENSE');
               const hasIncome = dayRules.some((r) => r.type === 'INCOME');
-              const totalAmount = dayRules.reduce((acc, r) => acc + (r.type === 'INCOME' ? r.amount : -r.amount), 0);
 
               return (
                 <button
                   key={day}
                   onClick={() => setSelectedDayFilter(isSelected ? null : day)}
-                  className={`group relative flex flex-col items-center justify-between py-1.5 px-0.5 rounded-xl border transition-all min-w-[32px] h-12 ${
+                  className={`group relative flex flex-col items-center justify-between py-1.5 px-1 rounded-xl border transition-all min-w-[36px] sm:min-w-0 h-12 flex-shrink-0 sm:flex-shrink ${
                     isSelected
                       ? 'border-primary bg-primary text-white shadow-md shadow-primary/20 scale-105 z-10'
                       : isToday
@@ -395,15 +401,15 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
         {upcomingRules.length > 0 && (
           <div className="pt-2">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-bold">
+              <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-bold">
                 Upcoming Queue
               </span>
-              <span className="text-[11px] font-mono text-zinc-500">
+              <span className="text-[10px] sm:text-[11px] font-mono text-zinc-500">
                 Sorted by nearest due date
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2.5">
               {upcomingRules.slice(0, 3).map((rule) => {
                 const countdown = getDaysUntil(rule.nextExecutionDate);
                 const isIncome = rule.type === 'INCOME';
@@ -463,23 +469,23 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
         )}
       </div>
 
-      {/* 4. Quick Setup Templates (Interactive & Premium) */}
-      <div className="bg-surface border border-surface-border rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
-        <div className="flex items-center justify-between">
+      {/* 4. Quick Setup Templates (Swipeable on mobile, grid on desktop) */}
+      <div className="bg-surface border border-surface-border rounded-2xl p-3.5 sm:p-5 shadow-sm space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
           <div>
             <h3 className="text-xs sm:text-sm font-bold text-foreground">
               Popular Automation Presets
             </h3>
-            <p className="text-[11px] text-zinc-400">
+            <p className="text-[10px] sm:text-[11px] text-zinc-400">
               One-click setup for common recurring commitments
             </p>
           </div>
-          <span className="text-[10px] font-mono text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-full font-semibold">
+          <span className="self-start sm:self-auto text-[9px] sm:text-[10px] font-mono text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 sm:py-1 rounded-full font-semibold">
             ⚡ 1-Click Fast Add
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+        <div className="flex overflow-x-auto gap-2.5 pb-1 sm:pb-0 no-scrollbar sm:grid sm:grid-cols-3 lg:grid-cols-6 sm:overflow-visible">
           {presets.map((preset, idx) => {
             const isJustAdded = recentlyAddedPreset === preset.title;
             const isIncome = preset.type === 'INCOME';
@@ -488,7 +494,7 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
               <button
                 key={idx}
                 onClick={() => handleApplyPreset(preset)}
-                className={`p-3 rounded-2xl border text-left transition-all active:scale-[0.98] group flex flex-col justify-between space-y-2 relative overflow-hidden ${
+                className={`p-3 rounded-2xl border text-left transition-all active:scale-[0.98] group flex flex-col justify-between space-y-2 relative overflow-hidden min-w-[145px] sm:min-w-0 flex-shrink-0 sm:flex-shrink ${
                   isJustAdded
                     ? 'border-emerald-500 bg-emerald-500/10'
                     : 'bg-surface-raised hover:bg-surface-raised/80 border-surface-border hover:border-primary/40 hover:shadow-sm'
@@ -525,30 +531,30 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
       </div>
 
       {/* 5. Main Rules Engine List */}
-      <div className="bg-surface border border-surface-border rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
+      <div className="bg-surface border border-surface-border rounded-2xl p-3.5 sm:p-5 shadow-sm space-y-3.5 sm:space-y-4">
         {/* Controls Toolbar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-surface-border pb-3.5">
-          <div className="flex items-center space-x-2">
-            <h3 className="text-sm font-bold text-foreground tracking-tight">Active Automation Rules</h3>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 border-b border-surface-border pb-3.5">
+          <div className="flex items-center justify-between sm:justify-start space-x-2">
+            <h3 className="text-xs sm:text-sm font-bold text-foreground tracking-tight">Active Automation Rules</h3>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-surface-raised border border-surface-border text-zinc-400">
               {filteredRules.length} of {rules.length}
             </span>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             {/* Filter Pills */}
-            <div className="flex items-center bg-surface-raised border border-surface-border rounded-xl p-0.5 text-xs font-semibold">
+            <div className="flex items-center bg-surface-raised border border-surface-border rounded-xl p-0.5 text-xs font-semibold justify-between sm:justify-start">
               <button
                 onClick={() => setFilterType('ALL')}
-                className={`px-3 py-1 rounded-lg text-[11px] transition-all ${
-                  filterType === 'ALL' ? 'bg-primary text-white shadow-sm' : 'text-zinc-400 hover:text-foreground'
+                className={`flex-1 sm:flex-initial px-3 py-1 rounded-lg text-[11px] transition-all text-center ${
+                  filterType === 'ALL' ? 'bg-primary text-white shadow-sm font-bold' : 'text-zinc-400 hover:text-foreground'
                 }`}
               >
                 All
               </button>
               <button
                 onClick={() => setFilterType('EXPENSE')}
-                className={`px-3 py-1 rounded-lg text-[11px] transition-all ${
+                className={`flex-1 sm:flex-initial px-3 py-1 rounded-lg text-[11px] transition-all text-center ${
                   filterType === 'EXPENSE' ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 font-bold' : 'text-zinc-400 hover:text-foreground'
                 }`}
               >
@@ -556,7 +562,7 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
               </button>
               <button
                 onClick={() => setFilterType('INCOME')}
-                className={`px-3 py-1 rounded-lg text-[11px] transition-all ${
+                className={`flex-1 sm:flex-initial px-3 py-1 rounded-lg text-[11px] transition-all text-center ${
                   filterType === 'INCOME' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold' : 'text-zinc-400 hover:text-foreground'
                 }`}
               >
@@ -565,7 +571,7 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
             </div>
 
             {/* Search Box */}
-            <div className="relative min-w-[180px]">
+            <div className="relative w-full sm:min-w-[180px]">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
               <input
                 type="text"
@@ -605,10 +611,10 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
             {filteredRules.map((rule) => {
               const executionSchedule =
                 rule.frequency === 'MONTHLY'
-                  ? `Every ${rule.dayOfMonth === 1 ? '1st' : rule.dayOfMonth === 2 ? '2nd' : rule.dayOfMonth === 3 ? '3rd' : `${rule.dayOfMonth}th`} of month`
+                  ? `Every ${rule.dayOfMonth === 1 ? '1st' : rule.dayOfMonth === 2 ? '2nd' : rule.dayOfMonth === 3 ? '3rd' : `${rule.dayOfMonth}th`}`
                   : rule.frequency === 'WEEKLY'
-                  ? `Every ${['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][rule.dayOfWeek ?? 1]}`
-                  : 'Daily recurring';
+                  ? `Every ${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][rule.dayOfWeek ?? 1]}`
+                  : 'Daily';
 
               const countdown = getDaysUntil(rule.nextExecutionDate);
               const isIncome = rule.type === 'INCOME';
@@ -616,7 +622,7 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
               return (
                 <div
                   key={rule.id}
-                  className={`relative overflow-hidden rounded-2xl border transition-all p-4 flex flex-col justify-between space-y-3.5 ${
+                  className={`relative overflow-hidden rounded-2xl border transition-all p-3.5 sm:p-4 flex flex-col justify-between space-y-3 ${
                     rule.isActive
                       ? 'bg-surface-raised/40 hover:bg-surface-raised/80 border-surface-border hover:border-surface-border/90 hover:shadow-sm'
                       : 'bg-surface-raised/10 border-surface-border/40 opacity-60'
@@ -630,29 +636,29 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
                   />
 
                   {/* Top Row: Title, Category Badges & Amount + Toggle */}
-                  <div className="flex items-start justify-between gap-3 pl-1">
-                    <div className="flex items-start space-x-3 min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2.5 pl-1.5">
+                    <div className="flex items-start space-x-2.5 min-w-0 flex-1">
                       <div
-                        className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                        className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
                           isIncome
                             ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
                             : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
                         }`}
                       >
                         {isIncome ? (
-                          <ArrowUpRight className="w-4 h-4" />
+                          <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         ) : (
-                          <ArrowDownRight className="w-4 h-4" />
+                          <ArrowDownRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         )}
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center space-x-2">
-                          <h4 className="font-bold text-sm text-foreground truncate">
+                        <div className="flex items-center space-x-1.5 flex-wrap">
+                          <h4 className="font-bold text-xs sm:text-sm text-foreground truncate">
                             {rule.title}
                           </h4>
                           <span
-                            className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full ${
+                            className={`text-[8px] sm:text-[9px] font-mono font-bold px-1.5 py-0.2 rounded-full ${
                               rule.isActive
                                 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
                                 : 'bg-zinc-500/10 text-zinc-500 border border-zinc-500/20'
@@ -662,8 +668,8 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-1.5 mt-1 text-[11px] text-zinc-400 font-mono flex-wrap">
-                          <span className="px-1.5 py-0.5 rounded bg-surface border border-surface-border text-foreground font-sans text-[10px]">
+                        <div className="flex items-center gap-1 sm:gap-1.5 mt-1 text-[10px] sm:text-[11px] text-zinc-400 font-mono flex-wrap">
+                          <span className="px-1.5 py-0.2 rounded bg-surface border border-surface-border text-foreground font-sans text-[9px] sm:text-[10px]">
                             {rule.categoryName || 'General'}
                           </span>
                           <span>•</span>
@@ -671,8 +677,8 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
                           {rule.autoLog && (
                             <>
                               <span>•</span>
-                              <span className="text-emerald-500 flex items-center gap-0.5">
-                                <CheckCheck className="w-3 h-3" /> Auto-log
+                              <span className="text-emerald-500 flex items-center gap-0.5 text-[9px] sm:text-[10px]">
+                                <CheckCheck className="w-3 h-3" /> Auto
                               </span>
                             </>
                           )}
@@ -681,16 +687,16 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
                     </div>
 
                     {/* Amount & Active Switch */}
-                    <div className="flex items-center space-x-3 flex-shrink-0">
+                    <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
                       <div className="text-right">
                         <div
-                          className={`font-mono font-black text-sm sm:text-base ${
+                          className={`font-mono font-black text-xs sm:text-base ${
                             isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-foreground'
                           }`}
                         >
-                          {isIncome ? '+' : '-'}{currencySymbol}{rule.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          {isIncome ? '+' : '-'}{currencySymbol}{rule.amount.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
                         </div>
-                        <div className="text-[9px] text-zinc-400 font-mono uppercase tracking-wider">
+                        <div className="text-[8px] sm:text-[9px] text-zinc-400 font-mono uppercase tracking-wider">
                           {rule.frequency}
                         </div>
                       </div>
@@ -698,13 +704,13 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
                       {/* Smooth Toggle Switch */}
                       <button
                         onClick={() => onToggleRule(rule.id)}
-                        className={`w-9 h-5 rounded-full p-0.5 transition-colors relative focus:outline-none ${
+                        className={`w-8 sm:w-9 h-4 sm:h-5 rounded-full p-0.5 transition-colors relative focus:outline-none flex-shrink-0 ${
                           rule.isActive ? 'bg-primary' : 'bg-zinc-300 dark:bg-zinc-700'
                         }`}
                         title={rule.isActive ? 'Pause automation' : 'Resume automation'}
                       >
                         <div
-                          className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
+                          className={`w-3 sm:w-4 h-3 sm:h-4 rounded-full bg-white shadow-sm transition-transform ${
                             rule.isActive ? 'translate-x-4' : 'translate-x-0'
                           }`}
                         />
@@ -713,26 +719,25 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
                   </div>
 
                   {/* Bottom Row: Cadence, Next Execution Countdown & Actions Toolbar */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-2.5 border-t border-surface-border/70 text-[11px] font-mono pl-1">
-                    <div className="flex items-center space-x-2 text-zinc-500 flex-wrap">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-surface-border/70 text-[10px] sm:text-[11px] font-mono pl-1.5">
+                    <div className="flex items-center space-x-1.5 sm:space-x-2 text-zinc-500 flex-wrap">
                       <span className="flex items-center space-x-1 text-foreground font-semibold">
-                        <Calendar className="w-3 h-3 text-primary" />
+                        <Calendar className="w-3 h-3 text-primary flex-shrink-0" />
                         <span>{executionSchedule}</span>
                       </span>
                       <span>•</span>
                       <span className={`flex items-center space-x-1 ${countdown.isUrgent ? 'text-amber-500 font-bold' : 'text-zinc-400'}`}>
-                        <Clock className="w-3 h-3" />
+                        <Clock className="w-3 h-3 flex-shrink-0" />
                         <span>{countdown.text}</span>
-                        {rule.nextExecutionDate && <span className="text-zinc-500">({rule.nextExecutionDate})</span>}
                       </span>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex items-center space-x-1.5 self-end sm:self-auto">
+                    <div className="flex items-center space-x-1.5 justify-end">
                       <button
                         onClick={() => handleTriggerWithFeedback(rule)}
                         disabled={runningId === rule.id}
-                        className={`px-2.5 py-1 rounded-xl border text-[11px] font-bold flex items-center space-x-1.5 transition-all ${
+                        className={`px-2.5 py-1 rounded-xl border text-[10px] sm:text-[11px] font-bold flex items-center space-x-1 transition-all ${
                           successId === rule.id
                             ? 'bg-emerald-500 text-white border-emerald-500'
                             : 'bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 active:scale-95'
@@ -740,11 +745,11 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
                         title="Trigger rule now"
                       >
                         {runningId === rule.id ? (
-                          <Sparkles className="w-3 h-3 animate-spin" />
+                          <Sparkles className="w-2.5 h-2.5 animate-spin" />
                         ) : successId === rule.id ? (
-                          <Check className="w-3 h-3" />
+                          <Check className="w-2.5 h-2.5" />
                         ) : (
-                          <Play className="w-3 h-3" />
+                          <Play className="w-2.5 h-2.5" />
                         )}
                         <span>{successId === rule.id ? 'Executed!' : 'Run Now'}</span>
                       </button>
@@ -753,6 +758,7 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
                         onClick={() => handleOpenEdit(rule)}
                         className="p-1.5 rounded-xl text-zinc-400 hover:text-foreground hover:bg-surface border border-transparent hover:border-surface-border transition-all"
                         title="Edit Rule"
+                        aria-label="Edit Rule"
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
@@ -761,6 +767,7 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
                         onClick={() => onDeleteRule(rule.id)}
                         className="p-1.5 rounded-xl text-zinc-400 hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all"
                         title="Delete Rule"
+                        aria-label="Delete Rule"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

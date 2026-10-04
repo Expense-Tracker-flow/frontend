@@ -406,22 +406,22 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/70 backdrop-blur-md overflow-hidden">
         <motion.div
           initial={{ opacity: 0, scale: 0.96, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 12 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="relative w-full max-w-lg bg-surface border border-surface-border rounded-3xl shadow-2xl overflow-hidden flex flex-col my-auto text-foreground max-h-[92dvh]"
+          className="relative w-full max-w-lg bg-surface border border-surface-border rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col my-auto text-foreground max-h-[92dvh] sm:max-h-[88vh]"
         >
           {/* Header Bar: Type Switcher on Left, AI Fill & Close on Right */}
-          <div className="flex items-center justify-between px-5 sm:px-6 py-3.5 border-b border-surface-border flex-shrink-0">
+          <div className="flex items-center justify-between px-3.5 sm:px-6 py-2.5 sm:py-3.5 border-b border-surface-border flex-shrink-0">
             {/* Segmented Type Switcher */}
-            <div className="flex items-center bg-surface-raised p-1 rounded-2xl border border-surface-border">
+            <div className="flex items-center bg-surface-raised p-0.5 sm:p-1 rounded-xl sm:rounded-2xl border border-surface-border">
               <button
                 type="button"
                 onClick={() => handleTypeChange('EXPENSE')}
-                className={`px-3.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+                className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl font-bold text-xs flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
                   type === 'EXPENSE'
                     ? 'bg-rose-500 text-white shadow-xs'
                     : 'text-zinc-500 hover:text-foreground'
@@ -433,7 +433,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
               <button
                 type="button"
                 onClick={() => handleTypeChange('INCOME')}
-                className={`px-3.5 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+                className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl font-bold text-xs flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
                   type === 'INCOME'
                     ? 'bg-emerald-500 text-white shadow-xs'
                     : 'text-zinc-500 hover:text-foreground'
@@ -444,34 +444,34 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
               </button>
             </div>
 
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-1.5 sm:gap-2.5">
               <button
                 type="button"
                 onClick={() => setActiveTab(activeTab === 'ai' ? 'manual' : 'ai')}
-                className={`px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer shadow-sm active:scale-95 ${
+                className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95 ${
                   activeTab === 'ai'
                     ? 'bg-primary text-white shadow-md shadow-primary/30 ring-2 ring-primary/40'
                     : 'bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary hover:border-primary/50'
                 }`}
                 title="Smart Fill with AI"
               >
-                <Sparkles className="w-5 h-5 flex-shrink-0" />
+                <Sparkles className="w-4 h-4 flex-shrink-0" />
                 <span className="tracking-wide">AI Fill</span>
               </button>
 
               <button
                 onClick={onClose}
-                className="p-2 rounded-2xl text-zinc-400 hover:text-foreground hover:bg-surface-raised transition-colors cursor-pointer"
+                className="p-1.5 sm:p-2 rounded-xl sm:rounded-2xl text-zinc-400 hover:text-foreground hover:bg-surface-raised transition-colors cursor-pointer"
                 title="Close"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
           </div>
 
           {/* Error Banner */}
           {error && (
-            <div className="mx-5 sm:mx-6 mt-3 p-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs flex items-center space-x-2.5">
+            <div className="mx-3.5 sm:mx-6 mt-2.5 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs flex items-center space-x-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>{error}</span>
             </div>
@@ -479,184 +479,192 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 
           {activeTab === 'ai' ? (
             /* Smart Natural Language Mode */
-            <form onSubmit={handleAiParseSubmit} className="p-5 sm:p-6 space-y-4">
-              <div className="space-y-1.5">
-                <label className="block text-[11px] font-mono uppercase font-semibold text-zinc-600 dark:text-zinc-300 tracking-wider">
-                  Type or paste what happened
-                </label>
-                <textarea
-                  rows={3}
-                  autoFocus
-                  value={naturalInput}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setNaturalInput(val);
-                    if (val.trim()) {
-                      parseNaturalLanguage(val);
-                    }
-                  }}
-                  placeholder="e.g. Spent ₹450 on dinner with friends via UPI, or Received 85000 salary from employer"
-                  className="w-full bg-surface-raised border border-surface-border rounded-2xl p-3.5 text-xs text-foreground placeholder-zinc-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
-                />
-              </div>
-
-              {naturalInput.trim().length > 2 && (
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-surface-raised border border-surface-border text-xs">
-                  <span className="text-zinc-500 font-mono text-[11px]">Detected:</span>
-                  <span className="font-bold text-foreground font-mono">
-                    {amount ? `₹${parseFloat(amount).toLocaleString('en-IN')}` : '—'}
-                  </span>
-                  <span className="text-primary font-semibold text-[11px] truncate max-w-[140px]">
-                    {aiDetectedCategory?.name || 'General'}
-                  </span>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                className="w-full py-3 rounded-2xl bg-primary hover:bg-primary-600 text-white font-semibold text-xs flex items-center justify-center space-x-1.5 transition-all shadow-md shadow-primary/25 cursor-pointer"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Fill Form</span>
-              </button>
-            </form>
-          ) : (
-            /* Clean, Modern, Elegant Manual Transaction Form */
-            <form onSubmit={handleSaveTransaction} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
-              {/* 1. Date Calendar Picker at Top of Form */}
-              <div className="space-y-1">
-                <label className="block text-[11px] font-mono uppercase font-semibold text-zinc-600 dark:text-zinc-300 tracking-wider">
-                  Transaction Date
-                </label>
-                <input
-                  type="date"
-                  required
-                  value={transactionDate}
-                  onChange={(e) => setTransactionDate(e.target.value)}
-                  className="w-full bg-surface-raised border border-surface-border rounded-2xl px-3.5 py-2.5 text-xs font-mono text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
-                />
-              </div>
-
-              {/* 2. Amount Input & Quick-Add Pills */}
-              <div className="space-y-1.5">
-                <label className="block text-[11px] font-mono uppercase font-semibold text-zinc-600 dark:text-zinc-300 tracking-wider">
-                  Amount
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 font-mono text-lg font-bold">
-                    ₹
-                  </span>
-                  <input
-                    type="number"
-                    step="0.01"
-                    inputMode="decimal"
-                    autoFocus
-                    required
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="0.00"
-                    className="w-full bg-surface-raised border border-surface-border rounded-2xl pl-9 pr-4 py-2.5 text-lg font-bold font-mono text-foreground placeholder-zinc-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
-                </div>
-                {/* Clean Quick Amount Helper Pills */}
-                <div className="flex items-center gap-1.5 pt-0.5">
-                  {[100, 200, 500, 1000, 2000].map((val) => (
-                    <button
-                      key={val}
-                      type="button"
-                      onClick={() => handleQuickAmount(val)}
-                      className="px-2.5 py-1 rounded-xl bg-surface border border-surface-border hover:border-primary/40 text-xs font-mono font-medium text-zinc-600 dark:text-zinc-300 hover:text-primary transition-all active:scale-95 cursor-pointer"
-                    >
-                      +{val}
-                    </button>
-                  ))}
-                  {amount && (
-                    <button
-                      type="button"
-                      onClick={handleClearAmount}
-                      className="px-2.5 py-1 rounded-xl text-xs font-mono text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer ml-auto"
-                    >
-                      Clear
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* 3. Category & Payment Method Side-by-Side (Searchable Dropdowns) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Category Dropdown */}
+            <form onSubmit={handleAiParseSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
+              <div className="p-3.5 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto flex-1">
                 <div className="space-y-1">
-                  <label className="block text-[11px] font-mono uppercase font-semibold text-zinc-600 dark:text-zinc-300 tracking-wider">
-                    Category
+                  <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-semibold text-zinc-500 tracking-wider">
+                    Type or paste what happened
                   </label>
-                  <SearchableSelect
-                    value={categoryId || ''}
-                    onChange={(val) => {
-                      setCategoryId(val || undefined);
-                      const cat = availableCategories.find((c) => c.id === val);
-                      if (cat && !description.trim()) {
-                        setDescription(cat.name);
+                  <textarea
+                    rows={3}
+                    autoFocus
+                    value={naturalInput}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setNaturalInput(val);
+                      if (val.trim()) {
+                        parseNaturalLanguage(val);
                       }
                     }}
-                    options={categoryOptions}
-                    placeholder="Select Category..."
-                    searchPlaceholder="Search category..."
+                    placeholder="e.g. Spent ₹450 on dinner with friends via UPI, or Received 85000 salary from employer"
+                    className="w-full bg-surface-raised border border-surface-border rounded-xl sm:rounded-2xl p-3 text-xs text-foreground placeholder-zinc-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-none"
                   />
                 </div>
 
-                {/* Payment Method Dropdown */}
+                {naturalInput.trim().length > 2 && (
+                  <div className="flex items-center justify-between p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-surface-raised border border-surface-border text-xs">
+                    <span className="text-zinc-500 font-mono text-[10px] sm:text-[11px]">Detected:</span>
+                    <span className="font-bold text-foreground font-mono">
+                      {amount ? `₹${parseFloat(amount).toLocaleString('en-IN')}` : '—'}
+                    </span>
+                    <span className="text-primary font-semibold text-[10px] sm:text-[11px] truncate max-w-[140px]">
+                      {aiDetectedCategory?.name || 'General'}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-3 sm:p-4 border-t border-surface-border bg-surface flex-shrink-0">
+                <button
+                  type="submit"
+                  className="w-full py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-primary hover:bg-primary-600 text-white font-semibold text-xs sm:text-sm flex items-center justify-center space-x-1.5 transition-all shadow-md shadow-primary/25 cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Fill Form</span>
+                </button>
+              </div>
+            </form>
+          ) : (
+            /* Clean, Modern, Elegant Manual Transaction Form with Sticky Footer */
+            <form onSubmit={handleSaveTransaction} className="flex flex-col flex-1 overflow-hidden min-h-0">
+              <div className="p-3.5 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto flex-1">
+                {/* 1. Date Calendar Picker at Top of Form */}
                 <div className="space-y-1">
-                  <label className="block text-[11px] font-mono uppercase font-semibold text-zinc-600 dark:text-zinc-300 tracking-wider">
-                    Payment Method
+                  <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-semibold text-zinc-500 tracking-wider">
+                    Transaction Date
                   </label>
-                  <SearchableSelect
-                    value={paymentMethod}
-                    onChange={(val) => setPaymentMethod(val as PaymentMethod)}
-                    options={PAYMENT_METHOD_OPTIONS}
-                    placeholder="Select Payment Method..."
-                    searchPlaceholder="Search payment method..."
-                    searchable={false}
+                  <input
+                    type="date"
+                    required
+                    value={transactionDate}
+                    onChange={(e) => setTransactionDate(e.target.value)}
+                    className="w-full bg-surface-raised border border-surface-border rounded-xl sm:rounded-2xl px-3 py-1.5 sm:py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
                   />
+                </div>
+
+                {/* 2. Amount Input & Quick-Add Pills */}
+                <div className="space-y-1">
+                  <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-semibold text-zinc-500 tracking-wider">
+                    Amount
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 font-mono text-base sm:text-lg font-bold">
+                      ₹
+                    </span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      inputMode="decimal"
+                      autoFocus
+                      required
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full bg-surface-raised border border-surface-border rounded-xl sm:rounded-2xl pl-8 sm:pl-9 pr-3 sm:pr-4 py-2 sm:py-2.5 text-base sm:text-lg font-bold font-mono text-foreground placeholder-zinc-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                  </div>
+                  {/* Clean Quick Amount Helper Pills */}
+                  <div className="flex items-center gap-1 sm:gap-1.5 pt-0.5 overflow-x-auto no-scrollbar">
+                    {[100, 200, 500, 1000, 2000].map((val) => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => handleQuickAmount(val)}
+                        className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg sm:rounded-xl bg-surface border border-surface-border hover:border-primary/40 text-[11px] sm:text-xs font-mono font-medium text-zinc-600 dark:text-zinc-300 hover:text-primary transition-all active:scale-95 cursor-pointer flex-shrink-0"
+                      >
+                        +{val}
+                      </button>
+                    ))}
+                    {amount && (
+                      <button
+                        type="button"
+                        onClick={handleClearAmount}
+                        className="px-2 py-0.5 rounded-lg text-[11px] sm:text-xs font-mono text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer ml-auto flex-shrink-0"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* 3. Category & Payment Method Side-by-Side (Searchable Dropdowns) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                  {/* Category Dropdown */}
+                  <div className="space-y-1">
+                    <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-semibold text-zinc-500 tracking-wider">
+                      Category
+                    </label>
+                    <SearchableSelect
+                      value={categoryId || ''}
+                      onChange={(val) => {
+                        setCategoryId(val || undefined);
+                        const cat = availableCategories.find((c) => c.id === val);
+                        if (cat && !description.trim()) {
+                          setDescription(cat.name);
+                        }
+                      }}
+                      options={categoryOptions}
+                      placeholder="Select Category..."
+                      searchPlaceholder="Search category..."
+                      className="text-xs"
+                    />
+                  </div>
+
+                  {/* Payment Method Dropdown */}
+                  <div className="space-y-1">
+                    <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-semibold text-zinc-500 tracking-wider">
+                      Payment Method
+                    </label>
+                    <SearchableSelect
+                      value={paymentMethod}
+                      onChange={(val) => setPaymentMethod(val as PaymentMethod)}
+                      options={PAYMENT_METHOD_OPTIONS}
+                      placeholder="Select Payment Method..."
+                      searchPlaceholder="Search payment method..."
+                      searchable={false}
+                      className="text-xs"
+                    />
+                  </div>
+                </div>
+
+                {/* 4. Description & Notes */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                  {/* Description / Title */}
+                  <div className="space-y-1">
+                    <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-semibold text-zinc-500 tracking-wider">
+                      Description / Title
+                    </label>
+                    <input
+                      type="text"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder={type === 'EXPENSE' ? 'e.g. Dinner, Grocery, Uber, Shopping' : 'e.g. Monthly Salary, Freelance Client'}
+                      className="w-full bg-surface-raised border border-surface-border rounded-xl sm:rounded-2xl px-3 py-1.5 sm:py-2 text-xs text-foreground placeholder-zinc-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                    />
+                  </div>
+
+                  {/* Notes (Optional) */}
+                  <div className="space-y-1">
+                    <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-semibold text-zinc-500 tracking-wider">
+                      Notes (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Additional context or memo"
+                      className="w-full bg-surface-raised border border-surface-border rounded-xl sm:rounded-2xl px-3 py-1.5 sm:py-2 text-xs text-foreground placeholder-zinc-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* 4. Description & Notes Side-by-Side */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Description / Title */}
-                <div className="space-y-1">
-                  <label className="block text-[11px] font-mono uppercase font-semibold text-zinc-600 dark:text-zinc-300 tracking-wider">
-                    Description / Title
-                  </label>
-                  <input
-                    type="text"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder={type === 'EXPENSE' ? 'e.g. Dinner, Grocery, Uber, Shopping' : 'e.g. Monthly Salary, Freelance Client, Dividend'}
-                    className="w-full bg-surface-raised border border-surface-border rounded-2xl px-3.5 py-2.5 text-xs text-foreground placeholder-zinc-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                  />
-                </div>
-
-                {/* Notes (Optional) */}
-                <div className="space-y-1">
-                  <label className="block text-[11px] font-mono uppercase font-semibold text-zinc-600 dark:text-zinc-300 tracking-wider">
-                    Notes (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Additional context or memo"
-                    className="w-full bg-surface-raised border border-surface-border rounded-2xl px-3.5 py-2.5 text-xs text-foreground placeholder-zinc-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                  />
-                </div>
-              </div>
-
-              {/* 6. Primary Action Submit Button */}
-              <div className="pt-2">
+              {/* Sticky Fixed Bottom Action Bar */}
+              <div className="p-3 sm:p-4 border-t border-surface-border bg-surface flex-shrink-0">
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-3.5 rounded-2xl bg-primary hover:bg-primary-600 disabled:opacity-50 text-white font-bold text-xs flex items-center justify-center space-x-2 transition-all shadow-md shadow-primary/30 active:scale-[0.99] cursor-pointer"
+                  className="w-full py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-primary hover:bg-primary-600 disabled:opacity-50 text-white font-bold text-xs sm:text-sm flex items-center justify-center space-x-2 transition-all shadow-md shadow-primary/25 active:scale-[0.99] cursor-pointer"
                 >
                   <Check className="w-4 h-4" />
                   <span>

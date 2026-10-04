@@ -98,6 +98,15 @@
   background: #3B4259;
 }
 
+/* Utility to hide scrollbars smoothly */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Orbit revolution keyframes */
 @keyframes orbit-spin {
   0% {

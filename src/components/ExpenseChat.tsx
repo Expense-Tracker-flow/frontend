@@ -170,6 +170,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
   const [copiedPrompt, setCopiedPrompt] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const activeInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = activeInputRef;
 
   const handleApplyGuidePrompt = (promptText: string, autoRun = false) => {
     setIsGuideOpen(false);
@@ -1073,26 +1074,118 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
   // 🧠 ENHANCED AI AGENT ENGINE (With Edge-Case & Context Handling)
   // =========================================================================
 
-  // Helper 1: Extract Date with relative & past dates support
+  // Helper 1: Extract Date with comprehensive relative, formatted, and named date support
   const extractDate = (text: string): { dateStr: string; label: string } => {
     const lower = text.toLowerCase();
     const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth(); // 0-indexed
 
-    if (lower.includes('yesterday')) {
-      const d = new Date(Date.now() - 86400000);
-      return { dateStr: d.toISOString().split('T')[0], label: 'Yesterday' };
-    }
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const toIso = (y: number, m: number, d: number) => `${y}-${pad(m + 1)}-${pad(d)}`;
+    const formatLabel = (y: number, m: number, d: number) =>
+      new Date(y, m, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-    if (lower.includes('day before yesterday')) {
+    // 1. Relative keywords
+    if (/\bday before yesterday\b/i.test(lower)) {
       const d = new Date(Date.now() - 2 * 86400000);
       return { dateStr: d.toISOString().split('T')[0], label: '2 days ago' };
     }
-
-    const daysAgoMatch = lower.match(/(\d+)\s*days?\s*ago/i);
+    if (/\byesterday\b/i.test(lower)) {
+      const d = new Date(Date.now() - 86400000);
+      return { dateStr: d.toISOString().split('T')[0], label: 'Yesterday' };
+    }
+    if (/\btomorrow\b/i.test(lower)) {
+      const d = new Date(Date.now() + 86400000);
+      return { dateStr: d.toISOString().split('T')[0], label: 'Tomorrow' };
+    }
+    const daysAgoMatch = lower.match(/\b(\d+)\s*days?\s*ago\b/i);
     if (daysAgoMatch && daysAgoMatch[1]) {
       const days = parseInt(daysAgoMatch[1], 10);
       const d = new Date(Date.now() - days * 86400000);
       return { dateStr: d.toISOString().split('T')[0], label: `${days} days ago` };
+    }
+
+    // 2. Weekdays (e.g. "last friday", "on wednesday")
+    const weekdayMap: { [key: string]: number } = {
+      sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6
+    };
+    const weekdayMatch = lower.match(/\b(?:last|this|past|on)\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i);
+    if (weekdayMatch && weekdayMatch[1]) {
+      const targetDay = weekdayMap[weekdayMatch[1].toLowerCase()];
+      const currentDay = now.getDay();
+      let diff = currentDay - targetDay;
+      if (diff <= 0) diff += 7; // go back to previous occurrence
+      const d = new Date(Date.now() - diff * 86400000);
+      const capName = weekdayMatch[1].charAt(0).toUpperCase() + weekdayMatch[1].slice(1);
+      return { dateStr: d.toISOString().split('T')[0], label: `Last ${capName}` };
+    }
+
+    // 3. ISO format: YYYY-MM-DD or YYYY/MM/DD
+    const isoMatch = lower.match(/\b(20\d{2})[-/.](0?[1-9]|1[0-2])[-/.](0?[1-9]|[12]\d|3[01])\b/);
+    if (isoMatch) {
+      const y = parseInt(isoMatch[1], 10);
+      const m = parseInt(isoMatch[2], 10) - 1;
+      const d = parseInt(isoMatch[3], 10);
+      return { dateStr: toIso(y, m, d), label: formatLabel(y, m, d) };
+    }
+
+    // 4. DD-MM-YYYY or DD/MM/YYYY or DD.MM.YYYY
+    const dmyMatch = lower.match(/\b(0?[1-9]|[12]\d|3[01])[-/.](0?[1-9]|1[0-2])(?:[-/.](20\d{2}|\d{2}))?\b/);
+    if (dmyMatch) {
+      const d = parseInt(dmyMatch[1], 10);
+      const m = parseInt(dmyMatch[2], 10) - 1;
+      let y = currentYear;
+      if (dmyMatch[3]) {
+        y = parseInt(dmyMatch[3], 10);
+        if (y < 100) y += 2000;
+      }
+      return { dateStr: toIso(y, m, d), label: formatLabel(y, m, d) };
+    }
+
+    // Month map for name-based parsing
+    const monthNames: { [key: string]: number } = {
+      jan: 0, january: 0,
+      feb: 1, february: 1,
+      mar: 2, march: 2,
+      apr: 3, april: 3,
+      may: 4,
+      jun: 5, june: 5,
+      jul: 6, july: 6,
+      aug: 7, august: 7,
+      sep: 8, sept: 8, september: 8,
+      oct: 9, october: 9,
+      nov: 10, november: 10,
+      dec: 11, december: 11
+    };
+
+    // 5. Day Month Year: e.g. "2nd oct", "15 october 2026", "on 2nd of oct"
+    const dayMonthMatch = lower.match(
+      /\b(?:on\s+)?(?:the\s+)?(0?[1-9]|[12]\d|3[01])(?:st|nd|rd|th)?\s+(?:of\s+)?(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)(?:\s+(20\d{2}))?\b/i
+    );
+    if (dayMonthMatch) {
+      const d = parseInt(dayMonthMatch[1], 10);
+      const m = monthNames[dayMonthMatch[2].toLowerCase()];
+      const y = dayMonthMatch[3] ? parseInt(dayMonthMatch[3], 10) : currentYear;
+      return { dateStr: toIso(y, m, d), label: formatLabel(y, m, d) };
+    }
+
+    // 6. Month Day Year: e.g. "oct 2nd", "october 15", "on oct 2nd 2026"
+    const monthDayMatch = lower.match(
+      /\b(?:on\s+)?(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+(?:the\s+)?(0?[1-9]|[12]\d|3[01])(?:st|nd|rd|th)?(?:\s+(20\d{2}))?\b/i
+    );
+    if (monthDayMatch) {
+      const m = monthNames[monthDayMatch[1].toLowerCase()];
+      const d = parseInt(monthDayMatch[2], 10);
+      const y = monthDayMatch[3] ? parseInt(monthDayMatch[3], 10) : currentYear;
+      return { dateStr: toIso(y, m, d), label: formatLabel(y, m, d) };
+    }
+
+    // 7. Standalone Day ordinal: e.g. "on 15th", "on the 2nd"
+    const ordinalMatch = lower.match(/\b(?:on\s+)(?:the\s+)?(0?[1-9]|[12]\d|3[01])(?:st|nd|rd|th)\b/i);
+    if (ordinalMatch) {
+      const d = parseInt(ordinalMatch[1], 10);
+      return { dateStr: toIso(currentYear, currentMonth, d), label: formatLabel(currentYear, currentMonth, d) };
     }
 
     // Default to today
@@ -1169,8 +1262,15 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       if (!isNaN(val) && val > 0) return val * 1000;
     }
 
-    // 3. Fallback to any standalone number with 2 or more digits, or with decimal
-    const numMatches = text.match(/\b\d+(?:,\d+)*(?:\.\d+)?\b/g);
+    // 3. Fallback to any standalone number - strip out dates first so dates like "02/10" or "2026" or "2nd" are not picked
+    const sanitizedForAmount = text
+      .replace(/\b(?:20\d{2}[-/.]\d{1,2}[-/.]\d{1,2}|\d{1,2}[-/.]\d{1,2}[-/.]20\d{2})\b/g, ' ')
+      .replace(/\b\d{1,2}[-/.]\d{1,2}\b/g, ' ')
+      .replace(/\b\d{1,2}(?:st|nd|rd|th)\b/gi, ' ')
+      .replace(/\b(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+\d{1,2}\b/gi, ' ')
+      .replace(/\b\d{1,2}\s+(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\b/gi, ' ');
+
+    const numMatches = sanitizedForAmount.match(/\b\d+(?:,\d+)*(?:\.\d+)?\b/g);
     if (numMatches && numMatches.length > 0) {
       // If there are multiple numbers (e.g. "2 shirts for 1500"), pick the highest value as price
       const numbers = numMatches.map(n => parseFloat(n.replace(/,/g, ''))).filter(n => !isNaN(n));
@@ -1235,8 +1335,16 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     let title = rawText
       // 0. Remove slash commands e.g. /income, /expense, /inflow, /spent
       .replace(/^\s*\/(?:income|expense|inflow|spent|add|log|inc|exp)\s*/i, ' ')
-      // 1. Remove relative dates
-      .replace(/\b(?:yesterday|today|day before yesterday|\d+\s*days?\s*ago)\b/gi, ' ')
+      // 1. Remove all date expressions (relative, formatted, and named)
+      .replace(/\b(?:yesterday|today|tomorrow|day before yesterday|\d+\s*days?\s*ago)\b/gi, ' ')
+      .replace(/\b(?:last|this|past)\s+(?:sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/gi, ' ')
+      .replace(/\b(?:on\s+)?(?:sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/gi, ' ')
+      .replace(/\b\d{4}[-/.]\d{1,2}[-/.]\d{1,2}\b/g, ' ')
+      .replace(/\b\d{1,2}[-/.]\d{1,2}(?:[-/.]\d{2,4})?\b/g, ' ')
+      .replace(/\b(?:on\s+)?(?:the\s+)?\d{1,2}(?:st|nd|rd|th)?\s+(?:of\s+)?(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)(?:\s+\d{4})?\b/gi, ' ')
+      .replace(/\b(?:on\s+)?(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\s+(?:the\s+)?\d{1,2}(?:st|nd|rd|th)?(?:\s+\d{4})?\b/gi, ' ')
+      .replace(/\b(?:on\s+)(?:the\s+)?\d{1,2}(?:st|nd|rd|th)\b/gi, ' ')
+      .replace(/\b(?:date:\s*[^,\n;]+)\b/gi, ' ')
       // 2. Remove currency amounts with strict non-empty digit match
       .replace(/(?:₹|\$|€|£|rs\.?|inr)?\s*(?:\b\d+(?:,\d+)*(?:\.\d+)?\s*(?:k|thousand)?|\b\d+k\b)/gi, ' ')
       // 3. Remove payment methods (including "by ...")

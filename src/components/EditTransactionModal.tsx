@@ -114,6 +114,8 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
     }
   };
 
+  if (!isOpen || !transaction) return null;
+
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
@@ -122,17 +124,17 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 12 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="relative w-full max-w-lg bg-surface border border-surface-border rounded-3xl shadow-2xl overflow-hidden max-h-[90dvh] flex flex-col my-auto text-foreground"
+          className="relative w-full max-w-lg bg-surface border border-surface-border rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden max-h-[92dvh] sm:max-h-[88vh] flex flex-col my-auto text-foreground"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-surface-border flex-shrink-0">
+          <div className="flex items-center justify-between px-3.5 sm:px-6 py-2.5 sm:py-3.5 border-b border-surface-border flex-shrink-0">
             <div>
-              <h2 className="text-base font-bold text-foreground tracking-tight">Edit Transaction</h2>
-              <p className="text-[11px] text-zinc-500 font-mono mt-0.5">Modify ledger details or re-categorize</p>
+              <h2 className="text-sm sm:text-base font-bold text-foreground tracking-tight">Edit Transaction</h2>
+              <p className="text-[10px] sm:text-[11px] text-zinc-500 font-mono mt-0.5">Modify ledger details or re-categorize</p>
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-xl text-zinc-400 hover:text-foreground hover:bg-surface-raised transition-colors"
+              className="p-1.5 sm:p-2 rounded-xl text-zinc-400 hover:text-foreground hover:bg-surface-raised transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -147,8 +149,9 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
           )}
 
           {/* Edit Form */}
-          <form onSubmit={handleUpdate} className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1">
-            {/* Type Switcher */}
+          <form onSubmit={handleUpdate} className="flex flex-col flex-1 overflow-hidden min-h-0">
+            <div className="p-3.5 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto flex-1">
+              {/* Type Switcher */}
             <div className="grid grid-cols-2 gap-2.5">
               <button
                 type="button"
@@ -274,24 +277,25 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
                 className="w-full bg-surface-raised border border-surface-border rounded-2xl px-3.5 py-2.5 text-xs text-foreground placeholder-zinc-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
               />
             </div>
+          </div>
 
-            {/* Action Buttons: Save & Delete */}
-            <div className="pt-2 flex items-center gap-2.5">
+          {/* Sticky Action Buttons: Save & Delete */}
+            <div className="p-3 sm:p-4 border-t border-surface-border bg-surface flex-shrink-0 flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleDelete}
                 disabled={isDeleting || isSubmitting}
-                className="px-4 py-3 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 font-semibold text-xs flex items-center justify-center space-x-1.5 transition-all disabled:opacity-50"
+                className="px-3.5 py-2.5 rounded-xl sm:rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 font-semibold text-xs flex items-center justify-center space-x-1.5 transition-all disabled:opacity-50 cursor-pointer"
                 title="Delete this transaction"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3.5 h-3.5" />
                 <span>Delete</span>
               </button>
 
               <button
                 type="submit"
                 disabled={isSubmitting || isDeleting}
-                className="flex-1 py-3 rounded-2xl bg-primary hover:bg-primary-600 disabled:opacity-50 text-white font-bold text-xs flex items-center justify-center space-x-2 transition-all shadow-lg shadow-primary/30 active:scale-[0.99]"
+                className="flex-1 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-primary hover:bg-primary-600 disabled:opacity-50 text-white font-bold text-xs sm:text-sm flex items-center justify-center space-x-2 transition-all shadow-md shadow-primary/25 active:scale-[0.99] cursor-pointer"
               >
                 <Check className="w-4 h-4" />
                 <span>{isSubmitting ? 'Saving changes...' : 'Save Changes'}</span>
