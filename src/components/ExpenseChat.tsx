@@ -169,6 +169,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
   const [guideTab, setGuideTab] = useState<'slash' | 'nlp' | 'auto' | 'query'>('slash');
   const [copiedPrompt, setCopiedPrompt] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const activeInputRef = useRef<HTMLInputElement>(null);
   const inputRef = activeInputRef;
 
@@ -992,8 +993,13 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     }
   };
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior,
+      });
+    }
   };
 
   useEffect(() => {
@@ -1895,7 +1901,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
         </div>
 
         {/* Messages Stream (Independently scrollable message area) */}
-        <div className="flex-1 min-h-0 space-y-3 sm:space-y-4 py-2 sm:py-3 overflow-y-auto px-2 sm:px-3 custom-scrollbar overscroll-contain">
+        <div ref={messagesContainerRef} className="flex-1 min-h-0 space-y-3 sm:space-y-4 py-2 sm:py-3 overflow-y-auto px-2 sm:px-3 custom-scrollbar overscroll-contain">
           {/* WhatsApp Style Date Divider */}
           <div className="flex justify-center my-1.5">
             <span className="px-3 py-0.5 rounded-full bg-surface-raised/90 dark:bg-surface-raised/60 border border-surface-border/70 text-[10px] font-medium text-zinc-400 shadow-2xs">

@@ -923,12 +923,19 @@ export default function DashboardPage() {
   // 2. AUTHENTICATED FINANCIAL DASHBOARD
   // ==========================================
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col transition-colors">
+    <div className={`bg-background text-foreground flex flex-col transition-colors ${
+      activeTab === 'home' ? 'h-[100dvh] max-h-[100dvh] overflow-hidden' : 'min-h-screen'
+    }`}>
       {/* Top Navbar with Profile Dropdown */}
       <Header
         user={user}
         activeTab={activeTab}
-        onTabChange={(tab) => setActiveTab(tab)}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          if (tab === 'home' && typeof window !== 'undefined') {
+            window.scrollTo(0, 0);
+          }
+        }}
         onRefresh={loadData}
         onOpenAuth={() => {
           setShowAuthForm(true);
@@ -946,9 +953,9 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <main className={`flex-1 max-w-7xl w-full mx-auto ${
+      <main className={`flex-1 min-h-0 max-w-7xl w-full mx-auto ${
         activeTab === 'home' 
-          ? 'p-0 sm:px-6 lg:px-8 sm:py-4 h-[calc(100dvh-8rem)] sm:h-[calc(100vh-8.5rem)] overflow-hidden flex flex-col' 
+          ? 'p-0 sm:px-6 lg:px-8 sm:py-2 overflow-hidden flex flex-col pb-16 md:pb-0' 
           : 'px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-5 sm:space-y-6 pb-24 md:pb-8'
       }`}>
         {/* ============================================================== */}
@@ -1274,7 +1281,12 @@ export default function DashboardPage() {
       {/* Mobile Bottom Navigation Bar */}
       <MobileBottomNav
         activeTab={activeTab}
-        onTabChange={(tab) => setActiveTab(tab)}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          if (tab === 'home' && typeof window !== 'undefined') {
+            window.scrollTo(0, 0);
+          }
+        }}
         onOpenQuickAdd={handleOpenExpense}
       />
     </div>
