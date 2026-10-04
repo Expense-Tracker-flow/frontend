@@ -402,10 +402,6 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     color: cat.color || '#6366F1',
   }));
 
-  const popularCategories = useMemo(() => {
-    return currentCategories.slice(0, 5);
-  }, [currentCategories]);
-
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
   const yesterdayStr = useMemo(() => {
     const d = new Date();
@@ -415,13 +411,6 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 
   const isToday = transactionDate === todayStr;
   const isYesterday = transactionDate === yesterdayStr;
-
-  const handleSelectQuickCategory = (cat: Category) => {
-    setCategoryId(cat.id);
-    if (!description.trim()) {
-      setDescription(cat.name);
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -695,30 +684,6 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                     searchPlaceholder="Search category..."
                     className="text-xs"
                   />
-                  {/* Quick 1-Tap Category Chips */}
-                  <div className="flex items-center gap-1.5 pt-0.5 overflow-x-auto no-scrollbar">
-                    {popularCategories.map((cat) => {
-                      const isSelected = categoryId === cat.id;
-                      return (
-                        <button
-                          key={cat.id}
-                          type="button"
-                          onClick={() => handleSelectQuickCategory(cat)}
-                          className={`px-2.5 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all cursor-pointer flex-shrink-0 active:scale-95 ${
-                            isSelected
-                              ? 'bg-primary text-white border-primary shadow-xs'
-                              : 'bg-surface-raised border-surface-border text-zinc-600 dark:text-zinc-300 hover:border-primary/40 hover:text-foreground'
-                          }`}
-                        >
-                          <span 
-                            className="w-2 h-2 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: isSelected ? '#ffffff' : (cat.color || '#6366F1') }}
-                          />
-                          <span className="truncate max-w-[110px]">{cat.name}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
                 </div>
 
                 {/* 4. Payment Method & Description/Notes */}
