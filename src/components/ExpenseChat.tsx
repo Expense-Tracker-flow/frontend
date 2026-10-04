@@ -1865,55 +1865,80 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
           </div>
         </div>
       ) : (
-        /* 2. Active Chat Stream with Compact Pods & Interactive Widgets */
-        <div className="flex-1 flex flex-col overflow-hidden max-w-2xl w-full mx-auto px-4 pb-4">
-          {/* Header Action Bar - Sticky */}
-          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm flex items-center justify-between pt-2 pb-2 border-b border-surface-border text-xs text-foreground font-mono flex-shrink-0">
-            <span className="flex items-center space-x-1.5 text-zinc-700 dark:text-zinc-300 font-semibold text-[11px]">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Conversation Active</span>
-            </span>
-            <div className="flex items-center space-x-2">
+        /* 2. Active Chat Stream with WhatsApp / Instagram DM Style Structure */
+        <div className="flex-1 flex flex-col overflow-hidden max-w-2xl w-full mx-auto px-2 sm:px-4 pb-2 sm:pb-4">
+          {/* WhatsApp / Instagram DM Style Top App Bar */}
+          <div className="sticky top-0 z-20 bg-surface/95 dark:bg-[#12141C]/95 backdrop-blur-xl flex items-center justify-between px-3 sm:px-4 py-2 border-b border-surface-border rounded-2xl sm:rounded-3xl shadow-xs mb-2">
+            <div className="flex items-center space-x-2.5">
+              {/* MonAI Avatar with Online Indicator */}
+              <div className="relative">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-primary via-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-sm shadow-primary/30">
+                  <Bot className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                </div>
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-surface animate-pulse" />
+              </div>
+
+              <div>
+                <div className="flex items-center space-x-1.5">
+                  <span className="font-bold text-xs sm:text-sm text-foreground tracking-tight">MonAI</span>
+                  <span className="px-1.5 py-0.2 rounded-full bg-primary/10 text-primary text-[9px] font-mono font-semibold">AI Agent</span>
+                </div>
+                <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                  <span>Online • Instant Assistant</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Action Icons (Instagram / WhatsApp style clean icon buttons) */}
+            <div className="flex items-center space-x-1 sm:space-x-1.5">
               <button
                 type="button"
                 onClick={() => setIsGuideOpen(true)}
-                className="flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary hover:text-primary-700 dark:hover:text-primary-300 text-[11px] font-sans font-bold transition-all shadow-2xs"
+                className="w-8 h-8 rounded-full bg-surface-raised hover:bg-primary/10 border border-surface-border hover:border-primary/30 text-zinc-500 hover:text-primary flex items-center justify-center transition-all"
+                title="MonAI Guide & Commands"
               >
-                <BookOpen className="w-3.5 h-3.5 text-primary" />
-                <span>MonAI Guide</span>
+                <BookOpen className="w-4 h-4" />
               </button>
               <button
                 type="button"
                 onClick={handleClearChat}
-                className="flex items-center space-x-1.5 px-2.5 py-1 rounded-xl bg-surface-raised hover:bg-rose-500/10 border border-surface-border hover:border-rose-500/30 text-zinc-700 dark:text-zinc-300 hover:text-rose-600 dark:hover:text-rose-400 text-[11px] font-sans font-semibold transition-all shadow-2xs"
+                className="w-8 h-8 rounded-full bg-surface-raised hover:bg-rose-500/10 border border-surface-border hover:border-rose-500/30 text-zinc-500 hover:text-rose-500 flex items-center justify-center transition-all"
+                title="Clear Conversation"
               >
-                <Trash2 className="w-3 h-3 text-zinc-500 hover:text-rose-500" />
-                <span>Clear Conversation</span>
+                <Trash2 className="w-4 h-4" />
               </button>
             </div>
           </div>
 
           {/* Messages Stream */}
-          <div className="flex-1 space-y-4 py-4 overflow-y-auto">
+          <div className="flex-1 space-y-3 sm:space-y-4 py-2 sm:py-3 overflow-y-auto px-0.5">
+            {/* WhatsApp Style Date Divider */}
+            <div className="flex justify-center my-1.5">
+              <span className="px-3 py-0.5 rounded-full bg-surface-raised/90 dark:bg-surface-raised/60 border border-surface-border/70 text-[10px] font-medium text-zinc-400 shadow-2xs">
+                Today
+              </span>
+            </div>
+
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex items-start gap-2.5 ${
+                className={`flex items-end gap-2 ${
                   msg.sender === 'user' ? 'justify-end' : 'justify-start'
                 }`}
               >
+                {/* Assistant Bot Avatar (Left side) */}
                 {msg.sender === 'assistant' && (
-                  <div className="w-6 h-6 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0 text-[11px] font-bold font-mono mt-0.5">
-                    AI
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary via-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-xs flex-shrink-0 mb-0.5">
+                    <Bot className="w-3.5 h-3.5" />
                   </div>
                 )}
 
-                {/* Compact Chat Pod */}
+                {/* WhatsApp / Instagram Speech Bubble */}
                 <div
-                  className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed transition-all ${
+                  className={`relative text-xs sm:text-sm leading-relaxed transition-all ${
                     msg.sender === 'user'
-                      ? 'bg-primary text-white shadow-md shadow-primary/20'
-                      : 'bg-surface border border-surface-border text-foreground shadow-sm'
+                      ? 'rounded-2xl rounded-tr-xs bg-primary text-white shadow-md shadow-primary/20 max-w-[85%] sm:max-w-[75%] px-3.5 py-2.5 ml-auto'
+                      : 'rounded-2xl rounded-tl-xs bg-surface dark:bg-[#181B26] border border-surface-border text-foreground shadow-sm max-w-[88%] sm:max-w-[80%] px-3.5 py-2.5'
                   }`}
                 >
                   <p className="whitespace-pre-line">{msg.text}</p>
@@ -2072,31 +2097,29 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                     </div>
                   )}
 
+                  {/* Message Timestamp & WhatsApp Double Checkmark */}
                   <div
-                    className={`text-[8px] mt-1.5 font-mono ${
-                      msg.sender === 'user' ? 'text-white/70 text-right' : 'text-zinc-400'
+                    className={`text-[9px] mt-1 font-mono flex items-center justify-end space-x-1 ${
+                      msg.sender === 'user' ? 'text-white/75' : 'text-zinc-400'
                     }`}
                   >
-                    {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    <span>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    {msg.sender === 'user' && (
+                      <span className="text-[10px] leading-none text-white/90">✓✓</span>
+                    )}
                   </div>
                 </div>
-
-                {msg.sender === 'user' && (
-                  <div className="w-6 h-6 rounded-full bg-surface-raised border border-surface-border flex items-center justify-center text-zinc-500 flex-shrink-0 text-xs font-bold mt-0.5">
-                    <User className="w-3 h-3" />
-                  </div>
-                )}
               </div>
             ))}
 
             {isProcessing && (
               <div className="flex items-center space-x-2 text-[11px] text-zinc-500 pl-1">
-                <div className="w-6 h-6 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
+                <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
                   <Sparkles className="w-3.5 h-3.5 animate-spin" />
                 </div>
-                <div className="flex items-center space-x-1.5 bg-surface border border-surface-border px-3 py-1.5 rounded-xl shadow-sm">
+                <div className="flex items-center space-x-1.5 bg-surface border border-surface-border px-3 py-1.5 rounded-2xl rounded-tl-xs shadow-xs">
                   <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
-                  <span>AI Agent reasoning & executing...</span>
+                  <span>MonAI is typing...</span>
                 </div>
               </div>
             )}
@@ -2104,17 +2127,17 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Sticky Bottom ChatGPT Input Bar */}
-          <div className="sticky bottom-4 z-40 w-full pt-2">
-            {/* Quick Mode Pills Row - Visible on Mobile for 100% full-width chat input */}
-            <div className="flex sm:hidden items-center justify-center gap-2 mb-1.5">
+          {/* WhatsApp / Instagram DM Sticky Bottom Bar */}
+          <div className="sticky bottom-2 sm:bottom-4 z-40 w-full pt-1">
+            {/* Quick Reply Chips Row - WhatsApp / Instagram Style */}
+            <div className="flex items-center justify-center gap-2 mb-1.5">
               <button
                 type="button"
                 onClick={() => handlePillClick('/expense ', activeInputRef)}
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-mono transition-all duration-150 ${
+                className={`flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-mono transition-all duration-150 ${
                   input.startsWith('/expense')
                     ? 'bg-rose-500 text-white font-semibold shadow-md shadow-rose-500/30 scale-[1.02]'
-                    : 'bg-surface-raised border border-surface-border text-rose-500 hover:bg-rose-500/10'
+                    : 'bg-surface-raised/95 hover:bg-rose-500/10 border border-surface-border text-rose-500'
                 }`}
                 title="Record Expense"
               >
@@ -2124,10 +2147,10 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
               <button
                 type="button"
                 onClick={() => handlePillClick('/income ', activeInputRef)}
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-mono transition-all duration-150 ${
+                className={`flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-mono transition-all duration-150 ${
                   input.startsWith('/income')
                     ? 'bg-emerald-500 text-white font-semibold shadow-md shadow-emerald-500/30 scale-[1.02]'
-                    : 'bg-surface-raised border border-surface-border text-emerald-500 hover:bg-emerald-500/10'
+                    : 'bg-surface-raised/95 hover:bg-emerald-500/10 border border-surface-border text-emerald-500'
                 }`}
                 title="Record Income"
               >
@@ -2141,51 +2164,23 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                 e.preventDefault();
                 handleSendMessage();
               }}
-              className="relative flex items-center bg-surface/90 backdrop-blur-md border border-surface-border focus-within:border-primary/80 rounded-3xl p-1.5 shadow-xl transition-all z-40"
+              className="relative flex items-center bg-surface/95 dark:bg-[#12141C]/95 backdrop-blur-xl border border-surface-border focus-within:border-primary/80 rounded-full p-1.5 shadow-xl transition-all z-40"
             >
               {renderSlashCommandPalette()}
               {renderSuggestionsDropdown('up')}
 
-              {/* Quick Mode Pills directly WITHIN the chat bar on desktop */}
-              <div className="hidden sm:flex items-center space-x-1.5 pl-1.5 sm:pl-2 flex-shrink-0">
-                <button
-                  type="button"
-                  onClick={() => handlePillClick('/expense ', activeInputRef)}
-                  className={`flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono transition-all duration-150 ${
-                    input.startsWith('/expense')
-                      ? 'bg-rose-500 text-white font-semibold shadow-sm shadow-rose-500/30'
-                      : 'bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 text-rose-500 hover:text-rose-400'
-                  }`}
-                  title="Record Expense"
-                >
-                  <ArrowDownRight className="w-3.5 h-3.5" />
-                  <span className="text-[11px] font-medium">/expense</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handlePillClick('/income ', activeInputRef)}
-                  className={`flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono transition-all duration-150 ${
-                    input.startsWith('/income')
-                      ? 'bg-emerald-500 text-white font-semibold shadow-sm shadow-emerald-500/30'
-                      : 'bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-500 hover:text-emerald-400'
-                  }`}
-                  title="Record Income"
-                >
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                  <span className="text-[11px] font-medium">/income</span>
-                </button>
-              </div>
-
-              {/* Mobile Leading Icon / Indicator */}
-              <div className="sm:hidden flex items-center pl-2.5 flex-shrink-0 text-zinc-400">
-                {input.startsWith('/expense') ? (
-                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                ) : input.startsWith('/income') ? (
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                ) : (
-                  <Sparkles className="w-3.5 h-3.5 text-primary/70" />
-                )}
-              </div>
+              {/* Slash Command Quick Trigger Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setInput('/');
+                  setTimeout(() => activeInputRef.current?.focus(), 10);
+                }}
+                className="w-8 h-8 rounded-full bg-surface-raised hover:bg-primary/10 border border-surface-border hover:border-primary/30 text-zinc-500 hover:text-primary flex items-center justify-center transition-all flex-shrink-0 ml-0.5"
+                title="Commands"
+              >
+                <Terminal className="w-3.5 h-3.5 text-primary" />
+              </button>
 
               <input
                 ref={activeInputRef}
@@ -2196,29 +2191,29 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                 disabled={isProcessing}
                 placeholder={
                   input.startsWith('/expense')
-                    ? "amount & description (e.g. 450 Team lunch)..."
+                    ? "amount & description (e.g. 450 lunch)..."
                     : input.startsWith('/income')
-                    ? "amount & description (e.g. 50000 Monthly Salary)..."
-                    : "Type / for commands or ask questions..."
+                    ? "amount & description (e.g. 50000 salary)..."
+                    : "Message MonAI or type /..."
                 }
-                className="w-full bg-transparent pl-2 sm:pl-3 pr-2 py-2 text-xs text-foreground placeholder-zinc-400 focus:outline-none"
+                className="w-full bg-transparent pl-2.5 sm:pl-3 pr-2 py-2 text-xs sm:text-sm text-foreground placeholder-zinc-400 focus:outline-none"
               />
 
               <button
                 type="button"
                 onClick={() => setIsGuideOpen(true)}
-                className="p-1.5 rounded-xl text-zinc-600 dark:text-zinc-300 hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20 transition-colors flex-shrink-0 mr-1"
-                title="Open MonAI Guide"
+                className="p-1.5 rounded-full text-zinc-400 hover:text-primary hover:bg-primary/10 transition-colors flex-shrink-0 mr-1"
+                title="MonAI Guide"
               >
-                <BookOpen className="w-3.5 h-3.5" />
+                <BookOpen className="w-4 h-4" />
               </button>
 
               <button
                 type="submit"
                 disabled={!input.trim() || isProcessing}
-                className="p-2 rounded-2xl bg-primary hover:bg-primary-600 disabled:opacity-30 text-white transition-all shadow-md shadow-primary/25 flex-shrink-0"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary hover:bg-primary-600 disabled:opacity-30 text-white transition-all shadow-md shadow-primary/25 flex items-center justify-center flex-shrink-0 active:scale-95"
               >
-                <Send className="w-3.5 h-3.5" />
+                <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-0.5" />
               </button>
             </form>
           </div>
