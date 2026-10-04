@@ -435,14 +435,14 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     if (!isSlashActive || filteredSlashCommands.length === 0) return null;
 
     return (
-      <div className="absolute bottom-full mb-2.5 left-0 right-0 sm:left-1 sm:right-1 bg-[#12141C]/95 backdrop-blur-xl border border-[#262A3B] rounded-2xl shadow-2xl overflow-hidden p-1.5 z-40 text-left transition-all animate-in fade-in slide-in-from-bottom-2 duration-150">
-        <div className="flex items-center justify-between px-3 py-1.5 border-b border-[#262A3B]/60 mb-1">
-          <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 flex items-center space-x-1.5 font-semibold">
-            <Terminal className="w-3 h-3 text-primary" />
+      <div className="absolute bottom-full mb-2.5 left-0 right-0 sm:left-1 sm:right-1 bg-surface/95 backdrop-blur-xl border border-surface-border rounded-2xl shadow-2xl overflow-hidden p-1.5 z-40 text-left transition-all animate-in fade-in slide-in-from-bottom-2 duration-150">
+        <div className="flex items-center justify-between px-3 py-1.5 border-b border-surface-border/70 mb-1">
+          <span className="text-[10px] font-mono uppercase tracking-wider text-foreground flex items-center space-x-1.5 font-bold">
+            <Terminal className="w-3.5 h-3.5 text-primary" />
             <span>Slash Commands</span>
           </span>
-          <span className="text-[10px] font-mono text-zinc-500">
-            Claude Code Mode
+          <span className="text-[10px] font-mono text-primary font-semibold px-1.5 py-0.5 rounded-md bg-primary/10 border border-primary/20">
+            MonAI Engine
           </span>
         </div>
 
@@ -458,28 +458,28 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                   selectSlashCommand(cmd);
                 }}
                 onMouseEnter={() => setSelectedSlashIndex(idx)}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all text-xs ${
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all text-xs cursor-pointer ${
                   isSelected
-                    ? 'bg-primary/20 border border-primary/35 text-white shadow-sm'
-                    : 'border border-transparent text-zinc-400 hover:text-white hover:bg-surface-raised'
+                    ? 'bg-primary/10 border border-primary/30 text-foreground shadow-2xs'
+                    : 'border border-transparent text-zinc-600 dark:text-zinc-300 hover:text-foreground hover:bg-surface-raised'
                 }`}
               >
                 <div className="flex items-center space-x-2.5 min-w-0">
                   <div
                     className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
                       cmd.iconType === 'income'
-                        ? 'bg-emerald-500/15 text-emerald-400'
+                        ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
                         : cmd.iconType === 'expense'
-                        ? 'bg-rose-500/15 text-rose-400'
+                        ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
                         : cmd.iconType === 'category'
-                        ? 'bg-indigo-500/15 text-indigo-400'
+                        ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400'
                         : cmd.iconType === 'summary'
-                        ? 'bg-sky-500/15 text-sky-400'
+                        ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400'
                         : cmd.iconType === 'recent'
-                        ? 'bg-purple-500/15 text-purple-400'
+                        ? 'bg-purple-500/15 text-purple-600 dark:text-purple-400'
                         : cmd.iconType === 'help'
-                        ? 'bg-amber-500/15 text-amber-400'
-                        : 'bg-zinc-500/15 text-zinc-400'
+                        ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+                        : 'bg-zinc-500/15 text-zinc-600 dark:text-zinc-400'
                     }`}
                   >
                     {cmd.iconType === 'income' && <ArrowUpRight className="w-4 h-4" />}
@@ -493,10 +493,10 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
 
                   <div className="truncate">
                     <div className="flex items-center space-x-2">
-                      <span className="font-mono font-bold text-white text-xs">{cmd.command}</span>
-                      <span className="text-[10px] font-mono text-zinc-500 truncate">{cmd.syntax.replace(cmd.command, '').trim()}</span>
+                      <span className="font-mono font-bold text-foreground text-xs">{cmd.command}</span>
+                      <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500 truncate">{cmd.syntax.replace(cmd.command, '').trim()}</span>
                     </div>
-                    <div className="text-[10px] text-zinc-400 truncate">{cmd.description}</div>
+                    <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">{cmd.description}</div>
                   </div>
                 </div>
 
@@ -515,10 +515,10 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
           })}
         </div>
 
-        <div className="px-3 py-1.5 border-t border-[#262A3B]/60 mt-1 flex items-center justify-between text-[9px] font-mono text-zinc-500">
-          <span>Use <strong className="text-zinc-400">↑ ↓</strong> to navigate</span>
-          <span><strong className="text-zinc-400">Tab</strong> or <strong className="text-zinc-400">Enter</strong> to select</span>
-          <span><strong className="text-zinc-400">Esc</strong> to dismiss</span>
+        <div className="px-3 py-1.5 border-t border-surface-border/70 mt-1 flex items-center justify-between text-[9px] font-mono text-zinc-400 dark:text-zinc-500">
+          <span>Use <strong className="text-foreground">↑ ↓</strong> to navigate</span>
+          <span><strong className="text-foreground">Tab</strong> or <strong className="text-foreground">Enter</strong> to select</span>
+          <span><strong className="text-foreground">Esc</strong> to dismiss</span>
         </div>
       </div>
     );
@@ -536,7 +536,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     if (paymentTriggerMatch && filteredPaymentMethods.length > 0 && !isPaymentDismissed) {
       return (
         <div
-          className={`absolute ${positionClasses} left-0 right-0 sm:left-2 sm:right-auto sm:w-72 max-w-sm bg-surface/95 dark:bg-[#12141C]/95 backdrop-blur-xl border border-surface-border dark:border-[#262A3B] rounded-2xl shadow-2xl p-1.5 z-50 text-left transition-all`}
+          className={`absolute ${positionClasses} left-0 right-0 sm:left-2 sm:right-auto sm:w-72 max-w-sm bg-surface/95 backdrop-blur-xl border border-surface-border rounded-2xl shadow-2xl p-1.5 z-50 text-left transition-all`}
         >
           <div className="max-h-56 overflow-y-auto space-y-0.5 custom-scrollbar">
             {filteredPaymentMethods.map((p, idx) => {
@@ -550,7 +550,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                     selectPaymentSuggestion(p);
                   }}
                   onMouseEnter={() => setSelectedPaymentIndex(idx)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all text-xs ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-all text-xs cursor-pointer ${
                     isSelected
                       ? 'bg-primary/15 border border-primary/30 text-primary font-medium shadow-2xs'
                       : 'border border-transparent text-zinc-600 dark:text-zinc-300 hover:text-foreground hover:bg-surface-raised'
@@ -580,7 +580,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     if (categoryTriggerMatch && filteredCategories.length > 0 && !isCategoryDismissed) {
       return (
         <div
-          className={`absolute ${positionClasses} left-0 right-0 sm:left-2 sm:right-auto sm:w-72 max-w-sm bg-surface/95 dark:bg-[#12141C]/95 backdrop-blur-xl border border-surface-border dark:border-[#262A3B] rounded-2xl shadow-2xl p-1.5 z-50 text-left transition-all`}
+          className={`absolute ${positionClasses} left-0 right-0 sm:left-2 sm:right-auto sm:w-72 max-w-sm bg-surface/95 backdrop-blur-xl border border-surface-border rounded-2xl shadow-2xl p-1.5 z-50 text-left transition-all`}
         >
           <div className="max-h-56 overflow-y-auto space-y-0.5 custom-scrollbar">
             {filteredCategories.map((cat, idx) => {
