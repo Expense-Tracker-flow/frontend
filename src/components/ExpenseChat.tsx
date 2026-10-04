@@ -307,21 +307,21 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     const q = categoryTriggerMatch.query;
 
     const lowerInput = input.toLowerCase();
-    const isIncomeHint = lowerInput.startsWith('/income') ||
-      lowerInput.includes('salary') ||
-      lowerInput.includes('received') ||
-      lowerInput.includes('earned') ||
-      lowerInput.includes('income');
+    const isIncomeHint =
+      lowerInput.startsWith('/income') ||
+      /\b(salary|received|earned|credited|bonus|freelance|dividend|refund|interest|income)\b/i.test(lowerInput);
 
     const targetType: TransactionType = isIncomeHint ? 'INCOME' : 'EXPENSE';
 
-    let list = categories;
-    const hasGeneral = list.some((c) => c.name.toLowerCase() === 'general');
-    if (!hasGeneral) {
+    // Strictly show ONLY categories matching the active transaction type (INCOME vs EXPENSE)
+    let list = categories.filter((c) => c.type === targetType);
+
+    const generalCat = list.find((c) => c.name.toLowerCase() === 'general');
+    if (!generalCat) {
       const fallbackGeneral: Category = {
         id: `general-${targetType.toLowerCase()}`,
         name: 'General',
-        color: '#64748B',
+        color: targetType === 'INCOME' ? '#10B981' : '#64748B',
         icon: 'tag',
         type: targetType,
         isSystem: true,
@@ -339,16 +339,8 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       // General always at top of options
       if (a.name.toLowerCase() === 'general') return -1;
       if (b.name.toLowerCase() === 'general') return 1;
-
-      if (isIncomeHint) {
-        if (a.type === 'INCOME' && b.type !== 'INCOME') return -1;
-        if (a.type !== 'INCOME' && b.type === 'INCOME') return 1;
-      } else {
-        if (a.type === 'EXPENSE' && b.type !== 'EXPENSE') return -1;
-        if (a.type !== 'EXPENSE' && b.type === 'EXPENSE') return 1;
-      }
       return a.name.localeCompare(b.name);
-    }).slice(0, 12);
+    });
   }, [categoryTriggerMatch, categories, input]);
 
   useEffect(() => {
