@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Zap, 
+  Zap,
   Plus, 
   Calendar, 
   ArrowUpRight, 
@@ -62,11 +62,6 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
   const totalAutomatedIncome = activeRules
     .filter((r) => r.type === 'INCOME')
     .reduce((acc, r) => acc + r.amount, 0);
-
-  const netAutomated = totalAutomatedIncome - totalAutomatedExpenses;
-  const outflowRatio = totalAutomatedIncome > 0 
-    ? Math.min(100, Math.round((totalAutomatedExpenses / totalAutomatedIncome) * 100))
-    : totalAutomatedExpenses > 0 ? 100 : 0;
 
   // Preset templates
   const presets = [
@@ -223,8 +218,8 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
         </button>
       </div>
 
-      {/* 2. Top Metric & Health Pulse Cards (2-col grid on mobile, 3-col on lg) */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3.5">
+      {/* 2. Top Metric Cards (Scheduled Out & Scheduled In) */}
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
         {/* Scheduled Outflows */}
         <div className="relative overflow-hidden bg-surface border border-surface-border/90 rounded-2xl p-3 sm:p-5 shadow-sm hover:border-rose-500/30 transition-all group flex flex-col justify-between">
           <div>
@@ -264,42 +259,6 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
           <div className="mt-2 flex items-center justify-between text-[10px] sm:text-[11px] text-zinc-500 font-mono">
             <span>{activeRules.filter((r) => r.type === 'INCOME').length} inflows</span>
             <span className="text-emerald-500 font-semibold hidden sm:inline">Monthly In</span>
-          </div>
-        </div>
-
-        {/* Net Monthly Auto Pulse (Spans 2 columns on mobile for a sleek balanced look) */}
-        <div className="col-span-2 lg:col-span-1 relative overflow-hidden bg-surface border border-surface-border/90 rounded-2xl p-3.5 sm:p-5 shadow-sm hover:border-primary/40 transition-all group">
-          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-            <span className="text-[10px] sm:text-[11px] font-mono font-bold uppercase tracking-wider text-zinc-400">
-              Net Monthly Auto Pulse
-            </span>
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20 group-hover:scale-110 transition-transform flex-shrink-0">
-              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </div>
-          </div>
-          
-          <div className="flex flex-col justify-between">
-            <div className={`text-xl sm:text-2xl lg:text-3xl font-black font-mono tracking-tight ${netAutomated >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-              {netAutomated >= 0 ? '+' : '-'}{currencySymbol}{Math.abs(netAutomated).toLocaleString('en-IN', { minimumFractionDigits: 0 })}
-            </div>
-            
-            {/* Cashflow Ratio Indicator */}
-            <div className="mt-2 sm:mt-2.5 space-y-1">
-              <div className="w-full bg-surface-raised h-1.5 sm:h-2 rounded-full overflow-hidden flex">
-                <div 
-                  className="bg-rose-500 transition-all duration-500 rounded-l-full" 
-                  style={{ width: `${outflowRatio}%` }} 
-                />
-                <div 
-                  className="bg-emerald-500 transition-all duration-500 rounded-r-full" 
-                  style={{ width: `${100 - outflowRatio}%` }} 
-                />
-              </div>
-              <div className="flex items-center justify-between text-[10px] font-mono text-zinc-400">
-                <span>{outflowRatio}% Outflow</span>
-                <span>{100 - outflowRatio}% Retained</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
