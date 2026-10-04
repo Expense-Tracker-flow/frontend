@@ -642,29 +642,43 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     const GUIDE_ITEMS = {
       nlp: [
         {
-          syntax: 'Yesterday spent 250 on pizza using UPI',
+          syntax: '/expense 450 for Food & Dining by UPI',
+          desc: 'Use "for" for Category and "by" for Payment Type',
+          badge: 'Smart Log',
+          badgeStyle: 'bg-primary/10 text-primary border border-primary/20',
+          autoRun: false,
+        },
+        {
+          syntax: '/income 75000 for Salary & Inflows by Bank Transfer',
+          desc: 'Directly set category with "for" and payment with "by"',
+          badge: 'Smart Log',
+          badgeStyle: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
+          autoRun: false,
+        },
+        {
+          syntax: 'Spent 250 on pizza for Food & Dining by UPI',
           desc: 'Records ₹250 under Food & Dining with UPI payment',
           badge: 'Expense',
           badgeStyle: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20',
           autoRun: false,
         },
         {
-          syntax: 'Salary credited 75000 in bank',
+          syntax: 'Salary credited 75000 for Salary by Bank',
           desc: 'Records ₹75,000 under Salary & Inflows via Bank Transfer',
           badge: 'Income',
           badgeStyle: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
           autoRun: false,
         },
         {
-          syntax: 'Bought groceries 1200 with credit card',
-          desc: 'Records ₹1,200 under Groceries with Credit Card',
+          syntax: 'Bought groceries 1200 for Groceries by Cash',
+          desc: 'Records ₹1,200 under Groceries paid in Cash',
           badge: 'Expense',
           badgeStyle: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20',
           autoRun: false,
         },
         {
-          syntax: 'Friend sent 500 cash for lunch',
-          desc: 'Records ₹500 reimbursement as Cash Income',
+          syntax: 'Friend sent 500 for General by UPI',
+          desc: 'Records ₹500 reimbursement under General category via UPI',
           badge: 'Income',
           badgeStyle: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
           autoRun: false,
@@ -672,15 +686,15 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       ],
       slash: [
         {
-          syntax: '/expense 450 Team lunch at cafe',
-          desc: 'Quickly logs an expense with automatic category deduction',
+          syntax: '/expense 450 for Food & Dining by UPI',
+          desc: 'Logs expense using "for" for category and "by" for payment',
           badge: 'Shortcut',
           badgeStyle: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20',
           autoRun: false,
         },
         {
-          syntax: '/income 50000 Monthly salary',
-          desc: 'Directly records incoming money or salary',
+          syntax: '/income 50000 for Salary by Bank Transfer',
+          desc: 'Logs income using "for" for category and "by" for payment',
           badge: 'Shortcut',
           badgeStyle: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
           autoRun: false,
@@ -850,16 +864,20 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
             <div className="px-5 sm:px-6 py-2.5 bg-primary/5 border-b border-primary/10 flex items-center space-x-2 text-xs text-zinc-600 dark:text-zinc-300 flex-shrink-0">
               <Sparkles className="w-3.5 h-3.5 text-primary flex-shrink-0" />
               {guideTab === 'nlp' && (
-                <span>Type naturally like texting a friend. Amounts, categories & payment methods are detected automatically.</span>
+                <span>
+                  💡 <strong>Smart Chat Syntax:</strong> Use <code className="font-mono text-primary font-bold">for</code> for Category (e.g. <em>for Food</em>) and <code className="font-mono text-primary font-bold">by</code> for Payment Type (e.g. <em>by UPI</em>).
+                </span>
               )}
               {guideTab === 'slash' && (
-                <span>Type <code className="font-mono text-primary font-bold">/</code> in chat anytime to quickly pick command shortcuts.</span>
+                <span>
+                  Type <code className="font-mono text-primary font-bold">/expense 450 for &lt;Category&gt; by &lt;Payment&gt;</code> or type <code className="font-mono text-primary font-bold">/</code> for shortcut commands.
+                </span>
               )}
               {guideTab === 'auto' && (
-                <span>Tell FIN-XL to schedule recurring expenses like monthly rent, subscriptions, or bills.</span>
+                <span>Schedule recurring transactions anytime (e.g. <em>Rent 15000 on 5th of every month</em>).</span>
               )}
               {guideTab === 'query' && (
-                <span>Ask questions anytime to view your live balance, recent spending, or category breakdowns.</span>
+                <span>Ask questions anytime to view live balance, spending summary, or category breakdowns.</span>
               )}
             </div>
 
@@ -1171,6 +1189,23 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
   const resolveCategory = (text: string, type: TransactionType): string => {
     const lower = text.toLowerCase();
 
+    // 0. Explicit match: user typed "for <category>" or "on <category>"
+    const forMatch = text.match(/\b(?:for|on)\s+([^,.;\n]+?)(?:\s+(?:by|via|using|through|with)\b|$)/i);
+    if (forMatch && forMatch[1]) {
+      const explicitCat = forMatch[1].trim().toLowerCase();
+      const matched = categories.find(
+        (c) => c.name.toLowerCase() === explicitCat && c.type === type
+      ) || categories.find(
+        (c) => c.name.toLowerCase() === explicitCat
+      ) || categories.find(
+        (c) => (explicitCat.includes(c.name.toLowerCase()) || c.name.toLowerCase().includes(explicitCat)) && c.type === type
+      ) || categories.find(
+        (c) => explicitCat.includes(c.name.toLowerCase()) || c.name.toLowerCase().includes(explicitCat)
+      );
+
+      if (matched) return matched.name;
+    }
+
     if (type === 'INCOME') {
       if (lower.includes('freelance') || lower.includes('project') || lower.includes('client') || lower.includes('contract')) return 'Freelance';
       if (lower.includes('dividend') || lower.includes('stock') || lower.includes('interest') || lower.includes('crypto')) return 'Investments';
@@ -1195,7 +1230,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       }
     }
 
-    return 'Miscellaneous';
+    return 'General';
   };
 
   // Helper 5: Clean Description Title with Proper Spacing
@@ -1207,17 +1242,20 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       .replace(/\b(?:yesterday|today|day before yesterday|\d+\s*days?\s*ago)\b/gi, ' ')
       // 2. Remove currency amounts with strict non-empty digit match
       .replace(/(?:₹|\$|€|£|rs\.?|inr)?\s*(?:\b\d+(?:,\d+)*(?:\.\d+)?\s*(?:k|thousand)?|\b\d+k\b)/gi, ' ')
-      // 3. Remove payment methods
-      .replace(/\b(?:by|via|with|using|through)?\s*(?:upi|cash|credit\s*card|debit\s*card|card|gpay|paytm|phonepe|netbanking|bank\s*transfer)\b/gi, ' ')
+      // 3. Remove payment methods (including "by ...")
+      .replace(/\b(?:by|via|with|using|through)\s+(?:upi|cash|credit\s*card|debit\s*card|card|gpay|paytm|phonepe|netbanking|bank\s*transfer)\b/gi, ' ')
+      .replace(/\b(?:upi|cash|credit\s*card|debit\s*card|card|gpay|paytm|phonepe|netbanking|bank\s*transfer)\b/gi, ' ')
+      // 3.5 Remove "for <category>" explicitly from title so description stays neat
+      .replace(/\b(?:for|on)\s+[^,.;\n]+?(?=\s+(?:by|via|with|using|through)\b|$)/gi, ' ')
       // 4. Remove leading verbs and keywords
       .replace(/^\s*(?:i\s+)?(?:spent|paid|bought|received|got|added|recorded|purchase|purchased|income|expense|inflow)\s+(?:on|for|a|an|from|of)?\s*/i, ' ')
       // 5. Remove trailing prepositions
-      .replace(/\b(?:for|on|at|in|to|from)\s*$/gi, ' ')
+      .replace(/\b(?:for|on|at|in|to|from|by)\s*$/gi, ' ')
       // 6. Collapse spaces cleanly
       .replace(/\s+/g, ' ')
       .trim();
 
-    if (!title || title.length < 2 || title.toLowerCase() === 'for' || title.toLowerCase() === 'on') {
+    if (!title || title.length < 2 || title.toLowerCase() === 'for' || title.toLowerCase() === 'on' || title.toLowerCase() === 'by') {
       return categoryFallback;
     }
     return title.charAt(0).toUpperCase() + title.slice(1);
@@ -1230,17 +1268,20 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     // 0. SLASH COMMAND: /help
     if (q === '/help' || q === 'help') {
       return {
-        text: `Here are the available **FIN-XL Slash Commands** & syntax:\n\n` +
-          `• **/income <amount> <description>** — Record incoming salary or money\n` +
-          `  *Example: \`/income 50000 Monthly Salary from Posibolt\`*\n\n` +
-          `• **/expense <amount> <description>** — Record outgoing spending or bill\n` +
-          `  *Example: \`/expense 450 Team lunch at cafe\`*\n\n` +
+        text: `Here are the available **MonAI Chat Commands & Knowledge**:\n\n` +
+          `💡 **Smart Keywords:**\n` +
+          `• Use **\`for\`** to specify **Category** (e.g. *for Food & Dining*, *for Groceries*, *for General*)\n` +
+          `• Use **\`by\`** to specify **Payment Type** (e.g. *by UPI*, *by Cash*, *by Card*, *by Bank Transfer*)\n\n` +
+          `• **/expense <amount> for <category> by <payment>** — Record outgoing expense\n` +
+          `  *Example: \`/expense 450 for Food & Dining by UPI\`*\n\n` +
+          `• **/income <amount> for <category> by <payment>** — Record incoming money\n` +
+          `  *Example: \`/income 50000 for Salary & Inflows by Bank Transfer\`*\n\n` +
           `• **/category <name>** — Create a new custom category\n` +
           `  *Example: \`/category Freelance Project\`*\n\n` +
           `• **/summary** — View total balance, income, expenses & savings rate\n\n` +
           `• **/recent** — List your latest recorded transactions\n\n` +
           `• **/clear** — Clear chat history\n\n` +
-          `💡 *Tip: Simply type \`/\` in the chat input to open the Claude Code command palette!*`
+          `💡 *Tip: As you type \`for\` or \`by\`, live suggestions will appear right in the search bar!*`
       };
     }
 
@@ -1607,11 +1648,18 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     const { dateStr, label: dateLabel } = extractDate(queryText);
 
     let paymentMethod = 'CASH';
-    if (q.includes('upi') || q.includes('gpay') || q.includes('phonepe') || q.includes('paytm')) paymentMethod = 'UPI';
+    const byMatch = queryText.match(/\b(?:by|via|through|using)\s+([^,.;\n]+)/i);
+    const methodSearchText = (byMatch ? byMatch[1] : queryText).toLowerCase();
+
+    if (methodSearchText.includes('upi') || methodSearchText.includes('gpay') || methodSearchText.includes('phonepe') || methodSearchText.includes('paytm')) paymentMethod = 'UPI';
+    else if (methodSearchText.includes('debit')) paymentMethod = 'DEBIT_CARD';
+    else if (methodSearchText.includes('credit') || methodSearchText.includes('card')) paymentMethod = 'CREDIT_CARD';
+    else if (methodSearchText.includes('bank') || methodSearchText.includes('transfer') || methodSearchText.includes('netbanking')) paymentMethod = 'BANK_TRANSFER';
+    else if (methodSearchText.includes('cash')) paymentMethod = 'CASH';
+    else if (q.includes('upi') || q.includes('gpay') || q.includes('phonepe') || q.includes('paytm')) paymentMethod = 'UPI';
     else if (q.includes('debit')) paymentMethod = 'DEBIT_CARD';
-    else if (q.includes('card') || q.includes('credit')) paymentMethod = 'CREDIT_CARD';
+    else if (q.includes('credit') || q.includes('card')) paymentMethod = 'CREDIT_CARD';
     else if (q.includes('bank') || q.includes('transfer') || q.includes('netbanking')) paymentMethod = 'BANK_TRANSFER';
-    else if (q.includes('cash')) paymentMethod = 'CASH';
 
     const generalCat = categories.find((c) => c.name.toLowerCase() === 'general' && c.type === type) ||
       categories.find((c) => c.name.toLowerCase() === 'general');
@@ -1709,7 +1757,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
               What happened with your money today?
             </h1>
             <p className="text-xs sm:text-base text-zinc-500 max-w-lg mx-auto">
-              Ask questions about your balance, analyze spending, or log any expense/income in natural language.
+              Ask questions or log transactions. Use <span className="text-primary font-mono font-semibold">for</span> for category &amp; <span className="text-primary font-mono font-semibold">by</span> for payment type (e.g. <em>450 for Food by UPI</em>).
             </p>
           </div>
 
@@ -1805,10 +1853,10 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                 disabled={isProcessing}
                 placeholder={
                   input.startsWith('/expense')
-                    ? "amount & description (e.g. 450 Team lunch)..."
+                    ? "amount (e.g. 450 for Food by UPI)..."
                     : input.startsWith('/income')
-                    ? "amount & description (e.g. 50000 Monthly Salary)..."
-                    : "Type / for commands or ask anything..."
+                    ? "amount (e.g. 50000 for Salary by Bank)..."
+                    : "e.g. 250 for Snacks by Cash (or type /)..."
                 }
                 className="w-full bg-transparent pl-2 sm:pl-3 pr-2 py-2 sm:py-2.5 text-xs sm:text-sm text-foreground placeholder-zinc-400 focus:outline-none"
               />
@@ -2191,10 +2239,10 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                 disabled={isProcessing}
                 placeholder={
                   input.startsWith('/expense')
-                    ? "amount & description (e.g. 450 lunch)..."
+                    ? "amount (e.g. 450 for Food by UPI)..."
                     : input.startsWith('/income')
-                    ? "amount & description (e.g. 50000 salary)..."
-                    : "Message MonAI or type /..."
+                    ? "amount (e.g. 50000 for Salary by Bank)..."
+                    : "e.g. 300 for Groceries by UPI (or type /)..."
                 }
                 className="w-full bg-transparent pl-2.5 sm:pl-3 pr-2 py-2 text-xs sm:text-sm text-foreground placeholder-zinc-400 focus:outline-none"
               />
