@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Sun, Moon, DollarSign, CheckCircle2, Save, ArrowLeft, Shield, Palette, Globe } from 'lucide-react';
+import { Settings as SettingsIcon, Sun, Moon, DollarSign, CheckCircle2, Save, ArrowLeft, Shield, Palette, Globe, Smartphone, Download } from 'lucide-react';
 import { UserProfile } from '../lib/types';
 import { api } from '../lib/api';
 
@@ -25,6 +25,35 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isStandalone, setIsStandalone] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
+      setIsStandalone(isStandaloneMode);
+
+      const handleBeforeInstall = (e: any) => {
+        e.preventDefault();
+        setDeferredPrompt(e);
+      };
+
+      window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+      return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+    }
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const choiceResult = await deferredPrompt.userChoice;
+      if (choiceResult.outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    } else {
+      alert("To install on iOS Safari: Tap the Share button (⎋) and select 'Add to Home Screen'.\n\nOn Chrome or Edge: Click the install icon in the address bar.");
+    }
+  };
 
   useEffect(() => {
     setCurrency(user.currency || 'INR');
@@ -193,6 +222,43 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* PWA App Installation Section */}
+          <div className="space-y-3 pt-4 border-t border-surface-border">
+            <div className="flex items-center space-x-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+              <Smartphone className="w-4 h-4 text-blue-500" />
+              <span>Progressive Web App</span>
+            </div>
+
+            <div className="p-4 rounded-2xl border border-surface-border bg-surface-raised flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="text-xs font-bold text-foreground flex items-center gap-2">
+                  <span>FIN-XL Standalone App</span>
+                  {isStandalone && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                      Installed
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-zinc-400 mt-1">
+                  {isStandalone 
+                    ? 'You are running FIN-XL as an installed standalone app.' 
+                    : 'Install FIN-XL on your phone home screen or desktop for full-screen access.'}
+                </p>
+              </div>
+
+              {!isStandalone && (
+                <button
+                  type="button"
+                  onClick={handleInstallClick}
+                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center space-x-2 transition-all shadow-md shadow-blue-500/20 flex-shrink-0"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Install App</span>
+                </button>
+              )}
             </div>
           </div>
 
