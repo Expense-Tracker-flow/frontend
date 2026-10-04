@@ -29,7 +29,8 @@ import {
   Check,
   Lightbulb,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  ArrowRight
 } from 'lucide-react';
 import { Category, Transaction, TransactionType, DashboardSummary, AutomationRule } from '../lib/types';
 import { api } from '../lib/api';
@@ -364,148 +365,117 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     if (!isGuideOpen) return null;
 
     const GUIDE_ITEMS = {
-      slash: [
+      nlp: [
         {
-          title: 'Record Income',
-          syntax: '/income 50000 Monthly Salary from Posibolt',
-          desc: 'Explicitly logs incoming funds or salary. Bypasses NLP guessing and guarantees type is always recorded as INCOME.',
-          badge: 'INCOME',
-          badgeColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+          syntax: 'Yesterday spent 250 on pizza using UPI',
+          desc: 'Records ₹250 under Food & Dining with UPI payment',
+          badge: 'Expense',
+          badgeStyle: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20',
           autoRun: false,
         },
         {
-          title: 'Record Expense',
-          syntax: '/expense 450 Team lunch at cafe',
-          desc: 'Instantly logs an expense with automatic category deduction (e.g. Food & Dining) and payment method tagging.',
-          badge: 'EXPENSE',
-          badgeColor: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+          syntax: 'Salary credited 75000 in bank',
+          desc: 'Records ₹75,000 under Salary & Inflows via Bank Transfer',
+          badge: 'Income',
+          badgeStyle: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
           autoRun: false,
         },
         {
-          title: 'Create Category',
-          syntax: '/category Freelance income',
-          desc: 'Creates a brand new custom category for either income or expense directly from conversation.',
-          badge: 'CONFIG',
-          badgeColor: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30',
+          syntax: 'Bought groceries 1200 with credit card',
+          desc: 'Records ₹1,200 under Groceries with Credit Card',
+          badge: 'Expense',
+          badgeStyle: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20',
           autoRun: false,
         },
         {
-          title: 'Financial Summary',
-          syntax: '/summary',
-          desc: 'Fetches your month-to-date total income, total spending, net balance, and savings rate in a visual card.',
-          badge: 'SNAPSHOT',
-          badgeColor: 'bg-sky-500/15 text-sky-400 border-sky-500/30',
-          autoRun: true,
-        },
-        {
-          title: 'Recent Activity',
-          syntax: '/recent',
-          desc: 'Displays your latest 5 logged transactions with dates, categories, payment methods, and amounts.',
-          badge: 'TIMELINE',
-          badgeColor: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
-          autoRun: true,
-        },
-        {
-          title: 'Quick Command Help',
-          syntax: '/help',
-          desc: 'Shows an inline quick-reference list of all available slash commands in chat.',
-          badge: 'DOCS',
-          badgeColor: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-          autoRun: true,
-        },
-        {
-          title: 'Clear Session',
-          syntax: '/clear',
-          desc: 'Resets the chat window and cleans stored local message history.',
-          badge: 'UTILITY',
-          badgeColor: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/30',
+          syntax: 'Friend sent 500 cash for lunch',
+          desc: 'Records ₹500 reimbursement as Cash Income',
+          badge: 'Income',
+          badgeStyle: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
           autoRun: false,
         },
       ],
-      nlp: [
+      slash: [
         {
-          title: 'Natural Expense with Payment Method',
-          syntax: 'Yesterday spent 250 on pizza using UPI',
-          desc: 'FLOW extracts Amount (₹250), Category (Food), Date (Yesterday), and Payment Method (UPI) automatically.',
-          badge: 'EXPENSE',
-          badgeColor: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+          syntax: '/expense 450 Team lunch at cafe',
+          desc: 'Quickly logs an expense with automatic category deduction',
+          badge: 'Shortcut',
+          badgeStyle: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20',
           autoRun: false,
         },
         {
-          title: 'Income Recognition via Keywords',
-          syntax: 'Salary credited 75000 in bank',
-          desc: 'Keywords like "credited", "salary", "earned", "income", or "received" automatically set transaction type to INCOME.',
-          badge: 'INCOME',
-          badgeColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+          syntax: '/income 50000 Monthly salary',
+          desc: 'Directly records incoming money or salary',
+          badge: 'Shortcut',
+          badgeStyle: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
           autoRun: false,
         },
         {
-          title: 'Peer Payments & Cash Reimbursements',
-          syntax: 'Friend paid me back 500 in cash',
-          desc: 'Recognizes inbound money and assigns Cash as payment method and Income as type.',
-          badge: 'INCOME',
-          badgeColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-          autoRun: false,
+          syntax: '/summary',
+          desc: 'Shows this month\'s total income, spending, and net balance',
+          badge: 'Instant',
+          badgeStyle: 'bg-primary/10 text-primary border border-primary/20',
+          autoRun: true,
         },
         {
-          title: 'Credit Card Purchases',
-          syntax: 'Bought laptop 65000 with credit card',
-          desc: 'Extracts high-ticket purchase, classifies as Electronics / Shopping, and tags Credit Card.',
-          badge: 'EXPENSE',
-          badgeColor: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+          syntax: '/recent',
+          desc: 'Shows your latest 5 logged transactions with dates and categories',
+          badge: 'Instant',
+          badgeStyle: 'bg-primary/10 text-primary border border-primary/20',
+          autoRun: true,
+        },
+        {
+          syntax: '/category Freelance',
+          desc: 'Creates a brand new custom category straight from chat',
+          badge: 'Setup',
+          badgeStyle: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20',
           autoRun: false,
         },
       ],
       auto: [
         {
-          title: 'Recurring Monthly Rent',
           syntax: 'Recurring rent 15000 every month on day 5',
-          desc: 'Creates a recurring automation rule that triggers automatically on the 5th of every month.',
-          badge: 'AUTOMATION',
-          badgeColor: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+          desc: 'Schedules a monthly rule for house rent on the 5th',
+          badge: 'Monthly',
+          badgeStyle: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20',
           autoRun: false,
         },
         {
-          title: 'Digital Subscription Tracking',
           syntax: 'Subscription Netflix 649 every month',
-          desc: 'Sets up a monthly subscription automation rule so you never forget recurring SaaS bills.',
-          badge: 'SUBSCRIPTION',
-          badgeColor: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30',
+          desc: 'Tracks recurring entertainment subscriptions automatically',
+          badge: 'Subscription',
+          badgeStyle: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20',
           autoRun: false,
         },
         {
-          title: 'Utility Bills',
           syntax: 'Monthly electricity bill 2200 on day 10',
-          desc: 'Schedules recurring utility bills into your automated rules list.',
-          badge: 'UTILITY',
-          badgeColor: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
+          desc: 'Auto-schedules recurring utility bills into your rules list',
+          badge: 'Utility',
+          badgeStyle: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20',
           autoRun: false,
         },
       ],
       query: [
         {
-          title: 'Live Net Balance',
           syntax: 'What is my current balance?',
-          desc: 'Retrieves your real-time total income, expenses, and current cash balance directly from your dashboard.',
-          badge: 'INSIGHT',
-          badgeColor: 'bg-sky-500/15 text-sky-400 border-sky-500/30',
+          desc: 'Shows your live balance, month income, and spending',
+          badge: 'Balance',
+          badgeStyle: 'bg-primary/10 text-primary border border-primary/20',
           autoRun: true,
         },
         {
-          title: 'Recent Expense Insights',
           syntax: 'Show my latest expenses',
-          desc: 'Queries your recent activity stream and returns the latest records.',
-          badge: 'QUERY',
-          badgeColor: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+          desc: 'Retrieves your recent spending history in a glance',
+          badge: 'Activity',
+          badgeStyle: 'bg-primary/10 text-primary border border-primary/20',
           autoRun: true,
         },
         {
-          title: 'Quick Category Addition',
-          syntax: 'Create category Investments for expense',
-          desc: 'Generates a custom category without having to navigate to Settings.',
-          badge: 'SETUP',
-          badgeColor: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-          autoRun: false,
+          syntax: 'How much did I spend this month?',
+          desc: 'Calculates your total expenses and top spending categories',
+          badge: 'Insights',
+          badgeStyle: 'bg-primary/10 text-primary border border-primary/20',
+          autoRun: true,
         },
       ],
     };
@@ -514,173 +484,150 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
 
     return (
       <AnimatePresence>
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md overflow-y-auto">
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            initial={{ opacity: 0, scale: 0.96, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 15 }}
+            exit={{ opacity: 0, scale: 0.96, y: 12 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="relative w-full max-w-2xl bg-[#12141C] border border-[#262A3B] rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col my-auto text-foreground"
+            className="relative w-full max-w-lg bg-surface border border-surface-border rounded-3xl shadow-2xl overflow-hidden max-h-[90dvh] flex flex-col my-auto text-foreground"
           >
-            {/* Modal Header */}
-            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-[#262A3B] bg-[#161923]">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-surface-border flex-shrink-0 bg-surface">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/25 flex items-center justify-center text-primary shadow-sm shadow-primary/20">
-                  <BookOpen className="w-5 h-5" />
+                <div className="w-9 h-9 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                  <Sparkles className="w-4 h-4" />
                 </div>
                 <div>
-                  <h2 className="text-base sm:text-lg font-bold text-white flex items-center space-x-2">
-                    <span>FLOW AI Assistant Guide</span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30 font-semibold">
-                      v2.0
-                    </span>
+                  <h2 className="text-base font-bold text-foreground tracking-tight">
+                    MonAI Guide
                   </h2>
-                  <p className="text-xs text-zinc-400 mt-0.5">
-                    Interactive guide & cheatsheet for natural chat, slash commands, and automations
+                  <p className="text-[11px] text-zinc-500 font-mono mt-0.5">
+                    Click any example below to try it in chat
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setIsGuideOpen(false)}
-                className="w-8 h-8 rounded-xl bg-surface hover:bg-surface-raised border border-surface-border text-zinc-400 hover:text-white flex items-center justify-center transition-all"
+                className="p-1.5 rounded-xl text-zinc-400 hover:text-foreground hover:bg-surface-raised transition-colors"
                 title="Close guide"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Feature Tabs */}
-            <div className="flex items-center space-x-1.5 px-4 sm:px-6 py-2.5 border-b border-[#262A3B] bg-[#0E1017] overflow-x-auto scrollbar-none">
-              <button
-                type="button"
-                onClick={() => setGuideTab('slash')}
-                className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
-                  guideTab === 'slash'
-                    ? 'bg-primary text-white shadow-md shadow-primary/25 font-semibold'
-                    : 'text-zinc-400 hover:text-white hover:bg-[#161923]'
-                }`}
-              >
-                <Terminal className="w-3.5 h-3.5" />
-                <span>Slash Commands</span>
-                <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-white/20 font-mono">Claude Code</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setGuideTab('nlp')}
-                className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
-                  guideTab === 'nlp'
-                    ? 'bg-primary text-white shadow-md shadow-primary/25 font-semibold'
-                    : 'text-zinc-400 hover:text-white hover:bg-[#161923]'
-                }`}
-              >
-                <Zap className="w-3.5 h-3.5" />
-                <span>Natural Speech</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setGuideTab('auto')}
-                className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
-                  guideTab === 'auto'
-                    ? 'bg-primary text-white shadow-md shadow-primary/25 font-semibold'
-                    : 'text-zinc-400 hover:text-white hover:bg-[#161923]'
-                }`}
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Smart Automations</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setGuideTab('query')}
-                className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
-                  guideTab === 'query'
-                    ? 'bg-primary text-white shadow-md shadow-primary/25 font-semibold'
-                    : 'text-zinc-400 hover:text-white hover:bg-[#161923]'
-                }`}
-              >
-                <BarChart3 className="w-3.5 h-3.5" />
-                <span>Live Insights</span>
-              </button>
+            {/* Segmented Tabs Switcher */}
+            <div className="px-5 sm:px-6 pt-3 pb-2.5 border-b border-surface-border bg-surface flex-shrink-0">
+              <div className="grid grid-cols-4 gap-1 p-1 bg-surface-raised border border-surface-border rounded-2xl">
+                <button
+                  type="button"
+                  onClick={() => setGuideTab('nlp')}
+                  className={`py-2 px-1.5 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1 transition-all ${
+                    guideTab === 'nlp'
+                      ? 'bg-surface text-foreground shadow-xs border border-surface-border'
+                      : 'text-zinc-500 hover:text-foreground'
+                  }`}
+                >
+                  <Zap className="w-3.5 h-3.5" />
+                  <span>Chat</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGuideTab('slash')}
+                  className={`py-2 px-1.5 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1 transition-all ${
+                    guideTab === 'slash'
+                      ? 'bg-surface text-foreground shadow-xs border border-surface-border'
+                      : 'text-zinc-500 hover:text-foreground'
+                  }`}
+                >
+                  <Terminal className="w-3.5 h-3.5" />
+                  <span>Shortcuts</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGuideTab('auto')}
+                  className={`py-2 px-1.5 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1 transition-all ${
+                    guideTab === 'auto'
+                      ? 'bg-surface text-foreground shadow-xs border border-surface-border'
+                      : 'text-zinc-500 hover:text-foreground'
+                  }`}
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>Autos</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGuideTab('query')}
+                  className={`py-2 px-1.5 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1 transition-all ${
+                    guideTab === 'query'
+                      ? 'bg-surface text-foreground shadow-xs border border-surface-border'
+                      : 'text-zinc-500 hover:text-foreground'
+                  }`}
+                >
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  <span>Insights</span>
+                </button>
+              </div>
             </div>
 
-            {/* Tab Explanation Banner */}
-            <div className="px-5 sm:px-6 py-2.5 bg-primary/5 border-b border-primary/10 flex items-center justify-between text-xs text-zinc-300">
-              {guideTab === 'slash' && (
-                <div className="flex items-center space-x-2 text-[11px]">
-                  <Command className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-                  <span>
-                    Type <code className="text-primary font-mono font-bold bg-primary/10 px-1.5 py-0.5 rounded">/</code> anywhere in the chat box to open the floating Claude Code autocomplete palette.
-                  </span>
-                </div>
-              )}
+            {/* Quick Tip Banner */}
+            <div className="px-5 sm:px-6 py-2.5 bg-primary/5 border-b border-primary/10 flex items-center space-x-2 text-xs text-zinc-600 dark:text-zinc-300 flex-shrink-0">
+              <Sparkles className="w-3.5 h-3.5 text-primary flex-shrink-0" />
               {guideTab === 'nlp' && (
-                <div className="flex items-center space-x-2 text-[11px]">
-                  <Lightbulb className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                  <span>
-                    Keywords like <strong className="text-emerald-400 font-mono">income</strong>, <strong className="text-emerald-400 font-mono">salary</strong>, <strong className="text-emerald-400 font-mono">received</strong> automatically route to Income without typing slashes!
-                  </span>
-                </div>
+                <span>Type naturally like texting a friend. Amounts, categories & payment methods are detected automatically.</span>
+              )}
+              {guideTab === 'slash' && (
+                <span>Type <code className="font-mono text-primary font-bold">/</code> in chat anytime to quickly pick command shortcuts.</span>
               )}
               {guideTab === 'auto' && (
-                <div className="flex items-center space-x-2 text-[11px]">
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
-                  <span>
-                    Easily schedule recurring rent, Netflix, or bills straight through natural chat conversation.
-                  </span>
-                </div>
+                <span>Tell FIN-XL to schedule recurring expenses like monthly rent, subscriptions, or bills.</span>
               )}
               {guideTab === 'query' && (
-                <div className="flex items-center space-x-2 text-[11px]">
-                  <BarChart3 className="w-3.5 h-3.5 text-sky-400 flex-shrink-0" />
-                  <span>
-                    Real-time financial telemetry: Ask about balance, net savings, or category distributions anytime.
-                  </span>
-                </div>
+                <span>Ask questions anytime to view your live balance, recent spending, or category breakdowns.</span>
               )}
             </div>
 
             {/* Items List */}
-            <div className="p-4 sm:p-6 overflow-y-auto space-y-3 flex-1">
+            <div className="p-4 sm:p-5 overflow-y-auto space-y-2.5 flex-1 bg-surface">
               {currentItems.map((item, idx) => (
                 <div
                   key={idx}
-                  className="p-3.5 sm:p-4 rounded-2xl bg-[#161923] border border-[#262A3B] hover:border-primary/40 transition-all group"
+                  onClick={() => handleApplyGuidePrompt(item.syntax, item.autoRun)}
+                  className="p-3.5 rounded-2xl bg-surface-raised border border-surface-border hover:border-primary/50 hover:shadow-xs transition-all cursor-pointer group flex flex-col justify-between gap-2.5"
                 >
-                  <div className="flex items-start justify-between gap-2 mb-1.5">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs font-semibold text-white group-hover:text-primary transition-colors">
-                        {item.title}
-                      </span>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1 min-w-0 flex-1">
+                      <div className="text-xs sm:text-sm font-semibold text-foreground group-hover:text-primary transition-colors flex items-center space-x-1.5">
+                        <span className="truncate">&ldquo;{item.syntax}&rdquo;</span>
+                      </div>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-normal">
+                        {item.desc}
+                      </p>
                     </div>
-                    <span className={`text-[9px] font-mono font-semibold px-2 py-0.5 rounded-md border ${item.badgeColor}`}>
+                    <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-lg flex-shrink-0 ${item.badgeStyle}`}>
                       {item.badge}
                     </span>
                   </div>
 
-                  <p className="text-[11px] text-zinc-400 leading-relaxed mb-3">
-                    {item.desc}
-                  </p>
-
-                  {/* Code / Syntax Block with 1-Click Try and Copy */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-[#0E1017] border border-[#262A3B] rounded-xl p-2 sm:px-3 sm:py-2">
-                    <div className="font-mono text-xs text-primary truncate selection:bg-primary/30">
-                      {item.syntax}
-                    </div>
-
-                    <div className="flex items-center space-x-2 flex-shrink-0 self-end sm:self-auto">
+                  <div className="flex items-center justify-between pt-2 border-t border-surface-border/60">
+                    <span className="text-[10px] text-zinc-400 font-mono">
+                      Tap card to try
+                    </span>
+                    <div className="flex items-center space-x-1.5">
                       <button
                         type="button"
-                        onClick={(e) => handleCopyGuidePrompt(e, item.syntax)}
-                        className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-surface hover:bg-surface-raised border border-surface-border text-zinc-400 hover:text-white text-[10px] font-mono transition-all"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCopyGuidePrompt(e, item.syntax);
+                        }}
+                        className="flex items-center space-x-1 px-2.5 py-1 rounded-lg text-zinc-400 hover:text-foreground hover:bg-surface border border-transparent hover:border-surface-border text-[11px] font-medium transition-all"
                         title="Copy to clipboard"
                       >
                         {copiedPrompt === item.syntax ? (
                           <>
-                            <Check className="w-3 h-3 text-emerald-400" />
-                            <span className="text-emerald-400">Copied!</span>
+                            <Check className="w-3 h-3 text-emerald-500" />
+                            <span className="text-emerald-500 font-semibold">Copied</span>
                           </>
                         ) : (
                           <>
@@ -692,8 +639,11 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
 
                       <button
                         type="button"
-                        onClick={() => handleApplyGuidePrompt(item.syntax, item.autoRun)}
-                        className="flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-primary hover:bg-primary-600 text-white text-[11px] font-medium transition-all shadow-md shadow-primary/20"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleApplyGuidePrompt(item.syntax, item.autoRun);
+                        }}
+                        className="flex items-center space-x-1 px-3 py-1 rounded-xl bg-primary hover:bg-primary-600 text-white text-[11px] font-semibold transition-all shadow-xs"
                       >
                         <span>{item.autoRun ? 'Run Now ↵' : 'Try in Chat ↵'}</span>
                       </button>
@@ -703,18 +653,17 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
               ))}
             </div>
 
-            {/* Footer Summary / Pro Tips */}
-            <div className="px-5 sm:px-6 py-3 border-t border-[#262A3B] bg-[#161923] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-zinc-400">
-              <div className="flex items-center space-x-2 text-[11px]">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Need dialog forms? You can still use traditional <strong className="text-zinc-300">+ Modal</strong> buttons anytime.</span>
-              </div>
+            {/* Footer */}
+            <div className="px-5 sm:px-6 py-3 border-t border-surface-border bg-surface flex items-center justify-between gap-2 text-xs text-zinc-500 flex-shrink-0">
+              <span className="text-[11px]">
+                Tip: You can also use the traditional <strong className="text-foreground">+ Transaction</strong> button anytime.
+              </span>
               <button
                 type="button"
                 onClick={() => setIsGuideOpen(false)}
-                className="px-4 py-1.5 rounded-xl bg-surface hover:bg-surface-raised border border-surface-border text-white text-xs font-medium transition-all w-full sm:w-auto"
+                className="px-4 py-1.5 rounded-xl bg-surface-raised hover:bg-surface-border border border-surface-border text-foreground text-xs font-semibold transition-colors"
               >
-                Got it, let's go!
+                Close
               </button>
             </div>
           </motion.div>
@@ -1006,7 +955,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     // 0. SLASH COMMAND: /help
     if (q === '/help' || q === 'help') {
       return {
-        text: `Here are the available **FLOW Slash Commands** & syntax:\n\n` +
+        text: `Here are the available **FIN-XL Slash Commands** & syntax:\n\n` +
           `• **/income <amount> <description>** — Record incoming salary or money\n` +
           `  *Example: \`/income 50000 Monthly Salary from Posibolt\`*\n\n` +
           `• **/expense <amount> <description>** — Record outgoing spending or bill\n` +
@@ -1373,7 +1322,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
         };
       }
       return {
-        text: `I'm your FLOW Financial AI Agent. You can log transactions with slash commands or natural language!\n\n**Try asking:**\n• **/income 50000 Monthly Salary**\n• **/expense 450 Team lunch**\n• *"Yesterday spent 250 on pizza using upi"*\n• *"Friend paid me back 500"* (Logs as Income)\n• *"What is my balance?"*`
+        text: `I'm MonAI, your personal financial assistant. You can log transactions with slash commands or natural language!\n\n**Try asking:**\n• **/income 50000 Monthly Salary**\n• **/expense 450 Team lunch**\n• *"Yesterday spent 250 on pizza using upi"*\n• *"Friend paid me back 500"* (Logs as Income)\n• *"What is my balance?"*`
       };
     }
 
@@ -1405,8 +1354,9 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     if (res.success && res.data) {
       onTransactionAdded(res.data);
       const dateText = dateLabel !== 'Today' ? ` on ${dateLabel} (${dateStr})` : '';
+      const catDisplayName = matchedCategory?.name || 'General';
       return {
-        text: `Recorded **${type === 'INCOME' ? 'income' : 'expense'}** of **${currencySymbol}${amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}** for "${title}"${dateText}.`,
+        text: `Recorded **${type === 'INCOME' ? 'income' : 'expense'}** of **${currencySymbol}${amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}** for "${title}"${dateText} • Categorized by MonAI under **${catDisplayName}**.`,
         widget: {
           type: 'TRANSACTION_CONFIRMATION',
           transaction: res.data,
@@ -1471,16 +1421,8 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
             <div className="flex flex-wrap items-center justify-center gap-2">
               <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold">
                 <Bot className="w-3.5 h-3.5" />
-                <span>FLOW Financial AI Agent</span>
+                <span>MonAI</span>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsGuideOpen(true)}
-                className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-surface hover:bg-surface-raised border border-surface-border hover:border-primary/50 text-zinc-300 hover:text-foreground text-xs font-medium transition-all shadow-sm group"
-              >
-                <BookOpen className="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform" />
-                <span>AI Guide & Cheat Sheet</span>
-              </button>
             </div>
             <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground font-sans">
               What happened with your money today?
@@ -1551,8 +1493,8 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
               <button
                 type="button"
                 onClick={() => setIsGuideOpen(true)}
-                className="p-1.5 sm:p-2 rounded-xl text-zinc-400 hover:text-primary hover:bg-surface-raised transition-colors flex-shrink-0 mr-1"
-                title="AI Guide & Cheat Sheet"
+                className="p-1.5 sm:p-2 rounded-xl text-zinc-600 dark:text-zinc-300 hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20 transition-colors flex-shrink-0 mr-1"
+                title="Open MonAI Guide"
               >
                 <BookOpen className="w-4 h-4" />
               </button>
@@ -1566,22 +1508,16 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
               </button>
             </form>
 
-            {/* Optional subtle secondary action links below the chat bar */}
-            <div className="flex items-center justify-center space-x-3 mt-3 text-xs text-zinc-500">
+            {/* Unified beautiful colorful link to open traditional modal */}
+            <div className="flex items-center justify-center mt-3">
               <button
                 type="button"
                 onClick={onOpenExpenseModal}
-                className="hover:text-foreground transition-colors hover:underline text-[11px]"
+                className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-primary/10 via-purple-500/15 to-primary/10 hover:from-primary/20 hover:via-purple-500/25 hover:to-primary/20 border border-primary/25 hover:border-primary/45 text-primary hover:text-primary-600 dark:hover:text-primary-300 text-xs font-semibold tracking-wide transition-all duration-200 shadow-2xs hover:shadow-xs hover:scale-[1.02] group"
               >
-                + Traditional Expense Modal
-              </button>
-              <span>•</span>
-              <button
-                type="button"
-                onClick={onOpenIncomeModal}
-                className="hover:text-foreground transition-colors hover:underline text-[11px]"
-              >
-                + Traditional Income Modal
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                <span>Add Transaction</span>
+                <ArrowRight className="w-3.5 h-3.5 text-primary group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>
           </div>
@@ -1607,27 +1543,29 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
         </div>
       ) : (
         /* 2. Active Chat Stream with Compact Pods & Interactive Widgets */
-        <div className="flex-1 flex flex-col justify-between max-w-2xl w-full mx-auto px-4 pb-4">
-          {/* Header Action Bar */}
-          <div className="flex items-center justify-between pt-2 pb-1 border-b border-surface-border/50 text-xs text-zinc-400 font-mono">
-            <span className="flex items-center space-x-1.5 text-zinc-500">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+        <div className="flex-1 flex flex-col overflow-hidden max-w-2xl w-full mx-auto px-4 pb-4">
+          {/* Header Action Bar - Sticky */}
+          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm flex items-center justify-between pt-2 pb-2 border-b border-surface-border text-xs text-foreground font-mono flex-shrink-0">
+            <span className="flex items-center space-x-1.5 text-zinc-700 dark:text-zinc-300 font-semibold text-[11px]">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>Conversation Active</span>
             </span>
             <div className="flex items-center space-x-2">
               <button
                 type="button"
                 onClick={() => setIsGuideOpen(true)}
-                className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-surface-raised hover:bg-surface border border-surface-border text-zinc-300 hover:text-white text-[11px] font-sans font-medium transition-colors"
+                className="flex items-center space-x-1.5 px-3 py-1 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary hover:text-primary-700 dark:hover:text-primary-300 text-[11px] font-sans font-bold transition-all shadow-2xs"
               >
-                <BookOpen className="w-3 h-3 text-primary" />
-                <span>AI Guide</span>
+                <BookOpen className="w-3.5 h-3.5 text-primary" />
+                <span>MonAI Guide</span>
               </button>
               <button
+                type="button"
                 onClick={handleClearChat}
-                className="px-2 py-0.5 rounded-lg hover:bg-surface-raised hover:text-foreground text-[11px] transition-colors"
+                className="flex items-center space-x-1.5 px-2.5 py-1 rounded-xl bg-surface-raised hover:bg-rose-500/10 border border-surface-border hover:border-rose-500/30 text-zinc-700 dark:text-zinc-300 hover:text-rose-600 dark:hover:text-rose-400 text-[11px] font-sans font-semibold transition-all shadow-2xs"
               >
-                Clear Conversation
+                <Trash2 className="w-3 h-3 text-zinc-500 hover:text-rose-500" />
+                <span>Clear Conversation</span>
               </button>
             </div>
           </div>
@@ -1678,9 +1616,13 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                           <div className="font-semibold text-foreground text-[11px]">
                             {msg.widget.transaction.description}
                           </div>
-                          <div className="text-[9px] text-zinc-400 font-mono">
-                            {msg.widget.transaction.category?.name || 'General'}
-                            {msg.widget.transaction.transactionDate ? ` • ${msg.widget.transaction.transactionDate}` : ''}
+                          <div className="text-[10px] text-zinc-400 font-mono flex items-center gap-1.5 mt-0.5">
+                            <span className="font-semibold text-foreground">{msg.widget.transaction.category?.name || 'General'}</span>
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-primary/10 text-primary text-[8px] font-bold">
+                              <Sparkles className="w-2.5 h-2.5" />
+                              AI Categorized
+                            </span>
+                            {msg.widget.transaction.transactionDate ? <span>• {msg.widget.transaction.transactionDate}</span> : null}
                           </div>
                         </div>
                       </div>
@@ -1690,7 +1632,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                           className={`font-mono font-bold text-xs ${
                             msg.widget.transaction.type === 'INCOME'
                               ? 'text-emerald-600 dark:text-emerald-400'
-                              : 'text-foreground'
+                              : 'text-rose-600 dark:text-rose-400'
                           }`}
                         >
                           {msg.widget.transaction.type === 'INCOME' ? '+' : '-'}
@@ -1900,8 +1842,8 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
               <button
                 type="button"
                 onClick={() => setIsGuideOpen(true)}
-                className="p-1.5 rounded-xl text-zinc-400 hover:text-primary hover:bg-surface-raised transition-colors flex-shrink-0 mr-1"
-                title="AI Guide & Cheat Sheet"
+                className="p-1.5 rounded-xl text-zinc-600 dark:text-zinc-300 hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20 transition-colors flex-shrink-0 mr-1"
+                title="Open MonAI Guide"
               >
                 <BookOpen className="w-3.5 h-3.5" />
               </button>

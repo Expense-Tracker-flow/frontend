@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "FLOW — Personal Finance Tracker",
+  title: "FIN-XL — Personal Finance Tracker",
   description: "Track your money by simply talking to it. Built with Spring Boot & Next.js.",
 };
 

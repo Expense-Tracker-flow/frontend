@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Moon, Sun, DollarSign, CheckCircle2, Save, Settings as SettingsIcon } from 'lucide-react';
 import { UserProfile } from '../lib/types';
 import { api } from '../lib/api';
+import { SearchableSelect } from './SearchableSelect';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -157,19 +158,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider">
               Display Currency
             </label>
-            <div className="relative">
-              <select
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className="w-full bg-surface-raised border border-surface-border rounded-xl px-4 py-3 text-xs text-foreground focus:outline-none focus:border-primary transition-colors cursor-pointer"
-              >
-                {currencies.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.symbol} {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <SearchableSelect
+              value={currency}
+              onChange={(val) => setCurrency(val)}
+              options={currencies.map((c) => ({
+                value: c.code,
+                label: `${c.symbol} ${c.name}`,
+              }))}
+              searchPlaceholder="Search currency..."
+            />
             <p className="text-[11px] text-zinc-500">
               Balances and transaction amounts will display with this currency symbol.
             </p>

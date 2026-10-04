@@ -59,12 +59,17 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="w-full border-b border-surface-border bg-surface/80 backdrop-blur-md sticky top-0 z-30 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand Logo */}
-        <div className="flex items-center space-x-3">
-          <span 
-            onClick={() => onTabChange?.('home')}
-            className="text-xl font-bold tracking-tight text-foreground font-mono cursor-pointer hover:opacity-80 transition-opacity"
-          >
-            FLOW
+        <div 
+          onClick={() => onTabChange?.('home')}
+          className="flex items-center gap-2.5 cursor-pointer select-none group"
+        >
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-sm shadow-blue-500/30 group-hover:scale-105 group-hover:shadow-blue-500/40 transition-all">
+            <Zap className="w-4 h-4 fill-white text-white" />
+          </div>
+          <span className="brand-finxl text-base">
+            <span className="fin-text">FIN</span>
+            <span className="dash-text">-</span>
+            <span className="xl-text">XL</span>
           </span>
         </div>
 

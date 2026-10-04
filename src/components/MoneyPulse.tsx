@@ -1,8 +1,19 @@
 'use client';
 
-import React from 'react';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
+import React, { useState, useMemo } from 'react';
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from 'recharts';
 import { DailyTrend } from '../lib/types';
+import { BarChart3, TrendingUp } from 'lucide-react';
 
 interface MoneyPulseProps {
   data: DailyTrend[];
@@ -10,101 +21,252 @@ interface MoneyPulseProps {
 }
 
 export const MoneyPulse: React.FC<MoneyPulseProps> = ({ data = [], currencySymbol = '₹' }) => {
-  // Format dates for the X-axis
-  const formattedData = (data || []).map((d) => ({
-    ...d,
-    day: new Date(d.date).getDate(),
-    formattedDate: new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-  }));
+  const [chartType, setChartType] = useState<'bar' | 'area'>('bar');
 
-  if (formattedData.length === 0) {
-    return (
-      <div className="w-full h-44 flex flex-col items-center justify-center rounded-2xl glass-card text-zinc-500 text-xs font-mono">
-        <span>No pulse data available for this period.</span>
-        <span className="text-[11px] text-zinc-600 mt-1">Transactions will plot your daily velocity.</span>
-      </div>
-    );
-  }
+  // Generate a continuous multi-day timeline (minimum 7 days) so the chart always looks rich and filled
+  const chartData = useMemo(() => {
+    const dataMap = new Map<string, { income: number; expense: number }>();
+    (data || []).forEach((d) => {
+      const dateStr = d.date ? d.date.split('T')[0] : '';
+      if (dateStr) {
+        dataMap.set(dateStr, {
+          income: Number(d.income ?? 0),
+          expense: Number(d.expense ?? 0),
+        });
+      }
+    });
+
+    const now = new Date();
+    const dateList: string[] = [];
+
+    // Default window: last 7 days ending today
+    const WINDOW_SIZE = 7;
+    for (let i = WINDOW_SIZE - 1; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(now.getDate() - i);
+      dateList.push(d.toISOString().split('T')[0]);
+    }
+
+    // Merge any other recorded dates from backend that fall outside this window
+    (data || []).forEach((item) => {
+      const d = item.date ? item.date.split('T')[0] : '';
+      if (d && !dateList.includes(d)) {
+        dateList.push(d);
+      }
+    });
+
+    dateList.sort();
+
+    return dateList.map((dateStr) => {
+      const match = dataMap.get(dateStr) || { income: 0, expense: 0 };
+      const dObj = new Date(dateStr + 'T00:00:00');
+      return {
+        date: dateStr,
+        dayLabel: dObj.toLocaleDateString('en-US', { weekday: 'short' }),
+        shortDate: dObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        income: match.income,
+        expense: match.expense,
+        net: match.income - match.expense,
+      };
+    });
+  }, [data]);
+
+  const totalPeriodIncome = useMemo(() => chartData.reduce((acc, d) => acc + d.income, 0), [chartData]);
+  const totalPeriodExpense = useMemo(() => chartData.reduce((acc, d) => acc + d.expense, 0), [chartData]);
+
+  const formatYAxis = (v: number) => {
+    if (v >= 100000) return `${(v / 1000).toFixed(0)}k`;
+    if (v >= 1000) return `${(v / 1000).toFixed(0)}k`;
+    return `${v}`;
+  };
 
   return (
-    <div className="w-full h-48 rounded-2xl glass-card p-4 flex flex-col justify-between">
-      <div className="flex items-center justify-between text-xs text-zinc-400 mb-2">
-        <span className="font-mono uppercase tracking-wider text-[11px] text-zinc-400">Cashflow Pulse</span>
-        <div className="flex items-center space-x-3 text-[11px]">
-          <span className="flex items-center space-x-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span>Income</span>
+    <div className="w-full space-y-3">
+      {/* Chart Controls & Legend Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+        {/* Period Totals Badge */}
+        <div className="flex items-center gap-3 font-mono text-[11px]">
+          <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span>+{currencySymbol}{totalPeriodIncome.toLocaleString('en-IN')}</span>
           </span>
-          <span className="flex items-center space-x-1">
-            <span className="w-2 h-2 rounded-full bg-rose-400" />
-            <span>Expense</span>
+          <span className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-semibold">
+            <span className="w-2 h-2 rounded-full bg-rose-500" />
+            <span>-{currencySymbol}{totalPeriodExpense.toLocaleString('en-IN')}</span>
           </span>
+        </div>
+
+        {/* View Mode Switcher (Bar vs Smooth Curve) */}
+        <div className="flex items-center bg-surface-raised border border-surface-border p-0.5 rounded-xl">
+          <button
+            type="button"
+            onClick={() => setChartType('bar')}
+            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+              chartType === 'bar'
+                ? 'bg-surface text-primary shadow-xs'
+                : 'text-zinc-400 hover:text-foreground'
+            }`}
+            title="Bar Chart View"
+          >
+            <BarChart3 className="w-3.5 h-3.5" />
+            <span>Bars</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setChartType('area')}
+            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+              chartType === 'area'
+                ? 'bg-surface text-primary shadow-xs'
+                : 'text-zinc-400 hover:text-foreground'
+            }`}
+            title="Spline Area View"
+          >
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span>Area</span>
+          </button>
         </div>
       </div>
 
-      <div className="w-full h-32">
+      {/* Main Chart Container */}
+      <div className="w-full h-56 pt-1">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={formattedData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
-            <defs>
-              <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10B981" stopOpacity={0.4} />
-                <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#EF4444" stopOpacity={0.4} />
-                <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <XAxis
-              dataKey="day"
-              stroke="#52525B"
-              fontSize={10}
-              tickLine={false}
-              axisLine={false}
-            />
-            <YAxis
-              stroke="#52525B"
-              fontSize={10}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : `${v}`)}
-            />
-            <Tooltip
-              content={({ active, payload }) => {
-                if (active && payload && payload.length) {
-                  const curr = payload[0].payload;
-                  return (
-                    <div className="bg-surface-raised border border-surface-border p-2.5 rounded-lg shadow-xl text-xs font-mono">
-                      <p className="text-zinc-400 mb-1">{curr.formattedDate}</p>
-                      <p className="text-emerald-400">
-                        + {currencySymbol}{Number(curr.income ?? 0).toLocaleString('en-IN')}
-                      </p>
-                      <p className="text-rose-400">
-                        - {currencySymbol}{Number(curr.expense ?? 0).toLocaleString('en-IN')}
-                      </p>
-                    </div>
-                  );
-                }
-                return null;
-              }}
-            />
-            <Area
-              type="monotone"
-              dataKey="income"
-              stroke="#10B981"
-              strokeWidth={2}
-              fillOpacity={1}
-              fill="url(#incomeGrad)"
-            />
-            <Area
-              type="monotone"
-              dataKey="expense"
-              stroke="#EF4444"
-              strokeWidth={2}
-              fillOpacity={1}
-              fill="url(#expenseGrad)"
-            />
-          </AreaChart>
+          {chartType === 'bar' ? (
+            <BarChart data={chartData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" strokeOpacity={0.06} />
+              <XAxis
+                dataKey="shortDate"
+                stroke="#71717A"
+                fontSize={11}
+                tickLine={false}
+                axisLine={false}
+                dy={6}
+              />
+              <YAxis
+                stroke="#71717A"
+                fontSize={10}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={formatYAxis}
+              />
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    const d = payload[0].payload;
+                    return (
+                      <div className="bg-surface border border-surface-border p-3 rounded-2xl shadow-xl text-xs space-y-1 font-mono">
+                        <div className="text-foreground font-bold text-xs pb-1 border-b border-surface-border">
+                          {d.dayLabel}, {d.shortDate}
+                        </div>
+                        <div className="flex items-center justify-between gap-4 text-emerald-600 dark:text-emerald-400 font-semibold">
+                          <span>Income:</span>
+                          <span>+{currencySymbol}{d.income.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4 text-rose-600 dark:text-rose-400 font-semibold">
+                          <span>Expense:</span>
+                          <span>-{currencySymbol}{d.expense.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4 text-zinc-500 pt-1 border-t border-surface-border text-[11px]">
+                          <span>Net:</span>
+                          <span className={d.net >= 0 ? 'text-primary font-bold' : 'text-rose-500 font-bold'}>
+                            {d.net >= 0 ? '+' : ''}{currencySymbol}{d.net.toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Bar
+                dataKey="income"
+                name="Income"
+                fill="#10B981"
+                radius={[6, 6, 0, 0]}
+                maxBarSize={28}
+              />
+              <Bar
+                dataKey="expense"
+                name="Expense"
+                fill="#EF4444"
+                radius={[6, 6, 0, 0]}
+                maxBarSize={28}
+              />
+            </BarChart>
+          ) : (
+            <AreaChart data={chartData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="pulseIncomeGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="pulseExpenseGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#EF4444" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" strokeOpacity={0.06} />
+              <XAxis
+                dataKey="shortDate"
+                stroke="#71717A"
+                fontSize={11}
+                tickLine={false}
+                axisLine={false}
+                dy={6}
+              />
+              <YAxis
+                stroke="#71717A"
+                fontSize={10}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={formatYAxis}
+              />
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    const d = payload[0].payload;
+                    return (
+                      <div className="bg-surface border border-surface-border p-3 rounded-2xl shadow-xl text-xs space-y-1 font-mono">
+                        <div className="text-foreground font-bold text-xs pb-1 border-b border-surface-border">
+                          {d.dayLabel}, {d.shortDate}
+                        </div>
+                        <div className="flex items-center justify-between gap-4 text-emerald-600 dark:text-emerald-400 font-semibold">
+                          <span>Income:</span>
+                          <span>+{currencySymbol}{d.income.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4 text-rose-600 dark:text-rose-400 font-semibold">
+                          <span>Expense:</span>
+                          <span>-{currencySymbol}{d.expense.toLocaleString('en-IN')}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4 text-zinc-500 pt-1 border-t border-surface-border text-[11px]">
+                          <span>Net:</span>
+                          <span className={d.net >= 0 ? 'text-primary font-bold' : 'text-rose-500 font-bold'}>
+                            {d.net >= 0 ? '+' : ''}{currencySymbol}{d.net.toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="income"
+                stroke="#10B981"
+                strokeWidth={2.5}
+                fillOpacity={1}
+                fill="url(#pulseIncomeGrad)"
+              />
+              <Area
+                type="monotone"
+                dataKey="expense"
+                stroke="#EF4444"
+                strokeWidth={2.5}
+                fillOpacity={1}
+                fill="url(#pulseExpenseGrad)"
+              />
+            </AreaChart>
+          )}
         </ResponsiveContainer>
       </div>
     </div>

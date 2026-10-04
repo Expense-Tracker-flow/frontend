@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Transaction } from '../lib/types';
-import { Trash2, Search, ArrowDownRight, ArrowUpRight, RotateCcw, Pencil } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Transaction, Category } from '../lib/types';
+import { Trash2, Search, ArrowDownRight, ArrowUpRight, RotateCcw, Pencil, Sparkles, Filter, X } from 'lucide-react';
+import { SearchableSelect, SelectOption } from './SearchableSelect';
 
 interface ActivityTimelineProps {
   transactions: Transaction[];
+  categories?: Category[];
   onEditTransaction?: (transaction: Transaction) => void;
   onDeleteTransaction?: (id: string) => void;
   currencySymbol?: string;
@@ -13,11 +15,13 @@ interface ActivityTimelineProps {
 
 export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
   transactions,
+  categories = [],
   onEditTransaction,
   onDeleteTransaction,
   currencySymbol = '₹',
 }) => {
   const [filterType, setFilterType] = useState<'ALL' | 'EXPENSE' | 'INCOME'>('ALL');
+  const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
   const [search, setSearch] = useState('');
 
   // Default From: 1st day of current month, To: Today
@@ -31,12 +35,56 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
   const handleResetToCurrentMonth = () => {
     setFromDate(defaultFrom);
     setToDate(defaultTo);
+    setSelectedCategory('ALL');
+    setFilterType('ALL');
+    setSearch('');
   };
+
+  // Build category options list for SearchableSelect
+  const categoryOptions: SelectOption[] = useMemo(() => {
+    const list: SelectOption[] = [
+      { value: 'ALL', label: 'All Categories' },
+    ];
+    const seen = new Set<string>();
+
+    // 1. From passed categories
+    categories.forEach((cat) => {
+      if (cat.name && !seen.has(cat.name.toLowerCase())) {
+        seen.add(cat.name.toLowerCase());
+        list.push({
+          value: cat.name,
+          label: cat.name,
+          color: cat.color,
+        });
+      }
+    });
+
+    // 2. From actual transaction history
+    transactions.forEach((tx) => {
+      const name = tx.category?.name;
+      if (name && !seen.has(name.toLowerCase())) {
+        seen.add(name.toLowerCase());
+        list.push({
+          value: name,
+          label: name,
+          color: tx.category?.color,
+        });
+      }
+    });
+
+    return list;
+  }, [categories, transactions]);
 
   // Filter transactions
   const filtered = transactions.filter((tx) => {
     if (filterType !== 'ALL' && tx.type !== filterType) return false;
     
+    // Category filter
+    if (selectedCategory !== 'ALL') {
+      const txCategory = (tx.category?.name || (tx as any).categoryName || '').toLowerCase();
+      if (txCategory !== selectedCategory.toLowerCase()) return false;
+    }
+
     // Date filter
     const txDate = tx.transactionDate ? tx.transactionDate.split('T')[0] : '';
     if (fromDate && txDate && txDate < fromDate) return false;
@@ -53,18 +101,41 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
     return true;
   });
 
-  // Group by date
-  const groupByDate = (list: Transaction[]) => {
-    const groups: { [dateStr: string]: Transaction[] } = {};
+  // Sort transactions: Latest date first, then latest createdAt timestamp first
+  const sortedFiltered = useMemo(() => {
+    return [...filtered].sort((a, b) => {
+      // 1. Transaction Date (latest date first)
+      const dateA = a.transactionDate ? a.transactionDate.split('T')[0] : '';
+      const dateB = b.transactionDate ? b.transactionDate.split('T')[0] : '';
+      if (dateA !== dateB) {
+        return dateB.localeCompare(dateA);
+      }
+
+      // 2. CreatedAt timestamp (latest created first)
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      if (timeA !== timeB) {
+        return timeB - timeA;
+      }
+
+      // 3. Fallback: string compare id
+      return (b.id || '').localeCompare(a.id || '');
+    });
+  }, [filtered]);
+
+  // Group by date keeping exact date order (latest date first)
+  const dateGroups = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
     const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 
-    list.forEach((item) => {
-      let rawDate = item.transactionDate ? item.transactionDate.split('T')[0] : '';
+    const groupMap = new Map<string, { label: string; items: Transaction[] }>();
+
+    sortedFiltered.forEach((item) => {
+      const rawDate = item.transactionDate ? item.transactionDate.split('T')[0] : '1970-01-01';
       let label = rawDate;
       if (rawDate === today) label = 'Today';
       else if (rawDate === yesterday) label = 'Yesterday';
-      else if (rawDate) {
+      else if (rawDate && rawDate !== '1970-01-01') {
         label = new Date(rawDate).toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',
@@ -74,15 +145,20 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
         label = 'Recent';
       }
 
-      if (!groups[label]) groups[label] = [];
-      groups[label].push(item);
+      if (!groupMap.has(rawDate)) {
+        groupMap.set(rawDate, { label, items: [] });
+      }
+      groupMap.get(rawDate)!.items.push(item);
     });
 
-    return groups;
-  };
-
-  const grouped = groupByDate(filtered);
-  const dateKeys = Object.keys(grouped);
+    return Array.from(groupMap.entries())
+      .sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
+      .map(([rawDate, group]) => ({
+        dateKey: rawDate,
+        label: group.label,
+        items: group.items,
+      }));
+  }, [sortedFiltered]);
 
   return (
     <div className="w-full rounded-2xl sm:rounded-3xl bg-surface border border-surface-border p-4 sm:p-6 space-y-5 sm:space-y-6 shadow-sm text-foreground">
@@ -90,7 +166,21 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
       <div className="flex flex-col gap-4 border-b border-surface-border pb-5">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-sm sm:text-base font-bold text-foreground tracking-tight">Activity Ledger</h2>
+            <div className="flex items-center space-x-2">
+              <h2 className="text-sm sm:text-base font-bold text-foreground tracking-tight">Activity Ledger</h2>
+              {selectedCategory !== 'ALL' && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20">
+                  <span>Category: {selectedCategory}</span>
+                  <button 
+                    onClick={() => setSelectedCategory('ALL')}
+                    className="hover:text-rose-500"
+                    title="Clear category filter"
+                  >
+                    <X className="w-2.5 h-2.5" />
+                  </button>
+                </span>
+              )}
+            </div>
             <p className="text-[11px] sm:text-xs text-zinc-500 font-mono mt-0.5">
               {filtered.length} {filtered.length === 1 ? 'transaction' : 'transactions'} found
             </p>
@@ -122,7 +212,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
 
             <button
               onClick={handleResetToCurrentMonth}
-              title="Reset to This Month"
+              title="Reset all filters"
               className="p-1.5 rounded-xl text-zinc-400 hover:text-foreground hover:bg-surface transition-colors flex-shrink-0"
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -163,6 +253,18 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
             </button>
           </div>
 
+          {/* Category Filter Dropdown */}
+          <div className="w-full sm:w-[190px]">
+            <SearchableSelect
+              value={selectedCategory}
+              onChange={(val) => setSelectedCategory(val)}
+              options={categoryOptions}
+              placeholder="All Categories"
+              searchPlaceholder="Filter category..."
+              className="text-xs"
+            />
+          </div>
+
           {/* Search Box */}
           <div className="relative flex-1 min-w-[140px]">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
@@ -178,20 +280,20 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
       </div>
 
       {/* Timeline Stream */}
-      {dateKeys.length === 0 ? (
+      {dateGroups.length === 0 ? (
         <div className="py-12 sm:py-16 text-center text-zinc-400 text-xs font-mono">
           No transactions match your current date range and filters.
         </div>
       ) : (
         <div className="space-y-5 sm:space-y-6">
-          {dateKeys.map((dateStr) => (
-            <div key={dateStr} className="space-y-2">
+          {dateGroups.map((group) => (
+            <div key={group.dateKey} className="space-y-2">
               <div className="text-[10px] sm:text-[11px] font-mono font-bold text-zinc-400 uppercase tracking-wider pl-1">
-                {dateStr}
+                {group.label}
               </div>
 
               <div className="space-y-2">
-                {grouped[dateStr].map((tx) => (
+                {group.items.map((tx) => (
                   <div
                     key={tx.id}
                     className="flex items-center justify-between p-3.5 rounded-2xl bg-surface-raised/60 hover:bg-surface-raised border border-surface-border transition-all group gap-3"
@@ -216,10 +318,16 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
                         <div className="font-semibold text-xs text-foreground truncate">
                           {tx.description || 'Transaction'}
                         </div>
-                        <div className="text-[10px] sm:text-[11px] text-zinc-400 font-mono truncate">
-                          {tx.category?.name || 'General'}
-                          {tx.paymentMethod ? ` • ${tx.paymentMethod}` : ''}
-                          {tx.notes ? ` • ${tx.notes}` : ''}
+                        <div className="text-[10px] sm:text-[11px] text-zinc-400 font-mono truncate flex items-center gap-1.5 flex-wrap">
+                          <span className="text-foreground font-medium">{tx.category?.name || 'General'}</span>
+                          {(tx.notes?.includes('MonAI') || tx.notes?.includes('AI') || tx.notes?.includes('#ai-categorized')) && (
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-md bg-primary/10 border border-primary/20 text-primary text-[9px] font-bold">
+                              <Sparkles className="w-2.5 h-2.5" />
+                              AI
+                            </span>
+                          )}
+                          {tx.paymentMethod ? <span>• {tx.paymentMethod}</span> : null}
+                          {tx.notes && !tx.notes.includes('Categorized by MonAI') ? <span>• {tx.notes}</span> : null}
                         </div>
                       </div>
                     </div>
@@ -231,7 +339,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
                           className={`font-mono font-bold text-xs sm:text-sm ${
                             tx.type === 'INCOME'
                               ? 'text-emerald-600 dark:text-emerald-400'
-                              : 'text-foreground'
+                              : 'text-rose-600 dark:text-rose-400'
                           }`}
                         >
                           {tx.type === 'INCOME' ? '+' : '-'}

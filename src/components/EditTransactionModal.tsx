@@ -5,6 +5,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowDownRight, ArrowUpRight, Check, Trash2, AlertCircle } from 'lucide-react';
 import { Category, PaymentMethod, Transaction, TransactionType } from '../lib/types';
 import { api } from '../lib/api';
+import { SearchableSelect, SelectOption } from './SearchableSelect';
+
+const PAYMENT_METHOD_OPTIONS: SelectOption[] = [
+  { value: 'UPI', label: 'UPI / GPay / PhonePe' },
+  { value: 'CASH', label: 'Cash' },
+  { value: 'CREDIT_CARD', label: 'Credit Card' },
+  { value: 'DEBIT_CARD', label: 'Debit Card' },
+  { value: 'BANK_TRANSFER', label: 'Bank Transfer' },
+  { value: 'OTHER', label: 'Other' },
+];
 
 interface EditTransactionModalProps {
   isOpen: boolean;
@@ -208,38 +218,32 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
                 <label className="block text-[11px] font-mono uppercase font-semibold text-zinc-600 dark:text-zinc-300 tracking-wider">
                   Category
                 </label>
-                <select
+                <SearchableSelect
                   value={categoryId || ''}
-                  onChange={(e) => setCategoryId(e.target.value || undefined)}
-                  className="w-full bg-surface-raised border border-surface-border rounded-2xl px-3.5 py-2.5 text-xs text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                >
-                  <option value="">Select Category</option>
-                  {categories
+                  onChange={(val) => setCategoryId(val || undefined)}
+                  options={categories
                     .filter((c) => c.type === type)
-                    .map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                </select>
+                    .map((cat) => ({
+                      value: cat.id,
+                      label: cat.name,
+                      color: cat.color,
+                    }))}
+                  placeholder="Select Category..."
+                  searchPlaceholder="Search categories..."
+                />
               </div>
 
               <div className="space-y-1">
                 <label className="block text-[11px] font-mono uppercase font-semibold text-zinc-600 dark:text-zinc-300 tracking-wider">
                   Payment Method
                 </label>
-                <select
+                <SearchableSelect
                   value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                  className="w-full bg-surface-raised border border-surface-border rounded-2xl px-3.5 py-2.5 text-xs text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                >
-                  <option value="UPI">UPI / GPay / PhonePe</option>
-                  <option value="CASH">Cash</option>
-                  <option value="CREDIT_CARD">Credit Card</option>
-                  <option value="DEBIT_CARD">Debit Card</option>
-                  <option value="BANK_TRANSFER">Bank Transfer</option>
-                  <option value="OTHER">Other</option>
-                </select>
+                  onChange={(val) => setPaymentMethod(val as PaymentMethod)}
+                  options={PAYMENT_METHOD_OPTIONS}
+                  placeholder="Select Payment Method..."
+                  searchPlaceholder="Search payment method..."
+                />
               </div>
             </div>
 

@@ -34,7 +34,8 @@ import {
   Layers,
   Calendar,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Zap
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -350,6 +351,19 @@ export default function DashboardPage() {
     }
   }, [otpTimer]);
 
+  // Helper to ensure transactions are always sorted latest first
+  const sortTransactionsLatestFirst = (list: Transaction[]) => {
+    return [...list].sort((a, b) => {
+      const dateA = a.transactionDate ? a.transactionDate.split('T')[0] : '';
+      const dateB = b.transactionDate ? b.transactionDate.split('T')[0] : '';
+      if (dateA !== dateB) return dateB.localeCompare(dateA);
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      if (timeA !== timeB) return timeB - timeA;
+      return (b.id || '').localeCompare(a.id || '');
+    });
+  };
+
   // Fetch live user data from PostgreSQL backend
   const loadData = useCallback(async () => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('flow_access_token') : null;
@@ -367,7 +381,7 @@ export default function DashboardPage() {
         setSummary(summaryRes.data);
       }
       if (txRes.success && txRes.data) {
-        setTransactions(txRes.data.items);
+        setTransactions(sortTransactionsLatestFirst(txRes.data.items));
       }
       if (catRes.success && catRes.data) {
         setCategories(catRes.data);
@@ -566,8 +580,15 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen w-full bg-background flex items-center justify-center">
         <div className="flex flex-col items-center space-y-3">
-          <div className="text-2xl font-bold tracking-tight text-foreground font-mono animate-pulse">
-            FLOW
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-md shadow-blue-500/30 animate-pulse">
+              <Zap className="w-5 h-5 fill-white text-white" />
+            </div>
+            <span className="brand-finxl text-xl">
+              <span className="fin-text">FIN</span>
+              <span className="dash-text">-</span>
+              <span className="xl-text">XL</span>
+            </span>
           </div>
           <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
         </div>
@@ -592,9 +613,16 @@ export default function DashboardPage() {
               setShowAuthForm(false);
               setAuthError(null);
             }} 
-            className="flex items-center space-x-2 cursor-pointer"
+            className="flex items-center gap-2.5 cursor-pointer group"
           >
-            <span className="text-xl font-bold tracking-tight text-foreground font-mono">FLOW</span>
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-sm shadow-blue-500/30 group-hover:scale-105 transition-all">
+              <Zap className="w-4 h-4 fill-white text-white" />
+            </div>
+            <span className="brand-finxl text-base">
+              <span className="fin-text">FIN</span>
+              <span className="dash-text">-</span>
+              <span className="xl-text">XL</span>
+            </span>
           </div>
 
           <div>
@@ -786,7 +814,7 @@ export default function DashboardPage() {
                     {authLoading
                       ? 'Processing...'
                       : isLoginMode
-                      ? 'Sign In to FLOW'
+                      ? 'Sign In to FIN-XL'
                       : !otpSent
                       ? 'Send Verification Code'
                       : 'Verify & Create Account'}
@@ -867,7 +895,7 @@ export default function DashboardPage() {
                   </div>
                   <h3 className="text-base font-semibold text-foreground mb-1.5">Effortless Expense Entry</h3>
                   <p className="text-xs text-zinc-500 leading-relaxed">
-                    “Spent ₹450 on dinner” — simply type or talk what happened, and FLOW categorizes everything instantly.
+                    “Spent ₹450 on dinner” — simply type or talk what happened, and FIN-XL categorizes everything instantly.
                   </p>
                 </div>
 
@@ -897,7 +925,7 @@ export default function DashboardPage() {
 
         {/* Footer */}
         <footer className="max-w-7xl w-full mx-auto px-6 py-8 text-center text-xs text-zinc-500 font-mono relative z-10 border-t border-surface-border">
-          FLOW — Personal Finance Tracker
+          FIN-XL — Personal Finance Tracker
         </footer>
       </div>
     );
@@ -944,7 +972,7 @@ export default function DashboardPage() {
               summary={summary}
               onTransactionAdded={(newTx?: Transaction) => {
                 if (newTx) {
-                  setTransactions((prev) => [newTx, ...prev.filter(t => t.id !== newTx.id)]);
+                  setTransactions((prev) => sortTransactionsLatestFirst([newTx, ...prev.filter(t => t.id !== newTx.id)]));
                   setSummary((prev) => ({
                     ...prev,
                     totalBalance: newTx.type === 'INCOME' ? prev.totalBalance + newTx.amount : prev.totalBalance - newTx.amount,
@@ -1041,7 +1069,7 @@ export default function DashboardPage() {
                       <ArrowDownRight className="w-3.5 h-3.5 text-rose-500" />
                       <span>Period Spent</span>
                     </div>
-                    <div className="text-xl font-bold font-mono text-foreground">
+                    <div className="text-xl font-bold font-mono text-rose-600 dark:text-rose-400">
                       -{currencySymbol}{activeExpense.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </div>
                     <p className="text-[11px] text-zinc-400 font-mono">
@@ -1158,6 +1186,7 @@ export default function DashboardPage() {
                 </span>
               </div>
               <MoneyOrbit
+                key={`orbit-${summary.totalBalance}-${activeExpense}`}
                 balance={summary.totalBalance}
                 spent={activeExpense}
                 categories={activeCategories}
@@ -1211,6 +1240,7 @@ export default function DashboardPage() {
             {/* Complete Activity Timeline */}
             <ActivityTimeline
               transactions={transactions}
+              categories={categories}
               onEditTransaction={handleOpenEditTransaction}
               onDeleteTransaction={handleDeleteTransaction}
               currencySymbol={currencySymbol}
@@ -1253,6 +1283,10 @@ export default function DashboardPage() {
         onSuccess={() => {
           showToast('Transaction saved');
           loadData();
+        }}
+        onCategoryCreated={(newCat) => {
+          setCategories((prev) => [...prev.filter((c) => c.id !== newCat.id), newCat]);
+          showToast(`Category "${newCat.name}" added`);
         }}
         categories={categories}
         initialType={modalType}

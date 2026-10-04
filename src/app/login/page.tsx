@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Lock, Mail, User, ArrowRight, AlertCircle, CheckCircle2, KeyRound } from 'lucide-react';
+import { Lock, Mail, User, ArrowRight, AlertCircle, CheckCircle2, KeyRound, Zap } from 'lucide-react';
 import { api } from '../../lib/api';
 
 export default function AuthPage() {
@@ -123,8 +123,15 @@ export default function AuthPage() {
 
       {/* Header */}
       <header className="max-w-7xl w-full mx-auto px-6 py-6 flex items-center justify-between relative z-10">
-        <Link href="/" className="cursor-pointer">
-          <span className="text-xl font-bold tracking-tight text-white font-mono">FLOW</span>
+        <Link href="/" className="flex items-center gap-2.5 cursor-pointer group">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-sm shadow-blue-500/30 group-hover:scale-105 transition-all">
+            <Zap className="w-4 h-4 fill-white text-white" />
+          </div>
+          <span className="brand-finxl text-base">
+            <span className="fin-text">FIN</span>
+            <span className="dash-text">-</span>
+            <span className="xl-text">XL</span>
+          </span>
         </Link>
 
         <Link
@@ -298,7 +305,7 @@ export default function AuthPage() {
                 {isLoading
                   ? 'Processing...'
                   : isLogin
-                  ? 'Sign In to FLOW'
+                  ? 'Sign In to FIN-XL'
                   : !otpSent
                   ? 'Send Verification Code'
                   : 'Verify & Create Account'}
@@ -346,7 +353,7 @@ export default function AuthPage() {
 
       {/* Footer */}
       <footer className="max-w-7xl w-full mx-auto px-6 py-6 text-center text-xs text-zinc-500 font-mono relative z-10">
-        FLOW — Personal Finance Tracker
+        FIN-XL — Personal Finance Tracker
       </footer>
     </div>
   );

@@ -4,6 +4,36 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Zap, ArrowDownRight, ArrowUpRight, Check, AlertCircle, Calendar, Sparkles } from 'lucide-react';
 import { Category, PaymentMethod, TransactionType, AutomationRule, AutomationFrequency } from '../lib/types';
+import { SearchableSelect, SelectOption } from './SearchableSelect';
+
+const FREQUENCY_OPTIONS: SelectOption[] = [
+  { value: 'MONTHLY', label: 'Monthly' },
+  { value: 'WEEKLY', label: 'Weekly' },
+  { value: 'DAILY', label: 'Daily' },
+];
+
+const DAY_OF_WEEK_OPTIONS: SelectOption[] = [
+  { value: '1', label: 'Every Monday' },
+  { value: '2', label: 'Every Tuesday' },
+  { value: '3', label: 'Every Wednesday' },
+  { value: '4', label: 'Every Thursday' },
+  { value: '5', label: 'Every Friday' },
+  { value: '6', label: 'Every Saturday' },
+  { value: '0', label: 'Every Sunday' },
+];
+
+const AUTO_PAYMENT_OPTIONS: SelectOption[] = [
+  { value: 'UPI', label: 'UPI / Autopay' },
+  { value: 'BANK_TRANSFER', label: 'Bank Standing Instruction' },
+  { value: 'CREDIT_CARD', label: 'Credit Card Auto-debit' },
+  { value: 'DEBIT_CARD', label: 'Debit Card' },
+  { value: 'CASH', label: 'Cash' },
+];
+
+const DAY_OF_MONTH_OPTIONS: SelectOption[] = Array.from({ length: 31 }, (_, i) => i + 1).map((d) => ({
+  value: d.toString(),
+  label: `${d === 1 ? '1st' : d === 2 ? '2nd' : d === 3 ? '3rd' : `${d}th`} of every month`,
+}));
 
 interface AddAutomationModalProps {
   isOpen: boolean;
@@ -254,15 +284,12 @@ export const AddAutomationModal: React.FC<AddAutomationModalProps> = ({
                   <label className="block text-[11px] font-mono uppercase font-semibold text-zinc-600 dark:text-zinc-300 tracking-wider">
                     Schedule Frequency
                   </label>
-                  <select
+                  <SearchableSelect
                     value={frequency}
-                    onChange={(e) => setFrequency(e.target.value as AutomationFrequency)}
-                    className="w-full bg-surface-raised border border-surface-border rounded-2xl px-3.5 py-2.5 text-xs text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                  >
-                    <option value="MONTHLY">Monthly</option>
-                    <option value="WEEKLY">Weekly</option>
-                    <option value="DAILY">Daily</option>
-                  </select>
+                    onChange={(val) => setFrequency(val as AutomationFrequency)}
+                    options={FREQUENCY_OPTIONS}
+                    searchable={false}
+                  />
                 </div>
 
                 {frequency === 'MONTHLY' && (
@@ -270,17 +297,12 @@ export const AddAutomationModal: React.FC<AddAutomationModalProps> = ({
                     <label className="block text-[11px] font-mono uppercase font-semibold text-zinc-600 dark:text-zinc-300 tracking-wider">
                       Day of Month
                     </label>
-                    <select
-                      value={dayOfMonth}
-                      onChange={(e) => setDayOfMonth(parseInt(e.target.value))}
-                      className="w-full bg-surface-raised border border-surface-border rounded-2xl px-3.5 py-2.5 text-xs text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-mono"
-                    >
-                      {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-                        <option key={d} value={d}>
-                          {d === 1 ? '1st' : d === 2 ? '2nd' : d === 3 ? '3rd' : `${d}th`} of every month
-                        </option>
-                      ))}
-                    </select>
+                    <SearchableSelect
+                      value={dayOfMonth.toString()}
+                      onChange={(val) => setDayOfMonth(parseInt(val))}
+                      options={DAY_OF_MONTH_OPTIONS}
+                      searchPlaceholder="Search day..."
+                    />
                   </div>
                 )}
 
@@ -289,19 +311,12 @@ export const AddAutomationModal: React.FC<AddAutomationModalProps> = ({
                     <label className="block text-[11px] font-mono uppercase font-semibold text-zinc-600 dark:text-zinc-300 tracking-wider">
                       Day of Week
                     </label>
-                    <select
-                      value={dayOfWeek}
-                      onChange={(e) => setDayOfWeek(parseInt(e.target.value))}
-                      className="w-full bg-surface-raised border border-surface-border rounded-2xl px-3.5 py-2.5 text-xs text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                    >
-                      <option value={1}>Every Monday</option>
-                      <option value={2}>Every Tuesday</option>
-                      <option value={3}>Every Wednesday</option>
-                      <option value={4}>Every Thursday</option>
-                      <option value={5}>Every Friday</option>
-                      <option value={6}>Every Saturday</option>
-                      <option value={0}>Every Sunday</option>
-                    </select>
+                    <SearchableSelect
+                      value={dayOfWeek.toString()}
+                      onChange={(val) => setDayOfWeek(parseInt(val))}
+                      options={DAY_OF_WEEK_OPTIONS}
+                      searchable={false}
+                    />
                   </div>
                 )}
               </div>
@@ -334,37 +349,32 @@ export const AddAutomationModal: React.FC<AddAutomationModalProps> = ({
                 <label className="block text-[11px] font-mono uppercase font-semibold text-zinc-600 dark:text-zinc-300 tracking-wider">
                   Category
                 </label>
-                <select
+                <SearchableSelect
                   value={categoryId || ''}
-                  onChange={(e) => setCategoryId(e.target.value || undefined)}
-                  className="w-full bg-surface-raised border border-surface-border rounded-2xl px-3.5 py-2.5 text-xs text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                >
-                  <option value="">Default Category</option>
-                  {categories
+                  onChange={(val) => setCategoryId(val || undefined)}
+                  options={categories
                     .filter((c) => c.type === type)
-                    .map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                </select>
+                    .map((cat) => ({
+                      value: cat.id,
+                      label: cat.name,
+                      color: cat.color,
+                    }))}
+                  placeholder="Default Category..."
+                  searchPlaceholder="Search categories..."
+                />
               </div>
 
               <div className="space-y-1">
                 <label className="block text-[11px] font-mono uppercase font-semibold text-zinc-600 dark:text-zinc-300 tracking-wider">
                   Payment Method
                 </label>
-                <select
+                <SearchableSelect
                   value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                  className="w-full bg-surface-raised border border-surface-border rounded-2xl px-3.5 py-2.5 text-xs text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                >
-                  <option value="UPI">UPI / Autopay</option>
-                  <option value="BANK_TRANSFER">Bank Standing Instruction</option>
-                  <option value="CREDIT_CARD">Credit Card Auto-debit</option>
-                  <option value="DEBIT_CARD">Debit Card</option>
-                  <option value="CASH">Cash</option>
-                </select>
+                  onChange={(val) => setPaymentMethod(val as PaymentMethod)}
+                  options={AUTO_PAYMENT_OPTIONS}
+                  placeholder="Select Payment Method..."
+                  searchPlaceholder="Search payment method..."
+                />
               </div>
             </div>
 

@@ -80,7 +80,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuc
           <div className="flex items-center justify-between pb-4 border-b border-surface-border">
             <div>
               <h2 className="text-base font-bold text-foreground tracking-tight">
-                {mode === 'login' ? 'Sign In to FLOW' : 'Create FLOW Account'}
+                {mode === 'login' ? 'Sign In to FIN-XL' : 'Create FIN-XL Account'}
               </h2>
               <p className="text-[11px] text-zinc-500 font-mono mt-0.5">
                 {mode === 'login'
