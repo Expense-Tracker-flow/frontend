@@ -227,36 +227,42 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 
           {/* PWA App Installation Section */}
           <div className="space-y-3 pt-4 border-t border-surface-border">
-            <div className="flex items-center space-x-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-              <Smartphone className="w-4 h-4 text-blue-500" />
+            <div className="flex items-center space-x-2 text-[10px] sm:text-[11px] font-mono font-bold text-zinc-400 uppercase tracking-wider">
+              <Smartphone className="w-4 h-4 text-primary" />
               <span>Progressive Web App</span>
             </div>
 
-            <div className="p-4 rounded-2xl border border-surface-border bg-surface-raised flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <div className="text-xs font-bold text-foreground flex items-center gap-2">
-                  <span>FIN-XL Standalone App</span>
-                  {isStandalone && (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                      Installed
-                    </span>
-                  )}
+            <div className="p-4 sm:p-5 rounded-2xl border border-surface-border bg-surface-raised flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all">
+              <div className="flex items-start sm:items-center space-x-3.5">
+                <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
+                  <Smartphone className="w-5 h-5" />
                 </div>
-                <p className="text-[11px] text-zinc-400 mt-1">
-                  {isStandalone 
-                    ? 'You are running FIN-XL as an installed standalone app.' 
-                    : 'Install FIN-XL on your phone home screen or desktop for full-screen access.'}
-                </p>
+                <div>
+                  <div className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-2">
+                    <span>FIN-XL App</span>
+                    {isStandalone && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Installed
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                    {isStandalone 
+                      ? 'You are running FIN-XL as an installed app.' 
+                      : 'Add PWA to your phone for easier use.'}
+                  </p>
+                </div>
               </div>
 
               {!isStandalone && (
                 <button
                   type="button"
                   onClick={handleInstallClick}
-                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center space-x-2 transition-all shadow-md shadow-blue-500/20 flex-shrink-0"
+                  className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-600 active:scale-95 text-white text-xs font-bold flex items-center justify-center space-x-2 transition-all shadow-md shadow-primary/25 flex-shrink-0 cursor-pointer"
                 >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Install App</span>
+                  <Download className="w-4 h-4" />
+                  <span>Add to Phone</span>
                 </button>
               )}
             </div>
