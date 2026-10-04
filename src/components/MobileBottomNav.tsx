@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { 
-  LayoutDashboard, 
+  MessageSquare, 
   PieChart, 
   Zap,
   History, 
@@ -25,7 +25,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface/90 backdrop-blur-xl border-t border-surface-border px-2 py-2 safe-area-pb">
       <div className="max-w-md mx-auto flex items-center justify-around relative">
-        {/* 1. Home Tab */}
+        {/* 1. Chat Tab (MonAI) */}
         <button
           onClick={() => onTabChange('home')}
           className={`flex flex-col items-center justify-center flex-1 py-1 transition-all ${
@@ -34,8 +34,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               : 'text-zinc-400 hover:text-foreground'
           }`}
         >
-          <LayoutDashboard className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
-          <span className="text-[9px] sm:text-[10px] tracking-tight">Home</span>
+          <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
+          <span className="text-[9px] sm:text-[10px] tracking-tight">Chat</span>
         </button>
 
         {/* 2. Summary Tab */}

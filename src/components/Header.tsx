@@ -6,7 +6,7 @@ import {
   RefreshCw, 
   LogOut, 
   LogIn, 
-  LayoutDashboard, 
+  MessageSquare, 
   PieChart, 
   Zap,
   History, 
@@ -79,8 +79,8 @@ export const Header: React.FC<HeaderProps> = ({
                   : 'text-zinc-500 hover:text-foreground'
               }`}
             >
-              <LayoutDashboard className="w-3.5 h-3.5" />
-              <span>Home</span>
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>Chat</span>
             </button>
 
             <button
