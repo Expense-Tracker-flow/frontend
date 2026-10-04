@@ -143,12 +143,17 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
     return { text: `In ${diffDays} days`, isUrgent: false, isPending: false };
   };
 
-  // Current day and month for timeline
+  // Current day and month for timeline & Google Calendar Grid
   const today = new Date();
   const todayDate = today.getDate();
   const currentMonthName = today.toLocaleDateString('en-US', { month: 'short' });
+  const currentMonthLong = today.toLocaleDateString('en-US', { month: 'long' });
   const currentYear = today.getFullYear();
   const daysInMonth = new Date(currentYear, today.getMonth() + 1, 0).getDate();
+  const firstDayOfMonth = new Date(currentYear, today.getMonth(), 1).getDay(); // 0 = Sun, 1 = Mon ...
+
+  const WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  const WEEKDAYS_SHORT = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
   // Map scheduled rules to days of month
   const scheduledDaysMap = useMemo(() => {
@@ -263,51 +268,91 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
         </div>
       </div>
 
-      {/* 3. Upcoming Schedule & Monthly Horizon Strip */}
+      {/* 3. Google Calendar Monthly Horizon (Mobile-Optimized 7-Column Grid) */}
       <div className="bg-surface border border-surface-border rounded-2xl p-3.5 sm:p-5 shadow-sm space-y-3.5 sm:space-y-4">
-        {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-surface-border/60 pb-3">
-          <div className="flex items-center space-x-2">
-            <div className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
-              <Calendar className="w-3.5 h-3.5" />
+        {/* Google Calendar Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-surface-border/60 pb-3">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+              <Calendar className="w-4 h-4" />
             </div>
-            <div className="min-w-0">
-              <h3 className="text-xs sm:text-sm font-bold text-foreground">
-                Monthly Schedule Horizon
-              </h3>
-              <p className="text-[10px] sm:text-[11px] text-zinc-400 truncate">
-                {currentMonthName} {currentYear} • Tap any day to filter cash flows
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm sm:text-base font-extrabold text-foreground tracking-tight">
+                  {currentMonthLong} {currentYear}
+                </h3>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-surface-raised border border-surface-border text-zinc-400">
+                  Google Calendar View
+                </span>
+              </div>
+              <p className="text-[10px] sm:text-[11px] text-zinc-400">
+                Tap any date to view scheduled cash flows or filter automations
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 text-[10px] font-mono overflow-x-auto pb-0.5 sm:pb-0 no-scrollbar">
-            <span className="flex items-center gap-1 text-zinc-500 flex-shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span>Inflow</span>
-            </span>
-            <span className="flex items-center gap-1 text-zinc-500 flex-shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-              <span>Outflow</span>
-            </span>
-            <span className="flex items-center gap-1 text-primary font-bold flex-shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-              <span>Today ({todayDate})</span>
-            </span>
-            {selectedDayFilter !== null && (
+          {/* Quick Actions & Legend */}
+          <div className="flex items-center justify-between sm:justify-end gap-2 text-[10px] font-mono">
+            <div className="flex items-center gap-2 sm:gap-3 text-zinc-400">
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span>Inflow</span>
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                <span>Outflow</span>
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5">
               <button
-                onClick={() => setSelectedDayFilter(null)}
-                className="ml-auto text-primary font-bold hover:underline flex-shrink-0"
+                type="button"
+                onClick={() => setSelectedDayFilter(selectedDayFilter === todayDate ? null : todayDate)}
+                className={`px-2.5 py-1 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                  selectedDayFilter === todayDate
+                    ? 'bg-primary text-white border-primary shadow-xs'
+                    : 'bg-surface-raised border-surface-border text-primary hover:bg-primary/10'
+                }`}
               >
-                Clear Filter
+                Today ({todayDate})
               </button>
-            )}
+
+              {selectedDayFilter !== null && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedDayFilter(null)}
+                  className="px-2 py-1 rounded-xl text-xs font-semibold text-zinc-400 hover:text-foreground transition-colors cursor-pointer"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Sleek 31-Day Timeline Bar (Horizontal swipe on phone, full grid on desktop) */}
-        <div className="relative">
-          <div className="flex gap-1.5 overflow-x-auto pb-2 pt-0.5 no-scrollbar sm:grid sm:grid-cols-16 lg:grid-cols-31 sm:overflow-visible">
+        {/* 7-Column Google Calendar Month Grid */}
+        <div className="bg-surface-raised/40 border border-surface-border/80 rounded-2xl p-2.5 sm:p-4">
+          {/* Weekday Header: S M T W T F S on mobile, SUN MON TUE... on desktop */}
+          <div className="grid grid-cols-7 gap-1 text-center mb-1.5 border-b border-surface-border/50 pb-1.5">
+            {WEEKDAYS.map((wd, idx) => (
+              <div
+                key={wd}
+                className="text-[10px] sm:text-xs font-mono font-bold text-zinc-400 py-0.5"
+              >
+                <span className="sm:hidden">{WEEKDAYS_SHORT[idx]}</span>
+                <span className="hidden sm:inline">{wd}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Month Day Cells */}
+          <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
+            {/* Blank cells for offset before 1st of month */}
+            {Array.from({ length: firstDayOfMonth }, (_, i) => (
+              <div key={`offset-${i}`} className="h-10 sm:h-12 pointer-events-none opacity-0" />
+            ))}
+
+            {/* Actual Days */}
             {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
               const dayRules = scheduledDaysMap.get(day) || [];
               const isToday = day === todayDate;
@@ -318,15 +363,16 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
               return (
                 <button
                   key={day}
+                  type="button"
                   onClick={() => setSelectedDayFilter(isSelected ? null : day)}
-                  className={`group relative flex flex-col items-center justify-between py-1.5 px-1 rounded-xl border transition-all min-w-[36px] sm:min-w-0 h-12 flex-shrink-0 sm:flex-shrink ${
+                  className={`group relative flex flex-col items-center justify-center h-10 sm:h-12 rounded-xl sm:rounded-2xl transition-all cursor-pointer ${
                     isSelected
-                      ? 'border-primary bg-primary text-white shadow-md shadow-primary/20 scale-105 z-10'
+                      ? 'bg-primary/15 border-2 border-primary shadow-xs'
                       : isToday
-                      ? 'border-primary/80 bg-primary/10 text-primary font-bold ring-2 ring-primary/20'
+                      ? 'bg-surface-raised border border-primary/40'
                       : dayRules.length > 0
-                      ? 'bg-surface-raised border-surface-border text-foreground font-semibold hover:border-primary/50 hover:bg-surface-raised/90'
-                      : 'bg-surface-raised/20 border-surface-border/40 text-zinc-400 hover:border-surface-border hover:bg-surface-raised/40'
+                      ? 'hover:bg-surface-raised border border-transparent hover:border-surface-border'
+                      : 'hover:bg-surface-raised/50 border border-transparent'
                   }`}
                   title={
                     dayRules.length > 0
@@ -334,31 +380,111 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
                       : `Day ${day}`
                   }
                 >
-                  <span className={`text-[10px] font-mono leading-none ${isSelected ? 'text-white font-bold' : ''}`}>
+                  {/* Google Calendar Circular Number */}
+                  <span
+                    className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs font-mono transition-transform group-hover:scale-105 ${
+                      isToday
+                        ? 'bg-primary text-white font-black shadow-sm shadow-primary/30'
+                        : isSelected
+                        ? 'bg-primary text-white font-bold'
+                        : dayRules.length > 0
+                        ? 'font-bold text-foreground'
+                        : 'text-zinc-500 group-hover:text-foreground'
+                    }`}
+                  >
                     {day}
                   </span>
-                  
-                  {dayRules.length > 0 ? (
-                    <div className="flex items-center space-x-0.5 mb-0.5">
-                      {hasIncome && (
-                        <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-emerald-500'}`} />
-                      )}
-                      {hasExpense && (
-                        <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white/80' : 'bg-rose-500'}`} />
-                      )}
-                    </div>
-                  ) : (
-                    <span className="w-1 h-1 rounded-full bg-transparent" />
-                  )}
+
+                  {/* Google Calendar Event Dots */}
+                  <div className="h-1.5 flex items-center justify-center gap-0.5 mt-0.5">
+                    {hasIncome && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-2xs" />
+                    )}
+                    {hasExpense && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-2xs" />
+                    )}
+                    {!hasIncome && !hasExpense && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-transparent" />
+                    )}
+                  </div>
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* Upcoming Cash Flow Queue / Cards */}
-        {upcomingRules.length > 0 && (
-          <div className="pt-2">
+        {/* Selected Day Agenda or Upcoming Queue */}
+        {selectedDayFilter !== null ? (
+          /* Day Specific Agenda (Google Calendar Daily Agenda) */
+          <div className="pt-1 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-bold">
+                Schedule for {currentMonthName} {selectedDayFilter}
+              </span>
+              <span className="text-[10px] sm:text-[11px] font-mono text-primary font-bold">
+                {(scheduledDaysMap.get(selectedDayFilter) || []).length} scheduled
+              </span>
+            </div>
+
+            {(scheduledDaysMap.get(selectedDayFilter) || []).length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2.5">
+                {(scheduledDaysMap.get(selectedDayFilter) || []).map((rule) => {
+                  const isIncome = rule.type === 'INCOME';
+                  return (
+                    <div
+                      key={rule.id}
+                      className="p-3 rounded-xl bg-surface-raised/60 border border-surface-border hover:border-primary/40 transition-all flex items-center justify-between gap-3 shadow-2xs"
+                    >
+                      <div className="flex items-center space-x-2.5 min-w-0">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                          isIncome ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                        }`}>
+                          {isIncome ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-bold text-xs text-foreground truncate">{rule.title}</div>
+                          <div className="text-[10px] text-zinc-400 font-mono">
+                            {rule.categoryName || (isIncome ? 'Income' : 'Expense')} • {rule.paymentMethod || 'UPI'}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-right flex-shrink-0">
+                        <div className={`font-mono font-bold text-xs ${isIncome ? 'text-emerald-500' : 'text-foreground'}`}>
+                          {isIncome ? '+' : '-'}{currencySymbol}{rule.amount.toLocaleString('en-IN')}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleTriggerWithFeedback(rule)}
+                          disabled={runningId === rule.id}
+                          className="text-[9px] font-mono text-primary hover:underline flex items-center justify-end gap-1 mt-0.5 ml-auto cursor-pointer"
+                        >
+                          {runningId === rule.id ? (
+                            <Sparkles className="w-2.5 h-2.5 animate-spin" />
+                          ) : successId === rule.id ? (
+                            <span className="text-emerald-500 font-bold flex items-center gap-0.5">
+                              <Check className="w-2.5 h-2.5" /> Executed
+                            </span>
+                          ) : (
+                            <>
+                              <Play className="w-2 h-2" /> Run Now
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="py-4 text-center text-xs text-zinc-400 bg-surface-raised/20 rounded-xl border border-surface-border/50">
+                No scheduled automations on {currentMonthName} {selectedDayFilter}.
+              </div>
+            )}
+          </div>
+        ) : upcomingRules.length > 0 ? (
+          /* Upcoming Cash Flow Queue / Cards */
+          <div className="pt-1">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-wider text-zinc-400 font-bold">
                 Upcoming Queue
@@ -376,7 +502,7 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
                 return (
                   <div
                     key={rule.id}
-                    className="p-3 rounded-xl bg-surface-raised/50 border border-surface-border hover:border-primary/30 transition-all flex items-center justify-between gap-3"
+                    className="p-3 rounded-xl bg-surface-raised/50 border border-surface-border hover:border-primary/30 transition-all flex items-center justify-between gap-3 shadow-2xs"
                   >
                     <div className="flex items-center space-x-2.5 min-w-0">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
@@ -405,7 +531,7 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
                       <button
                         onClick={() => handleTriggerWithFeedback(rule)}
                         disabled={runningId === rule.id}
-                        className="text-[9px] font-mono text-primary hover:underline flex items-center justify-end gap-1 mt-0.5 ml-auto"
+                        className="text-[9px] font-mono text-primary hover:underline flex items-center justify-end gap-1 mt-0.5 ml-auto cursor-pointer"
                       >
                         {runningId === rule.id ? (
                           <Sparkles className="w-2.5 h-2.5 animate-spin" />
@@ -425,7 +551,7 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
               })}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* 4. Quick Setup Templates (Swipeable on mobile, grid on desktop) */}
