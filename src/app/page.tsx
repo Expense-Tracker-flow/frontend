@@ -1203,26 +1203,17 @@ export default function DashboardPage() {
         {/* 📜 TAB 4: HISTORY (Complete Transaction Ledger) */}
         {/* ============================================================== */}
         {activeTab === 'history' && (
-          <div className="space-y-8">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-              <div>
-                <span className="text-xs font-mono text-zinc-500 uppercase tracking-widest">
-                  Financial Records
-                </span>
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mt-1">
-                  Transaction History
-                </h1>
-                <p className="text-sm text-zinc-500 mt-0.5">
-                  Complete chronological ledger of all income and expenses.
-                </p>
-              </div>
-
-              <button
-                onClick={handleOpenExpense}
-                className="px-4 py-2 rounded-xl bg-primary hover:bg-primary-600 text-white font-semibold text-xs transition-all shadow-md shadow-primary/20"
-              >
-                + Add Transaction
-              </button>
+          <div className="space-y-6 sm:space-y-8">
+            <div>
+              <span className="text-xs font-mono text-zinc-500 uppercase tracking-widest">
+                Financial Records
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mt-1 text-foreground">
+                Transaction History
+              </h1>
+              <p className="text-sm text-zinc-500 mt-0.5">
+                Complete chronological ledger of all income and expenses.
+              </p>
             </div>
 
             {/* Complete Activity Timeline */}
