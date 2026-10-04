@@ -1715,6 +1715,36 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
 
           {/* Centered ChatGPT-style Chat Bar */}
           <div className="w-full max-w-2xl relative z-30">
+            {/* Quick Mode Pills Row - Visible on Mobile for 100% full-width search input */}
+            <div className="flex sm:hidden items-center justify-center gap-2 mb-2">
+              <button
+                type="button"
+                onClick={() => handlePillClick('/expense ', inputRef)}
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-mono transition-all duration-150 ${
+                  input.startsWith('/expense')
+                    ? 'bg-rose-500 text-white font-semibold shadow-md shadow-rose-500/30 scale-[1.02]'
+                    : 'bg-surface-raised border border-surface-border text-rose-500 hover:bg-rose-500/10'
+                }`}
+                title="Record Expense"
+              >
+                <ArrowDownRight className="w-3.5 h-3.5" />
+                <span>/expense</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePillClick('/income ', inputRef)}
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-mono transition-all duration-150 ${
+                  input.startsWith('/income')
+                    ? 'bg-emerald-500 text-white font-semibold shadow-md shadow-emerald-500/30 scale-[1.02]'
+                    : 'bg-surface-raised border border-surface-border text-emerald-500 hover:bg-emerald-500/10'
+                }`}
+                title="Record Income"
+              >
+                <ArrowUpRight className="w-3.5 h-3.5" />
+                <span>/income</span>
+              </button>
+            </div>
+
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -1725,8 +1755,8 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
               {renderSlashCommandPalette()}
               {renderSuggestionsDropdown('down')}
 
-              {/* Quick Mode Pills directly WITHIN the chat bar */}
-              <div className="flex items-center space-x-1.5 pl-1.5 sm:pl-2 flex-shrink-0">
+              {/* Quick Mode Pills directly WITHIN the chat bar on desktop */}
+              <div className="hidden sm:flex items-center space-x-1.5 pl-1.5 sm:pl-2 flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => handlePillClick('/expense ', inputRef)}
@@ -1755,6 +1785,17 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                 </button>
               </div>
 
+              {/* Mobile Leading Icon / Indicator */}
+              <div className="sm:hidden flex items-center pl-2.5 flex-shrink-0 text-zinc-400">
+                {input.startsWith('/expense') ? (
+                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                ) : input.startsWith('/income') ? (
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                ) : (
+                  <Sparkles className="w-3.5 h-3.5 text-primary/70" />
+                )}
+              </div>
+
               <input
                 ref={inputRef}
                 type="text"
@@ -1769,7 +1810,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                     ? "amount & description (e.g. 50000 Monthly Salary)..."
                     : "Type / for commands or ask anything..."
                 }
-                className="w-full bg-transparent pl-2.5 sm:pl-3 pr-2 py-2 sm:py-2.5 text-xs sm:text-sm text-foreground placeholder-zinc-400 focus:outline-none"
+                className="w-full bg-transparent pl-2 sm:pl-3 pr-2 py-2 sm:py-2.5 text-xs sm:text-sm text-foreground placeholder-zinc-400 focus:outline-none"
               />
 
               <button
@@ -2065,6 +2106,36 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
 
           {/* Sticky Bottom ChatGPT Input Bar */}
           <div className="sticky bottom-4 z-40 w-full pt-2">
+            {/* Quick Mode Pills Row - Visible on Mobile for 100% full-width chat input */}
+            <div className="flex sm:hidden items-center justify-center gap-2 mb-1.5">
+              <button
+                type="button"
+                onClick={() => handlePillClick('/expense ', activeInputRef)}
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-mono transition-all duration-150 ${
+                  input.startsWith('/expense')
+                    ? 'bg-rose-500 text-white font-semibold shadow-md shadow-rose-500/30 scale-[1.02]'
+                    : 'bg-surface-raised border border-surface-border text-rose-500 hover:bg-rose-500/10'
+                }`}
+                title="Record Expense"
+              >
+                <ArrowDownRight className="w-3.5 h-3.5" />
+                <span>/expense</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePillClick('/income ', activeInputRef)}
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-mono transition-all duration-150 ${
+                  input.startsWith('/income')
+                    ? 'bg-emerald-500 text-white font-semibold shadow-md shadow-emerald-500/30 scale-[1.02]'
+                    : 'bg-surface-raised border border-surface-border text-emerald-500 hover:bg-emerald-500/10'
+                }`}
+                title="Record Income"
+              >
+                <ArrowUpRight className="w-3.5 h-3.5" />
+                <span>/income</span>
+              </button>
+            </div>
+
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -2075,8 +2146,8 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
               {renderSlashCommandPalette()}
               {renderSuggestionsDropdown('up')}
 
-              {/* Quick Mode Pills directly WITHIN the chat bar */}
-              <div className="flex items-center space-x-1.5 pl-1.5 sm:pl-2 flex-shrink-0">
+              {/* Quick Mode Pills directly WITHIN the chat bar on desktop */}
+              <div className="hidden sm:flex items-center space-x-1.5 pl-1.5 sm:pl-2 flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => handlePillClick('/expense ', activeInputRef)}
@@ -2088,7 +2159,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                   title="Record Expense"
                 >
                   <ArrowDownRight className="w-3.5 h-3.5" />
-                  <span className="text-[11px] font-medium hidden xs:inline">/expense</span>
+                  <span className="text-[11px] font-medium">/expense</span>
                 </button>
                 <button
                   type="button"
@@ -2101,8 +2172,19 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                   title="Record Income"
                 >
                   <ArrowUpRight className="w-3.5 h-3.5" />
-                  <span className="text-[11px] font-medium hidden xs:inline">/income</span>
+                  <span className="text-[11px] font-medium">/income</span>
                 </button>
+              </div>
+
+              {/* Mobile Leading Icon / Indicator */}
+              <div className="sm:hidden flex items-center pl-2.5 flex-shrink-0 text-zinc-400">
+                {input.startsWith('/expense') ? (
+                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                ) : input.startsWith('/income') ? (
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                ) : (
+                  <Sparkles className="w-3.5 h-3.5 text-primary/70" />
+                )}
               </div>
 
               <input
@@ -2119,7 +2201,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                     ? "amount & description (e.g. 50000 Monthly Salary)..."
                     : "Type / for commands or ask questions..."
                 }
-                className="w-full bg-transparent pl-2.5 pr-2 py-2 text-xs text-foreground placeholder-zinc-400 focus:outline-none"
+                className="w-full bg-transparent pl-2 sm:pl-3 pr-2 py-2 text-xs text-foreground placeholder-zinc-400 focus:outline-none"
               />
 
               <button
