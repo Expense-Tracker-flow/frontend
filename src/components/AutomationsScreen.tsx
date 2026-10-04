@@ -365,31 +365,23 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
                   key={day}
                   type="button"
                   onClick={() => setSelectedDayFilter(isSelected ? null : day)}
-                  className={`group relative flex flex-col items-center justify-center h-10 sm:h-12 rounded-xl sm:rounded-2xl transition-all cursor-pointer ${
-                    isSelected
-                      ? 'bg-primary/15 border-2 border-primary shadow-xs'
-                      : isToday
-                      ? 'bg-surface-raised border border-primary/40'
-                      : dayRules.length > 0
-                      ? 'hover:bg-surface-raised border border-transparent hover:border-surface-border'
-                      : 'hover:bg-surface-raised/50 border border-transparent'
-                  }`}
+                  className="group relative flex flex-col items-center justify-center h-10 sm:h-12 bg-transparent border-0 p-0 transition-all cursor-pointer select-none"
                   title={
                     dayRules.length > 0
                       ? `Day ${day}: ${dayRules.map((r) => `${r.title} (${r.type === 'INCOME' ? '+' : '-'}${currencySymbol}${r.amount})`).join(', ')}`
                       : `Day ${day}`
                   }
                 >
-                  {/* Google Calendar Circular Number */}
+                  {/* Google Calendar Circular Number: ONLY a circle, NO square box */}
                   <span
-                    className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs font-mono transition-transform group-hover:scale-105 ${
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-mono transition-all group-hover:scale-110 ${
                       isToday
-                        ? 'bg-primary text-white font-black shadow-sm shadow-primary/30'
+                        ? 'bg-primary text-white font-black shadow-md shadow-primary/35'
                         : isSelected
-                        ? 'bg-primary text-white font-bold'
+                        ? 'bg-primary text-white font-bold ring-2 ring-primary ring-offset-2 ring-offset-surface'
                         : dayRules.length > 0
-                        ? 'font-bold text-foreground'
-                        : 'text-zinc-500 group-hover:text-foreground'
+                        ? 'font-bold text-foreground group-hover:bg-surface-raised'
+                        : 'text-zinc-600 dark:text-zinc-400 group-hover:bg-surface-raised/70 group-hover:text-foreground'
                     }`}
                   >
                     {day}
