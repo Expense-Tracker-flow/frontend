@@ -1911,10 +1911,14 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
         category: res.data.category || matchedCategory,
       };
       onTransactionAdded(confirmedTransaction);
-      const dateText = dateLabel !== 'Today' ? ` on ${dateLabel} (${dateStr})` : '';
+      const isIncome = type === 'INCOME';
+      const actionName = isIncome ? 'Income Added' : 'Expense Recorded';
+      const formattedAmt = `${currencySymbol}${amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+      const cleanDateDisplay = dateLabel !== 'Today' ? dateLabel : 'Today';
       const catDisplayName = confirmedTransaction.category?.name || matchedCategory?.name || 'General';
+
       return {
-        text: `Recorded **${type === 'INCOME' ? 'income' : 'expense'}** of **${currencySymbol}${amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}** for "${title}"${dateText} • Categorized by MonAI under **${catDisplayName}**.`,
+        text: `✅ **${actionName}**: **${formattedAmt}** for **"${title}"**\n📁 Category: **${catDisplayName}** • 📅 Date: **${cleanDateDisplay}**`,
         widget: {
           type: 'TRANSACTION_CONFIRMATION',
           transaction: confirmedTransaction,
@@ -2130,52 +2134,86 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
 
                   {/* 1. WIDGET: Single Transaction Confirmation Card */}
                   {msg.widget?.type === 'TRANSACTION_CONFIRMATION' && msg.widget.transaction && (
-                    <div className="mt-2.5 p-2.5 rounded-xl bg-surface-raised border border-surface-border flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <div
-                          className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                            msg.widget.transaction.type === 'INCOME'
-                              ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                              : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
-                          }`}
-                        >
-                          {msg.widget.transaction.type === 'INCOME' ? (
-                            <ArrowUpRight className="w-3.5 h-3.5" />
-                          ) : (
-                            <ArrowDownRight className="w-3.5 h-3.5" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-foreground text-[11px]">
-                            {msg.widget.transaction.description}
+                    <div className="mt-2.5 p-3 rounded-2xl bg-zinc-50 dark:bg-[#151822] border border-surface-border shadow-xs space-y-2.5">
+                      {/* Top Header: Badge + Amount */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold ${
+                              msg.widget.transaction.type === 'INCOME'
+                                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                                : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
+                            }`}
+                          >
+                            {msg.widget.transaction.type === 'INCOME' ? (
+                              <ArrowUpRight className="w-4 h-4" />
+                            ) : (
+                              <ArrowDownRight className="w-4 h-4" />
+                            )}
                           </div>
-                          <div className="text-[10px] text-zinc-400 font-mono flex items-center gap-1.5 mt-0.5">
-                            <span className="font-semibold text-foreground">{msg.widget.transaction.category?.name || 'General'}</span>
-                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-primary/10 text-primary text-[8px] font-bold">
-                              <Sparkles className="w-2.5 h-2.5" />
-                              AI Categorized
-                            </span>
-                            {msg.widget.transaction.transactionDate ? <span>• {msg.widget.transaction.transactionDate}</span> : null}
+                          <span
+                            className={`text-[10px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded-md ${
+                              msg.widget.transaction.type === 'INCOME'
+                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                            }`}
+                          >
+                            {msg.widget.transaction.type === 'INCOME' ? 'Income' : 'Expense'}
+                          </span>
+                        </div>
+
+                        <div className="text-right">
+                          <div
+                            className={`font-mono font-extrabold text-sm sm:text-base ${
+                              msg.widget.transaction.type === 'INCOME'
+                                ? 'text-emerald-600 dark:text-emerald-400'
+                                : 'text-rose-600 dark:text-rose-400'
+                            }`}
+                          >
+                            {msg.widget.transaction.type === 'INCOME' ? '+' : '-'}
+                            {currencySymbol}
+                            {msg.widget.transaction.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          </div>
+                          <div className="flex items-center justify-end gap-1 text-[8px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                            <CheckCircle2 className="w-2.5 h-2.5" />
+                            <span>Saved</span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="text-right">
-                        <div
-                          className={`font-mono font-bold text-xs ${
-                            msg.widget.transaction.type === 'INCOME'
-                              ? 'text-emerald-600 dark:text-emerald-400'
-                              : 'text-rose-600 dark:text-rose-400'
-                          }`}
-                        >
-                          {msg.widget.transaction.type === 'INCOME' ? '+' : '-'}
-                          {currencySymbol}
-                          {msg.widget.transaction.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      {/* Clean 2-Column Key Details Grid */}
+                      <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-surface-border/70 text-xs">
+                        <div className="p-2 rounded-xl bg-white dark:bg-[#1A1D28] border border-surface-border/60">
+                          <div className="text-[9px] text-zinc-400 font-mono uppercase font-semibold">Description</div>
+                          <div className="font-semibold text-foreground text-[11px] mt-0.5 truncate">
+                            {msg.widget.transaction.description || 'Transaction'}
+                          </div>
                         </div>
-                        <span className="text-[8px] text-emerald-600 dark:text-emerald-400 font-mono flex items-center justify-end space-x-0.5">
-                          <CheckCircle2 className="w-2.5 h-2.5 inline" />
-                          <span>Logged</span>
-                        </span>
+
+                        <div className="p-2 rounded-xl bg-white dark:bg-[#1A1D28] border border-surface-border/60">
+                          <div className="text-[9px] text-zinc-400 font-mono uppercase font-semibold flex items-center justify-between">
+                            <span>Category</span>
+                            <span className="text-[8px] text-primary font-bold">AI</span>
+                          </div>
+                          <div className="font-semibold text-foreground text-[11px] mt-0.5 truncate flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
+                            <span className="truncate">{msg.widget.transaction.category?.name || 'General'}</span>
+                          </div>
+                        </div>
+
+                        <div className="p-2 rounded-xl bg-white dark:bg-[#1A1D28] border border-surface-border/60">
+                          <div className="text-[9px] text-zinc-400 font-mono uppercase font-semibold">Date</div>
+                          <div className="font-semibold text-foreground text-[11px] mt-0.5 font-mono">
+                            {msg.widget.transaction.transactionDate || new Date().toISOString().split('T')[0]}
+                          </div>
+                        </div>
+
+                        <div className="p-2 rounded-xl bg-white dark:bg-[#1A1D28] border border-surface-border/60">
+                          <div className="text-[9px] text-zinc-400 font-mono uppercase font-semibold">Payment</div>
+                          <div className="font-semibold text-foreground text-[11px] mt-0.5 uppercase tracking-wide font-mono">
+                            {msg.widget.transaction.paymentMethod?.replace('_', ' ') || 'CASH'}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
