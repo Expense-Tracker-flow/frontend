@@ -402,6 +402,27 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     color: cat.color || '#6366F1',
   }));
 
+  const popularCategories = useMemo(() => {
+    return currentCategories.slice(0, 5);
+  }, [currentCategories]);
+
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const yesterdayStr = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return d.toISOString().split('T')[0];
+  }, []);
+
+  const isToday = transactionDate === todayStr;
+  const isYesterday = transactionDate === yesterdayStr;
+
+  const handleSelectQuickCategory = (cat: Category) => {
+    setCategoryId(cat.id);
+    if (!description.trim()) {
+      setDescription(cat.name);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -414,16 +435,27 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
           transition={{ duration: 0.2, ease: 'easeOut' }}
           className="relative w-full max-w-lg bg-surface border border-surface-border rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col my-auto text-foreground max-h-[92dvh] sm:max-h-[88vh]"
         >
+          {/* Dynamic Top Edge Halo Glow */}
+          <div className={`h-1.5 w-full transition-all duration-500 ${
+            type === 'EXPENSE'
+              ? 'bg-gradient-to-r from-rose-500 via-red-500 to-rose-600'
+              : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600'
+          }`} />
+
           {/* Header Bar: Type Switcher on Left, AI Fill & Close on Right */}
-          <div className="flex items-center justify-between px-3.5 sm:px-6 py-2.5 sm:py-3.5 border-b border-surface-border flex-shrink-0">
+          <div className={`flex items-center justify-between px-3.5 sm:px-6 py-2.5 sm:py-3 border-b border-surface-border flex-shrink-0 transition-colors duration-300 ${
+            type === 'EXPENSE'
+              ? 'bg-gradient-to-r from-rose-500/8 via-transparent to-transparent'
+              : 'bg-gradient-to-r from-emerald-500/8 via-transparent to-transparent'
+          }`}>
             {/* Segmented Type Switcher */}
-            <div className="flex items-center bg-surface-raised p-0.5 sm:p-1 rounded-xl sm:rounded-2xl border border-surface-border">
+            <div className="flex items-center bg-surface-raised p-1 rounded-2xl border border-surface-border shadow-2xs">
               <button
                 type="button"
                 onClick={() => handleTypeChange('EXPENSE')}
-                className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl font-bold text-xs flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
+                className={`px-3 sm:px-4 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all duration-200 cursor-pointer ${
                   type === 'EXPENSE'
-                    ? 'bg-rose-500 text-white shadow-xs'
+                    ? 'bg-gradient-to-r from-rose-500 to-rose-600 text-white shadow-md shadow-rose-500/35 scale-[1.02]'
                     : 'text-zinc-500 hover:text-foreground'
                 }`}
               >
@@ -433,9 +465,9 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
               <button
                 type="button"
                 onClick={() => handleTypeChange('INCOME')}
-                className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl font-bold text-xs flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
+                className={`px-3 sm:px-4 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all duration-200 cursor-pointer ${
                   type === 'INCOME'
-                    ? 'bg-emerald-500 text-white shadow-xs'
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/35 scale-[1.02]'
                     : 'text-zinc-500 hover:text-foreground'
                 }`}
               >
@@ -444,24 +476,24 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
               </button>
             </div>
 
-            <div className="flex items-center gap-1.5 sm:gap-2.5">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setActiveTab(activeTab === 'ai' ? 'manual' : 'ai')}
-                className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm active:scale-95 ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all duration-200 cursor-pointer shadow-sm active:scale-95 ${
                   activeTab === 'ai'
-                    ? 'bg-primary text-white shadow-md shadow-primary/30 ring-2 ring-primary/40'
-                    : 'bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary hover:border-primary/50'
+                    ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-500/30 ring-2 ring-violet-500/30'
+                    : 'bg-gradient-to-r from-violet-500/10 via-purple-500/10 to-indigo-500/10 hover:from-violet-500/20 hover:to-indigo-500/20 border border-violet-500/30 text-violet-600 dark:text-violet-400'
                 }`}
                 title="Smart Fill with AI"
               >
-                <Sparkles className="w-4 h-4 flex-shrink-0" />
+                <Sparkles className="w-3.5 h-3.5 animate-pulse" />
                 <span className="tracking-wide">AI Fill</span>
               </button>
 
               <button
                 onClick={onClose}
-                className="p-1.5 sm:p-2 rounded-xl sm:rounded-2xl text-zinc-400 hover:text-foreground hover:bg-surface-raised transition-colors cursor-pointer"
+                className="p-1.5 sm:p-2 rounded-xl text-zinc-400 hover:text-foreground hover:bg-surface-raised transition-colors cursor-pointer"
                 title="Close"
               >
                 <X className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -525,30 +557,72 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
               </div>
             </form>
           ) : (
-            /* Clean, Modern, Elegant Manual Transaction Form with Sticky Footer */
+            /* Clean, Modern, Dynamic Manual Transaction Form with Sticky Footer */
             <form onSubmit={handleSaveTransaction} className="flex flex-col flex-1 overflow-hidden min-h-0">
-              <div className="p-3.5 sm:p-6 space-y-3 sm:space-y-4 overflow-y-auto flex-1">
-                {/* 1. Date Calendar Picker at Top of Form */}
-                <div className="space-y-1">
-                  <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-semibold text-zinc-500 tracking-wider">
-                    Transaction Date
-                  </label>
+              <div className="p-3.5 sm:p-6 space-y-3.5 sm:space-y-4 overflow-y-auto flex-1">
+                {/* 1. Date Calendar Picker with Quick Day Pills */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-bold text-zinc-400 tracking-wider">
+                      Transaction Date
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setTransactionDate(todayStr)}
+                        className={`px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold transition-all cursor-pointer ${
+                          isToday 
+                            ? 'bg-primary text-white shadow-2xs scale-105' 
+                            : 'bg-surface-raised border border-surface-border text-zinc-500 hover:text-foreground'
+                        }`}
+                      >
+                        Today
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTransactionDate(yesterdayStr)}
+                        className={`px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold transition-all cursor-pointer ${
+                          isYesterday 
+                            ? 'bg-primary text-white shadow-2xs scale-105' 
+                            : 'bg-surface-raised border border-surface-border text-zinc-500 hover:text-foreground'
+                        }`}
+                      >
+                        Yesterday
+                      </button>
+                    </div>
+                  </div>
                   <input
                     type="date"
                     required
                     value={transactionDate}
                     onChange={(e) => setTransactionDate(e.target.value)}
-                    className="w-full bg-surface-raised border border-surface-border rounded-xl sm:rounded-2xl px-3 py-1.5 sm:py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+                    className="w-full bg-surface-raised border border-surface-border rounded-xl sm:rounded-2xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
                   />
                 </div>
 
-                {/* 2. Amount Input & Quick-Add Pills */}
-                <div className="space-y-1">
-                  <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-semibold text-zinc-500 tracking-wider">
-                    Amount
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 font-mono text-base sm:text-lg font-bold">
+                {/* 2. Hero Dynamic Amount Input & Quick-Add Pills */}
+                <div className={`p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border transition-all duration-300 relative overflow-hidden ${
+                  type === 'EXPENSE' 
+                    ? 'bg-gradient-to-br from-rose-500/10 via-surface-raised to-surface-raised/80 border-rose-500/30 focus-within:border-rose-500 focus-within:ring-4 focus-within:ring-rose-500/15' 
+                    : 'bg-gradient-to-br from-emerald-500/10 via-surface-raised to-surface-raised/80 border-emerald-500/30 focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/15'
+                }`}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] sm:text-[11px] font-mono uppercase font-bold tracking-wider text-zinc-400">
+                      Amount ({type === 'EXPENSE' ? 'Spent' : 'Received'})
+                    </span>
+                    {amount && parseFloat(amount) > 0 && (
+                      <span className={`text-[11px] font-bold font-mono px-2 py-0.5 rounded-full ${
+                        type === 'EXPENSE' ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400' : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                      }`}>
+                        ₹{parseFloat(amount).toLocaleString('en-IN')}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <span className={`text-2xl sm:text-3xl font-black font-mono select-none transition-colors ${
+                      type === 'EXPENSE' ? 'text-rose-500' : 'text-emerald-500'
+                    }`}>
                       ₹
                     </span>
                     <input
@@ -560,26 +634,31 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
                       placeholder="0.00"
-                      className="w-full bg-surface-raised border border-surface-border rounded-xl sm:rounded-2xl pl-8 sm:pl-9 pr-3 sm:pr-4 py-2 sm:py-2.5 text-base sm:text-lg font-bold font-mono text-foreground placeholder-zinc-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      className="w-full bg-transparent text-2xl sm:text-3xl font-black font-mono text-foreground placeholder-zinc-400/50 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none tracking-tight"
                     />
                   </div>
+
                   {/* Clean Quick Amount Helper Pills */}
-                  <div className="flex items-center gap-1 sm:gap-1.5 pt-0.5 overflow-x-auto no-scrollbar">
-                    {[100, 200, 500, 1000, 2000].map((val) => (
+                  <div className="flex items-center gap-1.5 pt-2.5 overflow-x-auto no-scrollbar">
+                    {[100, 200, 500, 1000, 2000, 5000].map((val) => (
                       <button
                         key={val}
                         type="button"
                         onClick={() => handleQuickAmount(val)}
-                        className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg sm:rounded-xl bg-surface border border-surface-border hover:border-primary/40 text-[11px] sm:text-xs font-mono font-medium text-zinc-600 dark:text-zinc-300 hover:text-primary transition-all active:scale-95 cursor-pointer flex-shrink-0"
+                        className={`px-2.5 py-1 rounded-xl font-mono text-xs font-bold border transition-all duration-150 active:scale-90 hover:scale-105 cursor-pointer flex-shrink-0 shadow-2xs ${
+                          type === 'EXPENSE'
+                            ? 'bg-surface hover:bg-rose-500/15 border-surface-border hover:border-rose-500/40 text-foreground hover:text-rose-600 dark:hover:text-rose-400'
+                            : 'bg-surface hover:bg-emerald-500/15 border-surface-border hover:border-emerald-500/40 text-foreground hover:text-emerald-600 dark:hover:text-emerald-400'
+                        }`}
                       >
-                        +{val}
+                        +{val >= 1000 ? `${val / 1000}k` : val}
                       </button>
                     ))}
                     {amount && (
                       <button
                         type="button"
                         onClick={handleClearAmount}
-                        className="px-2 py-0.5 rounded-lg text-[11px] sm:text-xs font-mono text-rose-500 hover:bg-rose-500/10 transition-colors cursor-pointer ml-auto flex-shrink-0"
+                        className="px-2.5 py-1 rounded-xl text-xs font-mono font-semibold text-rose-500 hover:bg-rose-500/15 border border-transparent hover:border-rose-500/30 transition-all cursor-pointer ml-auto flex-shrink-0 active:scale-95"
                       >
                         Clear
                       </button>
@@ -587,32 +666,66 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                   </div>
                 </div>
 
-                {/* 3. Category & Payment Method Side-by-Side (Searchable Dropdowns) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
-                  {/* Category Dropdown */}
-                  <div className="space-y-1">
-                    <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-semibold text-zinc-500 tracking-wider">
+                {/* 3. Category with Quick 1-Tap Chips */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-bold text-zinc-400 tracking-wider">
                       Category
                     </label>
-                    <SearchableSelect
-                      value={categoryId || ''}
-                      onChange={(val) => {
-                        setCategoryId(val || undefined);
-                        const cat = availableCategories.find((c) => c.id === val);
-                        if (cat && !description.trim()) {
-                          setDescription(cat.name);
-                        }
-                      }}
-                      options={categoryOptions}
-                      placeholder="Select Category..."
-                      searchPlaceholder="Search category..."
-                      className="text-xs"
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setIsAddCategoryOpen(true)}
+                      className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>New</span>
+                    </button>
                   </div>
+                  <SearchableSelect
+                    value={categoryId || ''}
+                    onChange={(val) => {
+                      setCategoryId(val || undefined);
+                      const cat = availableCategories.find((c) => c.id === val);
+                      if (cat && !description.trim()) {
+                        setDescription(cat.name);
+                      }
+                    }}
+                    options={categoryOptions}
+                    placeholder="Select Category..."
+                    searchPlaceholder="Search category..."
+                    className="text-xs"
+                  />
+                  {/* Quick 1-Tap Category Chips */}
+                  <div className="flex items-center gap-1.5 pt-0.5 overflow-x-auto no-scrollbar">
+                    {popularCategories.map((cat) => {
+                      const isSelected = categoryId === cat.id;
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => handleSelectQuickCategory(cat)}
+                          className={`px-2.5 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all cursor-pointer flex-shrink-0 active:scale-95 ${
+                            isSelected
+                              ? 'bg-primary text-white border-primary shadow-xs'
+                              : 'bg-surface-raised border-surface-border text-zinc-600 dark:text-zinc-300 hover:border-primary/40 hover:text-foreground'
+                          }`}
+                        >
+                          <span 
+                            className="w-2 h-2 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: isSelected ? '#ffffff' : (cat.color || '#6366F1') }}
+                          />
+                          <span className="truncate max-w-[110px]">{cat.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
 
-                  {/* Payment Method Dropdown */}
+                {/* 4. Payment Method & Description/Notes */}
+                <div className="space-y-3">
+                  {/* Payment Method */}
                   <div className="space-y-1">
-                    <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-semibold text-zinc-500 tracking-wider">
+                    <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-bold text-zinc-400 tracking-wider">
                       Payment Method
                     </label>
                     <SearchableSelect
@@ -625,52 +738,59 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                       className="text-xs"
                     />
                   </div>
-                </div>
 
-                {/* 4. Description & Notes */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
-                  {/* Description / Title */}
-                  <div className="space-y-1">
-                    <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-semibold text-zinc-500 tracking-wider">
-                      Description / Title
-                    </label>
-                    <input
-                      type="text"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder={type === 'EXPENSE' ? 'e.g. Dinner, Grocery, Uber, Shopping' : 'e.g. Monthly Salary, Freelance Client'}
-                      className="w-full bg-surface-raised border border-surface-border rounded-xl sm:rounded-2xl px-3 py-1.5 sm:py-2 text-xs text-foreground placeholder-zinc-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                    />
-                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                    {/* Description / Title */}
+                    <div className="space-y-1">
+                      <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-bold text-zinc-400 tracking-wider">
+                        Description / Title
+                      </label>
+                      <input
+                        type="text"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder={type === 'EXPENSE' ? 'e.g. Dinner, Grocery, Uber, Shopping' : 'e.g. Monthly Salary, Freelance Client'}
+                        className="w-full bg-surface-raised border border-surface-border rounded-xl sm:rounded-2xl px-3 py-2 text-xs text-foreground placeholder-zinc-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                      />
+                    </div>
 
-                  {/* Notes (Optional) */}
-                  <div className="space-y-1">
-                    <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-semibold text-zinc-500 tracking-wider">
-                      Notes (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Additional context or memo"
-                      className="w-full bg-surface-raised border border-surface-border rounded-xl sm:rounded-2xl px-3 py-1.5 sm:py-2 text-xs text-foreground placeholder-zinc-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
-                    />
+                    {/* Notes (Optional) */}
+                    <div className="space-y-1">
+                      <label className="block text-[10px] sm:text-[11px] font-mono uppercase font-bold text-zinc-400 tracking-wider">
+                        Notes (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="Additional context or memo"
+                        className="w-full bg-surface-raised border border-surface-border rounded-xl sm:rounded-2xl px-3 py-2 text-xs text-foreground placeholder-zinc-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Sticky Fixed Bottom Action Bar */}
+              {/* Dynamic Sticky Bottom Action Bar */}
               <div className="p-3 sm:p-4 border-t border-surface-border bg-surface flex-shrink-0">
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-primary hover:bg-primary-600 disabled:opacity-50 text-white font-bold text-xs sm:text-sm flex items-center justify-center space-x-2 transition-all shadow-md shadow-primary/25 active:scale-[0.99] cursor-pointer"
+                  className={`w-full py-3 sm:py-3.5 rounded-xl sm:rounded-2xl text-white font-bold text-xs sm:text-sm flex items-center justify-center space-x-2 transition-all shadow-lg active:scale-[0.98] cursor-pointer disabled:opacity-50 ${
+                    type === 'EXPENSE'
+                      ? 'bg-gradient-to-r from-rose-500 via-rose-600 to-red-600 hover:from-rose-600 hover:to-red-700 shadow-rose-500/30'
+                      : 'bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-emerald-500/30'
+                  }`}
                 >
-                  <Check className="w-4 h-4" />
-                  <span>
+                  {type === 'EXPENSE' ? (
+                    <ArrowDownRight className="w-4 h-4" />
+                  ) : (
+                    <ArrowUpRight className="w-4 h-4" />
+                  )}
+                  <span className="tracking-wide">
                     {isSubmitting
                       ? 'Saving to ledger...'
-                      : `Add ${type === 'EXPENSE' ? 'Expense' : 'Income'} ${
+                      : `Record ${type === 'EXPENSE' ? 'Expense' : 'Income'} ${
                           amount && parseFloat(amount) > 0
                             ? `• ₹${parseFloat(amount).toLocaleString('en-IN')}`
                             : ''

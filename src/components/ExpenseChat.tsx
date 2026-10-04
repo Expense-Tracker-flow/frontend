@@ -1909,71 +1909,78 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
             </span>
           </div>
 
-          {/* Initial Welcome Message Bubble & Starter Chips when chat has no messages */}
+          {/* Initial Welcome Message Bubble (Crystal clear guide for customers, no prompt pills) */}
           {messages.length === 0 && (
             <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-200">
               <div className="flex items-end gap-2 justify-start">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-primary via-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-xs flex-shrink-0 mb-0.5">
-                  <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary via-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-xs flex-shrink-0 mb-0.5">
+                  <Bot className="w-4 h-4" />
                 </div>
-                <div className="relative text-xs sm:text-sm leading-relaxed rounded-2xl rounded-tl-xs bg-surface dark:bg-[#181B26] border border-surface-border text-foreground shadow-sm max-w-[92%] sm:max-w-[85%] p-3.5 sm:p-4 space-y-2.5">
-                  <div className="flex items-center space-x-1.5">
-                    <span className="font-bold text-foreground text-sm">
-                      What happened with your money today?
-                    </span>
-                  </div>
-                  <p className="text-zinc-600 dark:text-zinc-300 text-xs">
-                    Log expenses and income, or ask questions about your balance.
-                  </p>
-                  <div className="pt-2 border-t border-surface-border/70 text-[11px] font-mono text-zinc-500 space-y-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary font-bold">for</span>
-                      <span>Category (e.g. <em>for Food &amp; Dining</em>)</span>
+                <div className="relative text-xs sm:text-sm leading-relaxed rounded-2xl rounded-tl-xs bg-surface dark:bg-[#181B26] border border-surface-border text-foreground shadow-md max-w-[96%] sm:max-w-[88%] p-4 sm:p-5 space-y-3.5">
+                  {/* Greeting & Subtitle */}
+                  <div>
+                    <div className="flex items-center space-x-2">
+                      <span className="font-extrabold text-foreground text-sm sm:text-base tracking-tight">
+                        Hi, I'm MonAI! 👋
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary font-bold">by</span>
-                      <span>Payment Type (e.g. <em>by UPI</em>, <em>by Cash</em>)</span>
-                    </div>
+                    <p className="text-zinc-600 dark:text-zinc-300 text-xs sm:text-sm mt-1 leading-normal">
+                      Your intelligent finance assistant. Just type normally as you speak or text — I’ll automatically record the amount, category, date, and payment mode.
+                    </p>
                   </div>
-                </div>
-              </div>
 
-              {/* Quick Prompts Tap Chips */}
-              <div className="pl-9 space-y-1.5">
-                <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block">
-                  Quick Prompts (Tap to run)
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleSendMessage('/expense 450 for Food & Dining by UPI')}
-                    className="px-3 py-1.5 rounded-full bg-surface hover:bg-surface-raised border border-surface-border hover:border-rose-500/40 text-[11px] text-zinc-700 dark:text-zinc-300 font-medium transition-all shadow-2xs hover:scale-[1.02] flex items-center gap-1.5 active:scale-95"
-                  >
-                    <span className="w-2 h-2 rounded-full bg-rose-500" />
-                    <span>💸 /expense 450 for Food by UPI</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSendMessage('/income 50000 for Salary by Bank Transfer')}
-                    className="px-3 py-1.5 rounded-full bg-surface hover:bg-surface-raised border border-surface-border hover:border-emerald-500/40 text-[11px] text-zinc-700 dark:text-zinc-300 font-medium transition-all shadow-2xs hover:scale-[1.02] flex items-center gap-1.5 active:scale-95"
-                  >
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <span>💰 /income 50000 for Salary</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSendMessage('What is my current balance?')}
-                    className="px-3 py-1.5 rounded-full bg-surface hover:bg-surface-raised border border-surface-border hover:border-primary/40 text-[11px] text-zinc-700 dark:text-zinc-300 font-medium transition-all shadow-2xs hover:scale-[1.02] flex items-center gap-1.5 active:scale-95"
-                  >
-                    <span>📊 What is my balance?</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSendMessage('/recent')}
-                    className="px-3 py-1.5 rounded-full bg-surface hover:bg-surface-raised border border-surface-border hover:border-primary/40 text-[11px] text-zinc-700 dark:text-zinc-300 font-medium transition-all shadow-2xs hover:scale-[1.02] flex items-center gap-1.5 active:scale-95"
-                  >
-                    <span>📜 Recent transactions</span>
-                  </button>
+                  {/* Clear Customer Cheat Cards */}
+                  <div className="space-y-2 pt-2 border-t border-surface-border/70">
+                    <div className="text-[10px] sm:text-[11px] font-mono uppercase font-bold text-zinc-400 tracking-wider">
+                      How to use MonAI
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                      {/* Expense Card */}
+                      <div className="p-2.5 rounded-xl bg-surface-raised/80 border border-surface-border/80 space-y-1">
+                        <div className="flex items-center space-x-1.5 font-bold text-rose-600 dark:text-rose-400">
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                          <span>Log Expense</span>
+                        </div>
+                        <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-mono">
+                          "Spent 250 on pizza yesterday via UPI"
+                        </p>
+                      </div>
+
+                      {/* Income Card */}
+                      <div className="p-2.5 rounded-xl bg-surface-raised/80 border border-surface-border/80 space-y-1">
+                        <div className="flex items-center space-x-1.5 font-bold text-emerald-600 dark:text-emerald-400">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <span>Log Income</span>
+                        </div>
+                        <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-mono">
+                          "Received 50000 salary from employer"
+                        </p>
+                      </div>
+
+                      {/* Smart Dates */}
+                      <div className="p-2.5 rounded-xl bg-surface-raised/80 border border-surface-border/80 space-y-1">
+                        <div className="flex items-center space-x-1.5 font-bold text-primary">
+                          <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                          <span>Natural Dates</span>
+                        </div>
+                        <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-mono">
+                          "yesterday", "last friday", "2nd oct"
+                        </p>
+                      </div>
+
+                      {/* Ask Questions */}
+                      <div className="p-2.5 rounded-xl bg-surface-raised/80 border border-surface-border/80 space-y-1">
+                        <div className="flex items-center space-x-1.5 font-bold text-amber-600 dark:text-amber-400">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                          <span>Instant Answers</span>
+                        </div>
+                        <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-mono">
+                          "What is my balance?", "Spent on food?"
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
