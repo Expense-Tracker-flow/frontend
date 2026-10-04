@@ -1011,71 +1011,73 @@ export default function DashboardPage() {
             </div>
 
             {/* 1. Unified Executive Financial Hub */}
-            <div className="bg-surface border border-surface-border rounded-3xl p-6 sm:p-7 shadow-sm">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="bg-surface border border-surface-border rounded-3xl p-4 sm:p-7 shadow-sm">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 sm:gap-6">
                 {/* Total Balance Hero */}
-                <div className="space-y-1 sm:pr-8">
+                <div className="space-y-1.5 sm:pr-8">
                   <div className="flex items-center space-x-2">
-                    <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-widest">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-zinc-400 uppercase tracking-widest">
                       Total Net Balance
                     </span>
                   </div>
-                  <div className="text-3xl sm:text-4xl font-extrabold font-mono tracking-tight text-foreground">
+                  <div className="text-2xl sm:text-4xl font-extrabold font-mono tracking-tight text-foreground">
                     {currencySymbol}{summary.totalBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </div>
-                  <div className="flex items-center space-x-2 text-xs font-mono">
-                    <span className="text-emerald-600 dark:text-emerald-400 flex items-center space-x-1">
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-mono">
+                    <span className="text-emerald-600 dark:text-emerald-400 flex items-center space-x-1 font-semibold">
                       <TrendingUp className="w-3.5 h-3.5" />
                       <span>{summary.monthOverMonthGrowth >= 0 ? '+' : ''}{summary.monthOverMonthGrowth.toFixed(1)}% MoM</span>
                     </span>
                     <span className="text-zinc-300 dark:text-zinc-700">•</span>
                     <span className="text-zinc-500">
-                      Period Savings: {currencySymbol}{activeNetSavings.toLocaleString('en-IN')}
+                      Savings: {currencySymbol}{activeNetSavings.toLocaleString('en-IN')}
                     </span>
                   </div>
                 </div>
 
-                {/* 3 Executive Stat Pillars */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 flex-1 pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l border-surface-border lg:pl-8">
-                  {/* Income Stat */}
-                  <div className="space-y-1">
-                    <div className="flex items-center space-x-1.5 text-zinc-400 text-xs font-medium">
-                      <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500" />
-                      <span>Period Income</span>
+                {/* 3 Executive Stat Pillars: Responsive 2-Col on mobile, 3-Col on sm+ */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4 lg:gap-6 flex-1 pt-3 sm:pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l border-surface-border lg:pl-8">
+                  {/* Income Stat Card */}
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/15 space-y-1">
+                    <div className="flex items-center space-x-1 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
+                      <ArrowUpRight className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span className="truncate">Income</span>
                     </div>
-                    <div className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
-                      +{currencySymbol}{activeIncome.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    <div className="text-base sm:text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400 truncate">
+                      +{currencySymbol}{activeIncome.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
                     </div>
-                    <p className="text-[11px] text-zinc-400 font-mono">
+                    <p className="text-[10px] sm:text-[11px] text-zinc-400 font-mono">
                       {summaryFilteredTransactions.filter(t => t.type === 'INCOME').length} Inflows
                     </p>
                   </div>
 
-                  {/* Expense Stat */}
-                  <div className="space-y-1">
-                    <div className="flex items-center space-x-1.5 text-zinc-400 text-xs font-medium">
-                      <ArrowDownRight className="w-3.5 h-3.5 text-rose-500" />
-                      <span>Period Spent</span>
+                  {/* Expense Stat Card */}
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/15 space-y-1">
+                    <div className="flex items-center space-x-1 text-rose-600 dark:text-rose-400 text-xs font-medium">
+                      <ArrowDownRight className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span className="truncate">Spent</span>
                     </div>
-                    <div className="text-xl font-bold font-mono text-rose-600 dark:text-rose-400">
-                      -{currencySymbol}{activeExpense.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    <div className="text-base sm:text-xl font-bold font-mono text-rose-600 dark:text-rose-400 truncate">
+                      -{currencySymbol}{activeExpense.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
                     </div>
-                    <p className="text-[11px] text-zinc-400 font-mono">
-                      {activeCategories.length} Active Categories
+                    <p className="text-[10px] sm:text-[11px] text-zinc-400 font-mono truncate">
+                      {activeCategories.length} Categories
                     </p>
                   </div>
 
-                  {/* Savings Rate Stat */}
-                  <div className="space-y-1">
-                    <div className="flex items-center space-x-1.5 text-zinc-400 text-xs font-medium">
-                      <Percent className="w-3.5 h-3.5 text-indigo-500" />
-                      <span>Savings Rate</span>
-                    </div>
-                    <div className="text-xl font-bold font-mono text-indigo-600 dark:text-indigo-400">
-                      {activeSavingsRate}%
+                  {/* Savings Rate Stat - Spans full 2 cols on mobile, 1 col on sm */}
+                  <div className="col-span-2 sm:col-span-1 p-3 sm:p-3.5 rounded-2xl bg-indigo-500/5 dark:bg-indigo-500/10 border border-indigo-500/15 flex flex-col justify-between space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-1 text-indigo-600 dark:text-indigo-400 text-xs font-medium">
+                        <Percent className="w-3.5 h-3.5" />
+                        <span>Savings Rate</span>
+                      </div>
+                      <span className="text-sm sm:text-xl font-bold font-mono text-indigo-600 dark:text-indigo-400">
+                        {activeSavingsRate}%
+                      </span>
                     </div>
                     {/* Mini visual gauge bar */}
-                    <div className="w-full h-1.5 rounded-full bg-surface-raised overflow-hidden mt-1.5">
+                    <div className="w-full h-1.5 rounded-full bg-surface-raised dark:bg-zinc-800 overflow-hidden">
                       <div
                         className="h-full rounded-full bg-indigo-500 transition-all duration-500"
                         style={{ width: `${Math.min(100, Math.max(5, activeSavingsRate))}%` }}
@@ -1087,11 +1089,11 @@ export default function DashboardPage() {
             </div>
 
             {/* 2. Side-by-Side Analytics Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-stretch">
               {/* Category Breakdown Card */}
-              <div className="lg:col-span-6 bg-surface border border-surface-border rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+              <div className="lg:col-span-6 bg-surface border border-surface-border rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-3 sm:mb-4">
                     <div>
                       <h2 className="text-sm font-bold text-foreground">Category Distribution</h2>
                       <p className="text-[11px] text-zinc-400">Filtered expense breakdown</p>
@@ -1102,11 +1104,11 @@ export default function DashboardPage() {
                   </div>
 
                   {activeCategories.length === 0 ? (
-                    <div className="py-12 text-center text-xs text-zinc-400 font-mono">
+                    <div className="py-8 sm:py-12 text-center text-xs text-zinc-400 font-mono">
                       No categorized expenses recorded in this date range.
                     </div>
                   ) : (
-                    <div className="space-y-3.5">
+                    <div className="space-y-3 sm:space-y-3.5">
                       {activeCategories.map((cat, idx) => {
                         const name = cat.name || (cat as any).categoryName || 'General';
                         const amount = Number(cat.amount ?? (cat as any).totalAmount ?? 0);
@@ -1114,21 +1116,21 @@ export default function DashboardPage() {
                         return (
                           <div key={idx} className="space-y-1.5">
                             <div className="flex items-center justify-between text-xs">
-                              <div className="flex items-center space-x-2">
+                              <div className="flex items-center space-x-2 min-w-0 pr-2">
                                 <span
-                                  className="w-2 h-2 rounded-full"
+                                  className="w-2 h-2 rounded-full flex-shrink-0"
                                   style={{ backgroundColor: cat.color || '#6366F1' }}
                                 />
-                                <span className="font-semibold text-foreground">{name}</span>
+                                <span className="font-semibold text-foreground truncate">{name}</span>
                               </div>
-                              <div className="flex items-center space-x-2 font-mono">
-                                <span className="text-zinc-600 dark:text-zinc-400">
-                                  {currencySymbol}{amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                              <div className="flex items-center space-x-2 font-mono flex-shrink-0">
+                                <span className="text-zinc-600 dark:text-zinc-400 font-medium">
+                                  {currencySymbol}{amount.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
                                 </span>
-                                <span className="text-zinc-400 text-[10px]">({percentage.toFixed(1)}%)</span>
+                                <span className="text-zinc-400 text-[10px]">({percentage.toFixed(0)}%)</span>
                               </div>
                             </div>
-                            <div className="w-full h-2 rounded-full bg-surface-raised overflow-hidden">
+                            <div className="w-full h-1.5 sm:h-2 rounded-full bg-surface-raised overflow-hidden">
                               <div
                                 className="h-full rounded-full transition-all duration-500"
                                 style={{
@@ -1146,9 +1148,9 @@ export default function DashboardPage() {
               </div>
 
               {/* Daily Cashflow Pulse Card */}
-              <div className="lg:col-span-6 bg-surface border border-surface-border rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+              <div className="lg:col-span-6 bg-surface border border-surface-border rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-3 sm:mb-4">
                     <div>
                       <h2 className="text-sm font-bold text-foreground">Cashflow Pulse</h2>
                       <p className="text-[11px] text-zinc-400">Daily velocity and activity trends</p>
@@ -1163,7 +1165,7 @@ export default function DashboardPage() {
             </div>
 
             {/* 3. Orbital Spend Weights Visualizer */}
-            <div className="bg-surface border border-surface-border rounded-3xl p-6 shadow-sm">
+            <div className="bg-surface border border-surface-border rounded-3xl p-4 sm:p-6 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className="text-sm font-bold text-foreground">Orbital Spend Weights</h2>

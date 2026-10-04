@@ -61,25 +61,25 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
 
       {/* Quick Presets */}
       {onPresetSelect && (
-        <div className="flex items-center space-x-1 pt-1.5 sm:pt-0 sm:pl-2 border-t sm:border-t-0 sm:border-l border-surface-border overflow-x-auto">
+        <div className="flex items-center space-x-1 pt-1.5 sm:pt-0 sm:pl-2 border-t sm:border-t-0 sm:border-l border-surface-border overflow-x-auto w-full sm:w-auto">
           <button
             type="button"
             onClick={() => onPresetSelect('THIS_MONTH')}
-            className="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium text-zinc-400 hover:text-foreground hover:bg-surface-raised transition-colors whitespace-nowrap"
+            className="flex-1 sm:flex-initial text-center px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-semibold text-zinc-500 hover:text-foreground hover:bg-surface-raised active:bg-primary/10 transition-colors whitespace-nowrap"
           >
             Month
           </button>
           <button
             type="button"
             onClick={() => onPresetSelect('LAST_30')}
-            className="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium text-zinc-400 hover:text-foreground hover:bg-surface-raised transition-colors whitespace-nowrap"
+            className="flex-1 sm:flex-initial text-center px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-semibold text-zinc-500 hover:text-foreground hover:bg-surface-raised active:bg-primary/10 transition-colors whitespace-nowrap"
           >
             30 Days
           </button>
           <button
             type="button"
             onClick={() => onPresetSelect('ALL')}
-            className="px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium text-zinc-400 hover:text-foreground hover:bg-surface-raised transition-colors whitespace-nowrap"
+            className="flex-1 sm:flex-initial text-center px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-semibold text-zinc-500 hover:text-foreground hover:bg-surface-raised active:bg-primary/10 transition-colors whitespace-nowrap"
           >
             All
           </button>
