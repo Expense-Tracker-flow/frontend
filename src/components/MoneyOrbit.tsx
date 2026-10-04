@@ -241,7 +241,7 @@ export const MoneyOrbit: React.FC<MoneyOrbitProps> = ({
           const color = cat.color || '#6366F1';
           const iconKey = cat.icon || 'default';
           const spendShare = totalCategorySpend > 0 ? (amount / totalCategorySpend) : 0;
-          const percentage = cat.percentage ?? Math.round(spendShare * 100);
+          const percentage = Math.round(cat.percentage ?? (spendShare * 100));
 
           const coords = getCoordinates(index, orbitCategories.length, radius);
           const Icon = ICON_MAP[iconKey] || ICON_MAP.default;
@@ -379,7 +379,7 @@ export const MoneyOrbit: React.FC<MoneyOrbitProps> = ({
               {/* Spend Share Badge */}
               <div className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 mt-1">
                 <span className="font-bold text-foreground">
-                  {activeFocus.percentage ?? Math.round(((Number(activeFocus.amount ?? 0)) / totalCategorySpend) * 100)}%
+                  {Math.round(activeFocus.percentage ?? (((Number(activeFocus.amount ?? 0)) / totalCategorySpend) * 100))}%
                 </span>
                 <span> of spend</span>
               </div>
