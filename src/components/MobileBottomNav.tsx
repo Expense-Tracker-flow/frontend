@@ -7,7 +7,8 @@ import {
   Zap,
   History, 
   Settings as SettingsIcon, 
-  Plus
+  Plus,
+  Tags
 } from 'lucide-react';
 import { DashboardTab } from './Header';
 
@@ -23,8 +24,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   onOpenQuickAdd,
 }) => {
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#12141C]/95 backdrop-blur-xl border-t border-surface-border px-2 py-2 safe-area-pb">
-      <div className="max-w-md mx-auto flex items-center justify-around relative">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#12141C]/95 backdrop-blur-xl border-t border-surface-border px-1 py-1.5 safe-area-pb">
+      <div className="max-w-md mx-auto flex items-center justify-around relative px-0.5">
         {/* 1. Chat Tab (MonAI) */}
         <button
           onClick={() => onTabChange('home')}
@@ -34,8 +35,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               : 'text-zinc-400 hover:text-foreground'
           }`}
         >
-          <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
-          <span className="text-[9px] sm:text-[10px] tracking-tight">Chat</span>
+          <MessageSquare className="w-4 h-4 mb-0.5" />
+          <span className="text-[8px] sm:text-[9px] tracking-tight">Chat</span>
         </button>
 
         {/* 2. Summary Tab */}
@@ -47,18 +48,31 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               : 'text-zinc-400 hover:text-foreground'
           }`}
         >
-          <PieChart className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
-          <span className="text-[9px] sm:text-[10px] tracking-tight">Summary</span>
+          <PieChart className="w-4 h-4 mb-0.5" />
+          <span className="text-[8px] sm:text-[9px] tracking-tight">Summary</span>
+        </button>
+
+        {/* 3. Categories Tab */}
+        <button
+          onClick={() => onTabChange('categories')}
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition-all ${
+            activeTab === 'categories'
+              ? 'text-primary font-bold scale-105'
+              : 'text-zinc-400 hover:text-foreground'
+          }`}
+        >
+          <Tags className="w-4 h-4 mb-0.5" />
+          <span className="text-[8px] sm:text-[9px] tracking-tight">Categories</span>
         </button>
 
         {/* Center Quick Add Floating Trigger */}
-        <div className="flex items-center justify-center px-1">
+        <div className="flex items-center justify-center px-0.5">
           <button
             onClick={onOpenQuickAdd}
-            className="w-11 h-11 sm:w-12 sm:h-12 -mt-5 rounded-full bg-primary hover:bg-primary-600 text-white flex items-center justify-center shadow-lg shadow-primary/35 border-2 border-surface transition-transform active:scale-95"
+            className="w-10 h-10 -mt-4 rounded-full bg-primary hover:bg-primary-600 text-white flex items-center justify-center shadow-lg shadow-primary/35 border-2 border-surface transition-transform active:scale-95"
             aria-label="Add Transaction"
           >
-            <Plus className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
+            <Plus className="w-5 h-5 stroke-[2.5]" />
           </button>
         </div>
 

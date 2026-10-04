@@ -196,6 +196,11 @@ export const api = {
     return res.data;
   },
 
+  async deleteCategory(id: string) {
+    const res = await apiClient.delete<ApiResponse<void>>(`/categories/${id}`);
+    return res.data;
+  },
+
   // Transactions
   async getTransactions(params?: {
     type?: string;

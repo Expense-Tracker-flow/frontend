@@ -8,14 +8,17 @@ import {
   LogIn, 
   MessageSquare, 
   PieChart, 
-  Zap,
+  Zap, 
   History, 
   Settings as SettingsIcon, 
-  ChevronDown
+  ChevronDown,
+  Tags,
+  Download,
+  Smartphone
 } from 'lucide-react';
 import { UserProfile } from '../lib/types';
 
-export type DashboardTab = 'home' | 'summary' | 'automate' | 'history' | 'profile' | 'settings';
+export type DashboardTab = 'home' | 'summary' | 'categories' | 'automate' | 'history' | 'profile' | 'settings';
 
 interface HeaderProps {
   user: UserProfile | null;
@@ -37,12 +40,50 @@ export const Header: React.FC<HeaderProps> = ({
   isLoading,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isStandalone, setIsStandalone] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const currentDate = new Date().toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
   }).toUpperCase();
+
+  // Check standalone mode and capture PWA beforeinstallprompt event
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isStandaloneMode =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as any).standalone === true;
+      setIsStandalone(isStandaloneMode);
+
+      const handleBeforeInstall = (e: any) => {
+        e.preventDefault();
+        setDeferredPrompt(e);
+      };
+
+      window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+      return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+    }
+  }, []);
+
+  const handleInstallPwa = async () => {
+    if (isStandalone) {
+      alert("FIN-XL is already running as an installed app on your device!");
+      return;
+    }
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const choiceResult = await deferredPrompt.userChoice;
+      if (choiceResult.outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    } else {
+      alert(
+        "To install FIN-XL:\n\n• On iOS Safari: Tap the Share button (⎋) and select 'Add to Home Screen'.\n• On Chrome / Edge: Click the Install icon (⊕) in the browser address bar."
+      );
+    }
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -93,6 +134,18 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <PieChart className="w-3.5 h-3.5" />
               <span>Summary</span>
+            </button>
+
+            <button
+              onClick={() => onTabChange('categories')}
+              className={`flex items-center space-x-2 px-4 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                activeTab === 'categories'
+                  ? 'bg-primary text-white shadow-md shadow-primary/25'
+                  : 'text-zinc-500 hover:text-foreground'
+              }`}
+            >
+              <Tags className="w-3.5 h-3.5" />
+              <span>Categories</span>
             </button>
 
             <button
@@ -195,6 +248,29 @@ export const Header: React.FC<HeaderProps> = ({
                       >
                         <SettingsIcon className="w-4 h-4 text-indigo-500" />
                         <span>Settings & Preferences</span>
+                      </button>
+
+                      {/* Install App / PWA Option */}
+                      <button
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          handleInstallPwa();
+                        }}
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs text-zinc-600 dark:text-zinc-300 hover:text-foreground hover:bg-surface-raised transition-colors text-left font-medium group"
+                      >
+                        <div className="flex items-center space-x-2.5">
+                          <Download className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform" />
+                          <span>Install PWA / App</span>
+                        </div>
+                        {isStandalone ? (
+                          <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-md">
+                            Installed
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded-md">
+                            Install
+                          </span>
+                        )}
                       </button>
                     </div>
 

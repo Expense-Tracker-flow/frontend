@@ -11,6 +11,7 @@ import { MoneyPulse } from '../components/MoneyPulse';
 import { CategoryCircleChart } from '../components/CategoryCircleChart';
 import { ActivityTimeline } from '../components/ActivityTimeline';
 import { AutomationsScreen } from '../components/AutomationsScreen';
+import { CategoriesScreen } from '../components/CategoriesScreen';
 import { AddTransactionModal } from '../components/AddTransactionModal';
 import { EditTransactionModal } from '../components/EditTransactionModal';
 import { MobileBottomNav } from '../components/MobileBottomNav';
@@ -545,6 +546,11 @@ export default function DashboardPage() {
     } catch (e: any) {
       showToast(e?.response?.data?.message || 'Failed to delete transaction');
     }
+  };
+
+  const handleDeleteCategory = (categoryId: string) => {
+    setCategories((prev) => prev.filter((c) => c.id !== categoryId));
+    loadData();
   };
 
   // Savings rate calculation
@@ -1124,6 +1130,28 @@ export default function DashboardPage() {
               />
             </div>
           </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* 🏷️ TAB: CATEGORIES (Custom & Default Category Hub)             */}
+        {/* ============================================================== */}
+        {activeTab === 'categories' && (
+          <CategoriesScreen
+            categories={categories}
+            transactions={transactions}
+            currencySymbol={currencySymbol}
+            onCategoryAdded={(newCat) => {
+              setCategories((prev) => [...prev.filter((c) => c.id !== newCat.id), newCat]);
+              showToast(`Category "${newCat.name}" created`);
+              loadData();
+            }}
+            onCategoryDeleted={handleDeleteCategory}
+            onQuickLog={(categoryId, type) => {
+              setModalType(type);
+              setModalOpen(true);
+            }}
+            showToast={showToast}
+          />
         )}
 
         {/* ============================================================== */}
