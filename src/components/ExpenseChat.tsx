@@ -151,6 +151,7 @@ interface ExpenseChatProps {
 const renderFormattedMessageText = (text: string, isUser: boolean) => {
   // Strip accidental outer quotes wrapped inside/outside asterisks like **"name"** -> **name**
   const sanitized = text
+    .replace(/\\`/g, '`')
     .replace(/\*\*["']([^"']+)["']\*\*/g, '**$1**')
     .replace(/["']\*\*([^"']+)\*\*["']/g, '**$1**');
 
@@ -1596,20 +1597,21 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     // 0. SLASH COMMAND: /help
     if (q === '/help' || q === 'help') {
       return {
-        text: `Here are the available **MonAI Chat Commands & Knowledge**:\n\n` +
-          `💡 **Smart Keywords:**\n` +
-          `• Use **\`for\`** to specify **Category** (e.g. *for Food & Dining*, *for Groceries*, *for General*)\n` +
-          `• Use **\`by\`** to specify **Payment Type** (e.g. *by UPI*, *by Cash*, *by Card*, *by Bank Transfer*)\n\n` +
-          `• **/expense <amount> for <category> by <payment>** — Record outgoing expense\n` +
-          `  *Example: \`/expense 450 for Food & Dining by UPI\`*\n\n` +
-          `• **/income <amount> for <category> by <payment>** — Record incoming money\n` +
-          `  *Example: \`/income 50000 for Salary & Inflows by Bank Transfer\`*\n\n` +
-          `• **/category <name>** — Create a new custom category\n` +
-          `  *Example: \`/category Freelance Project\`*\n\n` +
-          `• **/summary** — View total balance, income, expenses & savings rate\n\n` +
-          `• **/recent** — List your latest recorded transactions\n\n` +
-          `• **/clear** — Clear chat history\n\n` +
-          `💡 *Tip: As you type \`for\` or \`by\`, live suggestions will appear right in the search bar!*`
+        text: `Here is a quick guide to **MonAI**:\n\n` +
+          `💸 **Record an Expense**\n` +
+          `• **/expense 450 for Food by UPI**\n` +
+          `• *"Spent 250 on groceries using cash"*\n\n` +
+          `💰 **Record Income**\n` +
+          `• **/income 50000 Salary by Bank Transfer**\n` +
+          `• *"Received 2500 freelance payment"*\n\n` +
+          `📊 **Check Finances**\n` +
+          `• **/summary** — Total balance, income, expenses & savings\n` +
+          `• **/recent** — View your latest transactions\n\n` +
+          `🏷️ **Manage Categories**\n` +
+          `• **/category Travel** — Create a new category\n\n` +
+          `🧹 **Clear Chat**\n` +
+          `• **/clear** — Reset conversation history\n\n` +
+          `💡 *Tip: You can use everyday words like "yesterday", "by cash", or "using UPI".*`
       };
     }
 
@@ -1974,16 +1976,25 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     if (amount <= 0) {
       if (q.startsWith('/income') || q.startsWith('/inflow')) {
         return {
-          text: `Please specify an amount for your income entry. Example:\n• **/income 50000 Monthly Salary from Posibolt**`
+          text: `Please specify an amount for your income.\n\n` +
+            `• **/income 50000 Monthly Salary**\n` +
+            `• **/income 2500 Freelance by Bank Transfer**`
         };
       }
       if (q.startsWith('/expense') || q.startsWith('/spent')) {
         return {
-          text: `Please specify an amount for your expense entry. Example:\n• **/expense 450 Team lunch at cafe**`
+          text: `Please specify an amount for your expense.\n\n` +
+            `• **/expense 450 Team lunch**\n` +
+            `• **/expense 1200 Groceries by UPI**`
         };
       }
       return {
-        text: `I'm MonAI, your personal financial assistant. You can log transactions with slash commands or natural language!\n\n**Try asking:**\n• **/income 50000 Monthly Salary**\n• **/expense 450 Team lunch**\n• *"Yesterday spent 250 on pizza using upi"*\n• *"Friend paid me back 500"* (Logs as Income)\n• *"What is my balance?"*`
+        text: `I'm MonAI, your financial assistant. Here are a few things you can ask me:\n\n` +
+          `• **/expense 450 Team lunch by UPI**\n` +
+          `• **/income 50000 Monthly Salary**\n` +
+          `• *"Yesterday spent 250 on pizza"*\n` +
+          `• *"What is my balance?"*\n` +
+          `• **/summary** or **/recent**`
       };
     }
 
