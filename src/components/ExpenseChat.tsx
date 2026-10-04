@@ -169,7 +169,6 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
   const [guideTab, setGuideTab] = useState<'slash' | 'nlp' | 'auto' | 'query'>('slash');
   const [copiedPrompt, setCopiedPrompt] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const activeInputRef = useRef<HTMLInputElement>(null);
 
   const handleApplyGuidePrompt = (promptText: string, autoRun = false) => {
@@ -179,7 +178,6 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     } else {
       setInput(promptText);
       setTimeout(() => {
-        inputRef.current?.focus();
         activeInputRef.current?.focus();
       }, 50);
     }
@@ -206,7 +204,6 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     }
     setTimeout(() => {
       targetRef?.current?.focus();
-      inputRef.current?.focus();
       activeInputRef.current?.focus();
     }, 20);
   };
@@ -1741,212 +1738,42 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
   };
 
   return (
-    <div className="w-full flex-1 flex flex-col justify-between min-h-[calc(100dvh-12rem)] md:min-h-[calc(100vh-8rem)]">
-      {/* 1. Empty / Initial State (ChatGPT-Style Centered Canvas) */}
-      {messages.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center max-w-3xl w-full mx-auto px-2 sm:px-4 py-6 sm:py-12 text-center space-y-6 sm:space-y-8">
-          {/* Greeting */}
-          <div className="space-y-2 sm:space-y-3">
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold">
-                <Bot className="w-3.5 h-3.5" />
-                <span>MonAI</span>
+    <div className="w-full flex-1 flex flex-col justify-between h-[calc(100dvh-10rem)] md:h-[calc(100vh-8.5rem)]">
+      {/* Unified WhatsApp / Instagram DM Chat Structure */}
+      <div className="flex-1 flex flex-col overflow-hidden max-w-2xl w-full mx-auto px-2 sm:px-4 pb-2">
+        {/* WhatsApp / Instagram DM Style Top App Bar */}
+        <div className="sticky top-0 z-20 bg-surface/95 dark:bg-[#12141C]/95 backdrop-blur-xl flex items-center justify-between px-3 sm:px-4 py-2 border-b border-surface-border rounded-2xl sm:rounded-3xl shadow-xs mb-2">
+          <div className="flex items-center space-x-2.5">
+            {/* MonAI Avatar with Online Indicator */}
+            <div className="relative">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-primary via-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-sm shadow-primary/30">
+                <Bot className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+              </div>
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-surface animate-pulse" />
+            </div>
+
+            <div>
+              <div className="flex items-center space-x-1.5">
+                <span className="font-bold text-xs sm:text-sm text-foreground tracking-tight">MonAI</span>
+                <span className="px-1.5 py-0.2 rounded-full bg-primary/10 text-primary text-[9px] font-mono font-semibold">AI Agent</span>
+              </div>
+              <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                <span>Online • Instant Assistant</span>
               </div>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-foreground font-sans">
-              What happened with your money today?
-            </h1>
-            <p className="text-xs sm:text-base text-zinc-500 max-w-lg mx-auto">
-              Ask questions or log transactions. Use <span className="text-primary font-mono font-semibold">for</span> for category &amp; <span className="text-primary font-mono font-semibold">by</span> for payment type (e.g. <em>450 for Food by UPI</em>).
-            </p>
           </div>
 
-          {/* Centered ChatGPT-style Chat Bar */}
-          <div className="w-full max-w-2xl relative z-30">
-            {/* Quick Mode Pills Row - Visible on Mobile for 100% full-width search input */}
-            <div className="flex sm:hidden items-center justify-center gap-2 mb-2">
-              <button
-                type="button"
-                onClick={() => handlePillClick('/expense ', inputRef)}
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-mono transition-all duration-150 ${
-                  input.startsWith('/expense')
-                    ? 'bg-rose-500 text-white font-semibold shadow-md shadow-rose-500/30 scale-[1.02]'
-                    : 'bg-surface-raised border border-surface-border text-rose-500 hover:bg-rose-500/10'
-                }`}
-                title="Record Expense"
-              >
-                <ArrowDownRight className="w-3.5 h-3.5" />
-                <span>/expense</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handlePillClick('/income ', inputRef)}
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-mono transition-all duration-150 ${
-                  input.startsWith('/income')
-                    ? 'bg-emerald-500 text-white font-semibold shadow-md shadow-emerald-500/30 scale-[1.02]'
-                    : 'bg-surface-raised border border-surface-border text-emerald-500 hover:bg-emerald-500/10'
-                }`}
-                title="Record Income"
-              >
-                <ArrowUpRight className="w-3.5 h-3.5" />
-                <span>/income</span>
-              </button>
-            </div>
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSendMessage();
-              }}
-              className="relative flex items-center bg-surface border border-surface-border focus-within:border-primary/80 rounded-3xl p-1.5 sm:p-2 shadow-xl transition-all z-40"
+          {/* Right Action Icons (Instagram / WhatsApp style clean icon buttons) */}
+          <div className="flex items-center space-x-1 sm:space-x-1.5">
+            <button
+              type="button"
+              onClick={() => setIsGuideOpen(true)}
+              className="w-8 h-8 rounded-full bg-surface-raised hover:bg-primary/10 border border-surface-border hover:border-primary/30 text-zinc-500 hover:text-primary flex items-center justify-center transition-all"
+              title="MonAI Guide & Commands"
             >
-              {renderSlashCommandPalette()}
-              {renderSuggestionsDropdown('down')}
-
-              {/* Quick Mode Pills directly WITHIN the chat bar on desktop */}
-              <div className="hidden sm:flex items-center space-x-1.5 pl-1.5 sm:pl-2 flex-shrink-0">
-                <button
-                  type="button"
-                  onClick={() => handlePillClick('/expense ', inputRef)}
-                  className={`flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono transition-all duration-150 ${
-                    input.startsWith('/expense')
-                      ? 'bg-rose-500 text-white font-semibold shadow-sm shadow-rose-500/30'
-                      : 'bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 text-rose-500 hover:text-rose-400'
-                  }`}
-                  title="Record Expense"
-                >
-                  <ArrowDownRight className="w-3.5 h-3.5" />
-                  <span className="text-[11px] font-medium">/expense</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handlePillClick('/income ', inputRef)}
-                  className={`flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-mono transition-all duration-150 ${
-                    input.startsWith('/income')
-                      ? 'bg-emerald-500 text-white font-semibold shadow-sm shadow-emerald-500/30'
-                      : 'bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/25 text-emerald-500 hover:text-emerald-400'
-                  }`}
-                  title="Record Income"
-                >
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                  <span className="text-[11px] font-medium">/income</span>
-                </button>
-              </div>
-
-              {/* Mobile Leading Icon / Indicator */}
-              <div className="sm:hidden flex items-center pl-2.5 flex-shrink-0 text-zinc-400">
-                {input.startsWith('/expense') ? (
-                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                ) : input.startsWith('/income') ? (
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                ) : (
-                  <Sparkles className="w-3.5 h-3.5 text-primary/70" />
-                )}
-              </div>
-
-              <input
-                ref={inputRef}
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleInputKeyDown}
-                disabled={isProcessing}
-                placeholder={
-                  input.startsWith('/expense')
-                    ? "amount (e.g. 450 for Food by UPI)..."
-                    : input.startsWith('/income')
-                    ? "amount (e.g. 50000 for Salary by Bank)..."
-                    : "e.g. 250 for Snacks by Cash (or type /)..."
-                }
-                className="w-full bg-transparent pl-2 sm:pl-3 pr-2 py-2 sm:py-2.5 text-xs sm:text-sm text-foreground placeholder-zinc-400 focus:outline-none"
-              />
-
-              <button
-                type="button"
-                onClick={() => setIsGuideOpen(true)}
-                className="p-1.5 sm:p-2 rounded-xl text-zinc-600 dark:text-zinc-300 hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20 transition-colors flex-shrink-0 mr-1"
-                title="Open MonAI Guide"
-              >
-                <BookOpen className="w-4 h-4" />
-              </button>
-
-              <button
-                type="submit"
-                disabled={!input.trim() || isProcessing}
-                className="p-2 sm:p-2.5 rounded-2xl bg-primary hover:bg-primary-600 disabled:opacity-30 text-white transition-all shadow-md shadow-primary/25 flex-shrink-0"
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </form>
-
-            {/* Unified beautiful colorful link to open traditional modal (desktop only, hidden on mobile phone view) */}
-            <div className="hidden sm:flex items-center justify-center mt-3">
-              <button
-                type="button"
-                onClick={onOpenExpenseModal}
-                className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-primary/10 via-purple-500/15 to-primary/10 hover:from-primary/20 hover:via-purple-500/25 hover:to-primary/20 border border-primary/25 hover:border-primary/45 text-primary hover:text-primary-600 dark:hover:text-primary-300 text-xs font-semibold tracking-wide transition-all duration-200 shadow-2xs hover:shadow-xs hover:scale-[1.02] group"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                <span>Add Transaction</span>
-                <ArrowRight className="w-3.5 h-3.5 text-primary group-hover:translate-x-0.5 transition-transform" />
-              </button>
-            </div>
-          </div>
-
-          {/* ChatGPT-style Prompt Suggestion Grid (Top 4 Most Used, hidden on mobile phone view) */}
-          <div className="hidden sm:grid sm:grid-cols-2 gap-3 w-full max-w-2xl pt-4">
-            {suggestions.map((item, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleSendMessage(item.prompt)}
-                className="p-3.5 rounded-2xl bg-surface hover:bg-surface-raised border border-surface-border hover:border-primary/40 text-left transition-all shadow-sm group"
-              >
-                <div className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors flex items-center justify-between">
-                  <span>{item.title}</span>
-                  <span className="text-[10px] font-mono font-normal text-zinc-400 group-hover:text-primary transition-colors">
-                    Click to run ↵
-                  </span>
-                </div>
-                <div className="text-[11px] text-zinc-500 mt-0.5">{item.desc}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : (
-        /* 2. Active Chat Stream with WhatsApp / Instagram DM Style Structure */
-        <div className="flex-1 flex flex-col overflow-hidden max-w-2xl w-full mx-auto px-2 sm:px-4 pb-2 sm:pb-4">
-          {/* WhatsApp / Instagram DM Style Top App Bar */}
-          <div className="sticky top-0 z-20 bg-surface/95 dark:bg-[#12141C]/95 backdrop-blur-xl flex items-center justify-between px-3 sm:px-4 py-2 border-b border-surface-border rounded-2xl sm:rounded-3xl shadow-xs mb-2">
-            <div className="flex items-center space-x-2.5">
-              {/* MonAI Avatar with Online Indicator */}
-              <div className="relative">
-                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-primary via-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-sm shadow-primary/30">
-                  <Bot className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
-                </div>
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-surface animate-pulse" />
-              </div>
-
-              <div>
-                <div className="flex items-center space-x-1.5">
-                  <span className="font-bold text-xs sm:text-sm text-foreground tracking-tight">MonAI</span>
-                  <span className="px-1.5 py-0.2 rounded-full bg-primary/10 text-primary text-[9px] font-mono font-semibold">AI Agent</span>
-                </div>
-                <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
-                  <span>Online • Instant Assistant</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Action Icons (Instagram / WhatsApp style clean icon buttons) */}
-            <div className="flex items-center space-x-1 sm:space-x-1.5">
-              <button
-                type="button"
-                onClick={() => setIsGuideOpen(true)}
-                className="w-8 h-8 rounded-full bg-surface-raised hover:bg-primary/10 border border-surface-border hover:border-primary/30 text-zinc-500 hover:text-primary flex items-center justify-center transition-all"
-                title="MonAI Guide & Commands"
-              >
-                <BookOpen className="w-4 h-4" />
-              </button>
+              <BookOpen className="w-4 h-4" />
+            </button>
+            {messages.length > 0 && (
               <button
                 type="button"
                 onClick={handleClearChat}
@@ -1955,17 +1782,88 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
               >
                 <Trash2 className="w-4 h-4" />
               </button>
-            </div>
+            )}
+          </div>
+        </div>
+
+        {/* Messages Stream */}
+        <div className="flex-1 space-y-3 sm:space-y-4 py-2 sm:py-3 overflow-y-auto px-0.5 custom-scrollbar">
+          {/* WhatsApp Style Date Divider */}
+          <div className="flex justify-center my-1.5">
+            <span className="px-3 py-0.5 rounded-full bg-surface-raised/90 dark:bg-surface-raised/60 border border-surface-border/70 text-[10px] font-medium text-zinc-400 shadow-2xs">
+              Today
+            </span>
           </div>
 
-          {/* Messages Stream */}
-          <div className="flex-1 space-y-3 sm:space-y-4 py-2 sm:py-3 overflow-y-auto px-0.5">
-            {/* WhatsApp Style Date Divider */}
-            <div className="flex justify-center my-1.5">
-              <span className="px-3 py-0.5 rounded-full bg-surface-raised/90 dark:bg-surface-raised/60 border border-surface-border/70 text-[10px] font-medium text-zinc-400 shadow-2xs">
-                Today
-              </span>
+          {/* Initial Welcome Message Bubble & Starter Chips when chat has no messages */}
+          {messages.length === 0 && (
+            <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-200">
+              <div className="flex items-end gap-2 justify-start">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-primary via-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-xs flex-shrink-0 mb-0.5">
+                  <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </div>
+                <div className="relative text-xs sm:text-sm leading-relaxed rounded-2xl rounded-tl-xs bg-surface dark:bg-[#181B26] border border-surface-border text-foreground shadow-sm max-w-[92%] sm:max-w-[85%] p-3.5 sm:p-4 space-y-2.5">
+                  <div className="flex items-center space-x-1.5">
+                    <span className="font-bold text-foreground text-sm">
+                      What happened with your money today?
+                    </span>
+                  </div>
+                  <p className="text-zinc-600 dark:text-zinc-300 text-xs">
+                    Log expenses and income, or ask questions about your balance.
+                  </p>
+                  <div className="pt-2 border-t border-surface-border/70 text-[11px] font-mono text-zinc-500 space-y-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary font-bold">for</span>
+                      <span>Category (e.g. <em>for Food &amp; Dining</em>)</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary font-bold">by</span>
+                      <span>Payment Type (e.g. <em>by UPI</em>, <em>by Cash</em>)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Prompts Tap Chips */}
+              <div className="pl-9 space-y-1.5">
+                <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block">
+                  Quick Prompts (Tap to run)
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleSendMessage('/expense 450 for Food & Dining by UPI')}
+                    className="px-3 py-1.5 rounded-full bg-surface hover:bg-surface-raised border border-surface-border hover:border-rose-500/40 text-[11px] text-zinc-700 dark:text-zinc-300 font-medium transition-all shadow-2xs hover:scale-[1.02] flex items-center gap-1.5 active:scale-95"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-rose-500" />
+                    <span>💸 /expense 450 for Food by UPI</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSendMessage('/income 50000 for Salary by Bank Transfer')}
+                    className="px-3 py-1.5 rounded-full bg-surface hover:bg-surface-raised border border-surface-border hover:border-emerald-500/40 text-[11px] text-zinc-700 dark:text-zinc-300 font-medium transition-all shadow-2xs hover:scale-[1.02] flex items-center gap-1.5 active:scale-95"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <span>💰 /income 50000 for Salary</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSendMessage('What is my current balance?')}
+                    className="px-3 py-1.5 rounded-full bg-surface hover:bg-surface-raised border border-surface-border hover:border-primary/40 text-[11px] text-zinc-700 dark:text-zinc-300 font-medium transition-all shadow-2xs hover:scale-[1.02] flex items-center gap-1.5 active:scale-95"
+                  >
+                    <span>📊 What is my balance?</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSendMessage('/recent')}
+                    className="px-3 py-1.5 rounded-full bg-surface hover:bg-surface-raised border border-surface-border hover:border-primary/40 text-[11px] text-zinc-700 dark:text-zinc-300 font-medium transition-all shadow-2xs hover:scale-[1.02] flex items-center gap-1.5 active:scale-95"
+                  >
+                    <span>📜 Recent transactions</span>
+                  </button>
+                </div>
+              </div>
             </div>
+          )}
 
             {messages.map((msg) => (
               <div
@@ -2266,7 +2164,6 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
             </form>
           </div>
         </div>
-      )}
 
       {/* Interactive AI Guide & Cheatsheet Modal */}
       {renderGuideModal()}
