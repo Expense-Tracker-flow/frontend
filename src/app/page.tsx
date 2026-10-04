@@ -96,41 +96,19 @@ export default function DashboardPage() {
       const saved = localStorage.getItem(`flow_automations_${user.id}`);
       if (saved) {
         try {
-          setAutomations(JSON.parse(saved));
-        } catch (e) {}
+          const parsed = JSON.parse(saved);
+          // Purge legacy seeded sample rules ('auto-1' House Rent, 'auto-2' Monthly Salary)
+          const cleaned = Array.isArray(parsed)
+            ? parsed.filter((r: AutomationRule) => r.id !== 'auto-1' && r.id !== 'auto-2')
+            : [];
+          setAutomations(cleaned);
+          localStorage.setItem(`flow_automations_${user.id}`, JSON.stringify(cleaned));
+        } catch (e) {
+          setAutomations([]);
+        }
       } else {
-        const initialDefaults: AutomationRule[] = [
-          {
-            id: 'auto-1',
-            title: 'House Rent',
-            amount: 15000,
-            type: 'EXPENSE',
-            frequency: 'MONTHLY',
-            dayOfMonth: 1,
-            categoryName: 'Housing & Bills',
-            paymentMethod: 'UPI',
-            isActive: true,
-            autoLog: true,
-            nextExecutionDate: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-01`,
-            createdAt: new Date().toISOString(),
-          },
-          {
-            id: 'auto-2',
-            title: 'Monthly Salary',
-            amount: 65000,
-            type: 'INCOME',
-            frequency: 'MONTHLY',
-            dayOfMonth: 30,
-            categoryName: 'Salary & Inflows',
-            paymentMethod: 'BANK_TRANSFER',
-            isActive: true,
-            autoLog: true,
-            nextExecutionDate: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-30`,
-            createdAt: new Date().toISOString(),
-          },
-        ];
-        setAutomations(initialDefaults);
-        localStorage.setItem(`flow_automations_${user.id}`, JSON.stringify(initialDefaults));
+        setAutomations([]);
+        localStorage.setItem(`flow_automations_${user.id}`, JSON.stringify([]));
       }
     }
   }, [user]);
