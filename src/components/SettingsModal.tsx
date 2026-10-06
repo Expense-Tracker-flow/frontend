@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Moon, Sun, DollarSign, CheckCircle2, Save, Settings as SettingsIcon } from 'lucide-react';
-import { UserProfile } from '../lib/types';
+import { X, Moon, Sun, DollarSign, CheckCircle2, Save, Settings as SettingsIcon, ALargeSmall } from 'lucide-react';
+import { UserProfile, FontSize } from '../lib/types';
 import { api } from '../lib/api';
 import { SearchableSelect } from './SearchableSelect';
 
@@ -11,7 +11,9 @@ interface SettingsModalProps {
   onClose: () => void;
   user: UserProfile | null;
   currentTheme: 'light' | 'dark';
+  currentFontSize?: FontSize;
   onThemeChange: (theme: 'light' | 'dark') => void;
+  onFontSizeChange?: (size: FontSize) => void;
   onCurrencyChange: (currency: string) => void;
 }
 
@@ -20,11 +22,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onClose,
   user,
   currentTheme,
+  currentFontSize = 'medium',
   onThemeChange,
+  onFontSizeChange,
   onCurrencyChange,
 }) => {
   const [currency, setCurrency] = useState('INR');
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [fontSize, setFontSize] = useState<FontSize>(currentFontSize);
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +39,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       setCurrency(user.currency || 'INR');
     }
     setTheme(currentTheme);
-  }, [user, currentTheme, isOpen]);
+    const savedFs = (localStorage.getItem('flow_font_size') as FontSize) || currentFontSize || 'medium';
+    setFontSize(savedFs);
+  }, [user, currentTheme, currentFontSize, isOpen]);
 
   if (!isOpen) return null;
 
@@ -47,6 +54,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar (CAD)' },
     { code: 'AUD', symbol: 'A$', name: 'Australian Dollar (AUD)' },
   ];
+
+  const fontSizes: { id: FontSize; label: string; scale: string; desc: string; previewClass: string }[] = [
+    { id: 'small', label: 'Small', scale: '87.5%', desc: 'Compact view', previewClass: 'text-xs' },
+    { id: 'medium', label: 'Default', scale: '100%', desc: 'Balanced standard', previewClass: 'text-sm' },
+    { id: 'large', label: 'Large', scale: '112.5%', desc: 'Comfortable', previewClass: 'text-base' },
+    { id: 'xlarge', label: 'X-Large', scale: '125%', desc: 'High legibility', previewClass: 'text-lg' },
+  ];
+
+  const handleFontSizeSelect = (size: FontSize) => {
+    setFontSize(size);
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-font-size', size);
+    }
+    if (onFontSizeChange) {
+      onFontSizeChange(size);
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,8 +89,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
       onCurrencyChange(currency);
       onThemeChange(theme);
+      if (onFontSizeChange) {
+        onFontSizeChange(fontSize);
+      }
+      if (typeof document !== 'undefined') {
+        document.documentElement.setAttribute('data-font-size', fontSize);
+      }
       localStorage.setItem('flow_theme', theme);
       localStorage.setItem('flow_currency', currency);
+      localStorage.setItem('flow_font_size', fontSize);
 
       setSuccess(true);
       setTimeout(() => {
@@ -150,6 +181,38 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <Moon className="w-6 h-6" />
                 <span className="text-xs font-semibold">Dark Mode</span>
               </button>
+            </div>
+          </div>
+
+          {/* Text Size Selector */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                Text Size
+              </label>
+              <span className="text-[10px] font-mono text-zinc-400">
+                {fontSizes.find((f) => f.id === fontSize)?.scale}
+              </span>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              {fontSizes.map((item) => {
+                const isSelected = fontSize === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => handleFontSizeSelect(item.id)}
+                    className={`p-2.5 rounded-xl border flex flex-col items-center justify-center transition-all ${
+                      isSelected
+                        ? 'border-violet-500 bg-violet-500/10 text-violet-600 dark:text-violet-400 ring-2 ring-violet-500/20 shadow-sm'
+                        : 'border-surface-border bg-surface-raised text-zinc-400 hover:text-foreground'
+                    }`}
+                  >
+                    <span className={`font-bold ${item.previewClass}`}>Aa</span>
+                    <span className="text-[10px] font-semibold mt-1">{item.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 

@@ -39,6 +39,26 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const savedTheme = localStorage.getItem('flow_theme');
+                if (savedTheme === 'light') {
+                  document.documentElement.classList.remove('dark');
+                } else if (savedTheme === 'dark') {
+                  document.documentElement.classList.add('dark');
+                }
+                const savedFontSize = localStorage.getItem('flow_font_size');
+                if (savedFontSize) {
+                  document.documentElement.setAttribute('data-font-size', savedFontSize);
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
+      </head>
       <body className="bg-background text-zinc-100 min-h-screen selection:bg-primary/30 selection:text-white antialiased overflow-x-hidden">
         <PwaRegistrar />
         {children}

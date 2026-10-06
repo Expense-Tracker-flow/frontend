@@ -15,7 +15,7 @@ import { AddTransactionModal } from '../components/AddTransactionModal';
 import { EditTransactionModal } from '../components/EditTransactionModal';
 import { MobileBottomNav } from '../components/MobileBottomNav';
 import { DateRangeFilter } from '../components/DateRangeFilter';
-import { Category, CategoryBreakdown, DashboardSummary, Transaction, TransactionType, UserProfile, AutomationRule } from '../lib/types';
+import { Category, CategoryBreakdown, DashboardSummary, Transaction, TransactionType, UserProfile, AutomationRule, FontSize } from '../lib/types';
 import { api } from '../lib/api';
 import { 
   TrendingUp, 
@@ -47,8 +47,9 @@ export default function DashboardPage() {
   // Active dashboard navigation tab: 'home' | 'summary' | 'history' | 'profile' | 'settings'
   const [activeTab, setActiveTab] = useState<DashboardTab>('home');
 
-  // Theme & Currency preferences (Light theme is default)
+  // Theme, Font Size & Currency preferences (Light theme is default)
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [fontSize, setFontSize] = useState<FontSize>('medium');
   const [currencySymbol, setCurrencySymbol] = useState<string>('₹');
 
   // Authentication UI state on landing
@@ -289,7 +290,7 @@ export default function DashboardPage() {
     }
   };
 
-  // Initialize theme on mount
+  // Initialize theme & font-size on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedTheme = (localStorage.getItem('flow_theme') as 'light' | 'dark') || 'light';
@@ -299,6 +300,10 @@ export default function DashboardPage() {
       } else {
         document.documentElement.classList.remove('dark');
       }
+
+      const savedFontSize = (localStorage.getItem('flow_font_size') as FontSize) || 'medium';
+      setFontSize(savedFontSize);
+      document.documentElement.setAttribute('data-font-size', savedFontSize);
     }
   }, []);
 
@@ -310,6 +315,21 @@ export default function DashboardPage() {
       document.documentElement.classList.remove('dark');
     }
     localStorage.setItem('flow_theme', newTheme);
+  };
+
+  const handleFontSizeChange = (newSize: FontSize) => {
+    setFontSize(newSize);
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-font-size', newSize);
+    }
+    localStorage.setItem('flow_font_size', newSize);
+    const labelMap: Record<FontSize, string> = {
+      small: 'Small (87.5%)',
+      medium: 'Default (100%)',
+      large: 'Large (112.5%)',
+      xlarge: 'X-Large (125%)',
+    };
+    showToast(`Typography set to ${labelMap[newSize]}`);
   };
 
   const handleCurrencyChange = (newCurrencyCode: string) => {
@@ -1183,7 +1203,9 @@ export default function DashboardPage() {
           <SettingsScreen
             user={user}
             currentTheme={theme}
+            currentFontSize={fontSize}
             onThemeChange={handleThemeChange}
+            onFontSizeChange={handleFontSizeChange}
             onCurrencyChange={handleCurrencyChange}
             onBackToHome={() => setActiveTab('home')}
           />

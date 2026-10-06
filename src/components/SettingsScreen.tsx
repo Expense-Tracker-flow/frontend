@@ -1,14 +1,16 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Settings as SettingsIcon, Sun, Moon, DollarSign, CheckCircle2, Save, ArrowLeft, Shield, Palette, Globe } from 'lucide-react';
-import { UserProfile } from '../lib/types';
+import { Settings as SettingsIcon, Sun, Moon, DollarSign, CheckCircle2, Save, ArrowLeft, Shield, Palette, Globe, ALargeSmall } from 'lucide-react';
+import { UserProfile, FontSize } from '../lib/types';
 import { api } from '../lib/api';
 
 interface SettingsScreenProps {
   user: UserProfile;
   currentTheme: 'light' | 'dark';
+  currentFontSize?: FontSize;
   onThemeChange: (theme: 'light' | 'dark') => void;
+  onFontSizeChange?: (size: FontSize) => void;
   onCurrencyChange: (currency: string) => void;
   onBackToHome: () => void;
 }
@@ -16,12 +18,15 @@ interface SettingsScreenProps {
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   user,
   currentTheme,
+  currentFontSize = 'medium',
   onThemeChange,
+  onFontSizeChange,
   onCurrencyChange,
   onBackToHome,
 }) => {
   const [currency, setCurrency] = useState(user.currency || 'INR');
   const [theme, setTheme] = useState<'light' | 'dark'>(currentTheme);
+  const [fontSize, setFontSize] = useState<FontSize>(currentFontSize);
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +34,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   useEffect(() => {
     setCurrency(user.currency || 'INR');
     setTheme(currentTheme);
-  }, [user, currentTheme]);
+    const savedFs = (localStorage.getItem('flow_font_size') as FontSize) || currentFontSize || 'medium';
+    setFontSize(savedFs);
+  }, [user, currentTheme, currentFontSize]);
 
   const currencies = [
     { code: 'INR', symbol: '₹', name: 'Indian Rupee (INR)', locale: 'en-IN' },
@@ -41,6 +48,23 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     { code: 'AUD', symbol: 'A$', name: 'Australian Dollar (AUD)', locale: 'en-AU' },
   ];
 
+  const fontSizes: { id: FontSize; label: string; scale: string; desc: string; previewClass: string }[] = [
+    { id: 'small', label: 'Small', scale: '87.5%', desc: 'Compact view for high data density', previewClass: 'text-xs' },
+    { id: 'medium', label: 'Default', scale: '100%', desc: 'Balanced standard typography scale', previewClass: 'text-sm' },
+    { id: 'large', label: 'Large', scale: '112.5%', desc: 'Comfortable size for easy reading', previewClass: 'text-base' },
+    { id: 'xlarge', label: 'X-Large', scale: '125%', desc: 'Enhanced legibility and accessibility', previewClass: 'text-lg' },
+  ];
+
+  const handleFontSizeSelect = (size: FontSize) => {
+    setFontSize(size);
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-font-size', size);
+    }
+    if (onFontSizeChange) {
+      onFontSizeChange(size);
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -49,8 +73,15 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     // 1. Immediately apply locally
     onCurrencyChange(currency);
     onThemeChange(theme);
+    if (onFontSizeChange) {
+      onFontSizeChange(fontSize);
+    }
+    if (typeof document !== 'undefined') {
+      document.documentElement.setAttribute('data-font-size', fontSize);
+    }
     localStorage.setItem('flow_theme', theme);
     localStorage.setItem('flow_currency', currency);
+    localStorage.setItem('flow_font_size', fontSize);
 
     try {
       const res = await api.updateProfile({
@@ -156,6 +187,80 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                   <div className="text-sm font-bold text-foreground">Dark Mode</div>
                   <p className="text-[11px] text-zinc-500 mt-0.5">Deep slate backdrop for low light</p>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Typography & Font Size Section */}
+          <div className="space-y-4 pt-4 border-t border-surface-border">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                <ALargeSmall className="w-4 h-4 text-violet-500" />
+                <span>Text Size & Typography Scaling</span>
+              </div>
+              <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-surface-raised border border-surface-border text-zinc-400">
+                Current: {fontSizes.find((f) => f.id === fontSize)?.scale} ({fontSizes.find((f) => f.id === fontSize)?.label})
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {fontSizes.map((item) => {
+                const isSelected = fontSize === item.id;
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => handleFontSizeSelect(item.id)}
+                    className={`p-4 rounded-2xl border cursor-pointer flex flex-col justify-between transition-all ${
+                      isSelected
+                        ? 'border-violet-500 bg-violet-500/10 text-violet-600 dark:text-violet-400 ring-2 ring-violet-500/20 shadow-sm'
+                        : 'border-surface-border bg-surface-raised text-zinc-500 hover:text-foreground hover:border-zinc-300 dark:hover:border-zinc-700'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div
+                        className={`w-9 h-9 rounded-xl border flex items-center justify-center font-bold font-sans transition-all ${
+                          isSelected
+                            ? 'bg-violet-500 text-white border-violet-400 shadow-sm'
+                            : 'bg-surface border-surface-border text-foreground'
+                        }`}
+                      >
+                        <span className={item.previewClass}>Aa</span>
+                      </div>
+                      {isSelected && (
+                        <CheckCircle2 className="w-4 h-4 text-violet-500 flex-shrink-0" />
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-xs font-bold text-foreground">{item.label}</span>
+                        <span className="text-[10px] font-mono text-zinc-400">{item.scale}</span>
+                      </div>
+                      <p className="text-[10px] text-zinc-500 mt-0.5 line-clamp-1">{item.desc}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Live Interactive Preview */}
+            <div className="p-4 rounded-2xl bg-surface-raised border border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center space-x-3">
+                <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-500 font-bold">
+                  Aa
+                </div>
+                <div>
+                  <div className="text-sm font-bold text-foreground">Live Typography Preview</div>
+                  <div className="text-xs text-zinc-500">Coffee with friends · ₹250.00 · Food & Dining</div>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  + ₹50,000 Income
+                </span>
+                <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                  - ₹450 Expense
+                </span>
               </div>
             </div>
           </div>

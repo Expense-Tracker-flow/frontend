@@ -27,6 +27,28 @@
     --muted: #94A3B8;
   }
 
+  /* Root typography scaling */
+  html {
+    font-size: 16px;
+    transition: font-size 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  html[data-font-size="small"] {
+    font-size: 14px;
+  }
+
+  html[data-font-size="medium"] {
+    font-size: 16px;
+  }
+
+  html[data-font-size="large"] {
+    font-size: 18px;
+  }
+
+  html[data-font-size="xlarge"] {
+    font-size: 20px;
+  }
+
   body {
     background-color: var(--background);
     color: var(--foreground);

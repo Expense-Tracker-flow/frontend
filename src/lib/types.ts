@@ -1,5 +1,7 @@
 export type TransactionType = 'EXPENSE' | 'INCOME';
 
+export type FontSize = 'small' | 'medium' | 'large' | 'xlarge';
+
 export type PaymentMethod = 'UPI' | 'CASH' | 'CREDIT_CARD' | 'DEBIT_CARD' | 'BANK_TRANSFER' | 'OTHER';
 
 export interface Category {
