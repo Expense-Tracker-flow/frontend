@@ -23,19 +23,19 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   onOpenQuickAdd,
 }) => {
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#12141C]/95 backdrop-blur-xl border-t border-surface-border px-1 py-1.5 safe-area-pb">
-      <div className="max-w-md mx-auto flex items-center justify-around relative px-0.5">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#12141C]/95 backdrop-blur-xl border-t border-surface-border px-2 pt-1.5 pb-2 safe-area-pb shadow-lg">
+      <div className="max-w-md mx-auto flex items-center justify-around relative">
         {/* 1. Chat Tab (MonAI) */}
         <button
           onClick={() => onTabChange('home')}
           className={`flex flex-col items-center justify-center flex-1 py-1 transition-all ${
             activeTab === 'home'
-              ? 'text-primary font-bold scale-105'
+              ? 'text-primary font-bold'
               : 'text-zinc-400 hover:text-foreground'
           }`}
         >
           <MessageSquare className="w-4 h-4 mb-0.5" />
-          <span className="text-[8px] sm:text-[9px] tracking-tight">Chat</span>
+          <span className="text-[10px] leading-tight tracking-tight">Chat</span>
         </button>
 
         {/* 2. Summary Tab */}
@@ -43,19 +43,19 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           onClick={() => onTabChange('summary')}
           className={`flex flex-col items-center justify-center flex-1 py-1 transition-all ${
             activeTab === 'summary'
-              ? 'text-primary font-bold scale-105'
+              ? 'text-primary font-bold'
               : 'text-zinc-400 hover:text-foreground'
           }`}
         >
           <PieChart className="w-4 h-4 mb-0.5" />
-          <span className="text-[8px] sm:text-[9px] tracking-tight">Summary</span>
+          <span className="text-[10px] leading-tight tracking-tight">Summary</span>
         </button>
 
         {/* Center Quick Add Floating Trigger */}
-        <div className="flex items-center justify-center px-0.5">
+        <div className="flex items-center justify-center px-1">
           <button
             onClick={onOpenQuickAdd}
-            className="w-10 h-10 -mt-4 rounded-full bg-primary hover:bg-primary-600 text-white flex items-center justify-center shadow-lg shadow-primary/35 border-2 border-surface transition-transform active:scale-95"
+            className="w-10 h-10 -mt-3.5 rounded-full bg-primary hover:bg-primary-600 text-white flex items-center justify-center shadow-lg shadow-primary/35 border-2 border-surface transition-transform active:scale-95"
             aria-label="Add Transaction"
           >
             <Plus className="w-5 h-5 stroke-[2.5]" />
@@ -67,12 +67,12 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           onClick={() => onTabChange('automate')}
           className={`flex flex-col items-center justify-center flex-1 py-1 transition-all ${
             activeTab === 'automate'
-              ? 'text-primary font-bold scale-105'
+              ? 'text-primary font-bold'
               : 'text-zinc-400 hover:text-foreground'
           }`}
         >
-          <Zap className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
-          <span className="text-[9px] sm:text-[10px] tracking-tight">Automate</span>
+          <Zap className="w-4 h-4 mb-0.5" />
+          <span className="text-[10px] leading-tight tracking-tight">Automate</span>
         </button>
 
         {/* 4. History Tab */}
@@ -80,12 +80,12 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           onClick={() => onTabChange('history')}
           className={`flex flex-col items-center justify-center flex-1 py-1 transition-all ${
             activeTab === 'history'
-              ? 'text-primary font-bold scale-105'
+              ? 'text-primary font-bold'
               : 'text-zinc-400 hover:text-foreground'
           }`}
         >
-          <History className="w-4 h-4 sm:w-5 sm:h-5 mb-0.5" />
-          <span className="text-[9px] sm:text-[10px] tracking-tight">History</span>
+          <History className="w-4 h-4 mb-0.5" />
+          <span className="text-[10px] leading-tight tracking-tight">History</span>
         </button>
       </div>
     </nav>

@@ -202,4 +202,8 @@ input[type="range"]::-moz-range-thumb {
   cursor: pointer;
 }
 
+.safe-area-pb {
+  padding-bottom: max(0.625rem, env(safe-area-inset-bottom, 0.625rem));
+}
+
 

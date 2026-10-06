@@ -101,9 +101,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   };
 
   return (
-    <div className="max-w-3xl w-full mx-auto space-y-6 animate-in fade-in duration-200">
+    <div className="max-w-3xl w-full mx-auto space-y-4 sm:space-y-6 pb-24 sm:pb-8 animate-in fade-in duration-200">
       {/* Top Header & Breadcrumb */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between px-1">
         <button
           onClick={onBackToHome}
           className="inline-flex items-center space-x-2 text-xs font-mono text-zinc-500 hover:text-foreground transition-colors"
@@ -112,25 +112,25 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           <span>Back to Home</span>
         </button>
 
-        <span className="text-xs font-mono text-zinc-400">Settings & System Preferences</span>
+        <span className="text-[11px] sm:text-xs font-mono text-zinc-400">Settings & Preferences</span>
       </div>
 
       {/* Main Settings Card */}
-      <div className="bg-surface border border-surface-border rounded-3xl p-6 sm:p-10 shadow-sm space-y-8">
+      <div className="bg-surface border border-surface-border rounded-2xl sm:rounded-3xl p-4 sm:p-8 shadow-sm space-y-6 sm:space-y-8">
         {/* Header */}
-        <div className="flex items-center space-x-4 pb-6 border-b border-surface-border">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500">
-            <SettingsIcon className="w-7 h-7" />
+        <div className="flex items-center space-x-3 sm:space-x-4 pb-4 sm:pb-6 border-b border-surface-border">
+          <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-500 flex-shrink-0">
+            <SettingsIcon className="w-5 h-5 sm:w-7 sm:h-7" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Preferences & Settings</h1>
-            <p className="text-xs text-zinc-500 mt-0.5">Customize theme mode, default currency, and ledger options</p>
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground truncate">Preferences & Settings</h1>
+            <p className="text-[11px] sm:text-xs text-zinc-500 mt-0.5 truncate">Customize theme mode, typography scale, and default currency</p>
           </div>
         </div>
 
         {/* Success Alert */}
         {success && (
-          <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center space-x-2.5">
+          <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center space-x-2.5">
             <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
             <span>Preferences saved and applied successfully!</span>
           </div>
@@ -138,74 +138,73 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 
         {/* Error Alert */}
         {error && (
-          <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs">
+          <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs">
             {error}
           </div>
         )}
 
         {/* Settings Form */}
-        <form onSubmit={handleSave} className="space-y-8">
+        <form onSubmit={handleSave} className="space-y-6 sm:space-y-8">
           {/* Theme Mode Section */}
-          <div className="space-y-3">
+          <div className="space-y-2.5 sm:space-y-3">
             <div className="flex items-center space-x-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
               <Palette className="w-4 h-4 text-primary" />
               <span>Theme Appearance</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
               {/* Light Theme Card */}
               <div
                 onClick={() => setTheme('light')}
-                className={`p-5 rounded-2xl border cursor-pointer flex items-center space-x-4 transition-all ${
+                className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border cursor-pointer flex items-center space-x-2.5 sm:space-x-3.5 transition-all ${
                   theme === 'light'
                     ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary/20 shadow-sm'
                     : 'border-surface-border bg-surface-raised text-zinc-500 hover:text-foreground'
                 }`}
               >
-                <div className="w-10 h-10 rounded-xl bg-white dark:bg-zinc-800 border border-surface-border flex items-center justify-center text-amber-500 shadow-sm">
-                  <Sun className="w-5 h-5" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-white dark:bg-zinc-800 border border-surface-border flex items-center justify-center text-amber-500 shadow-sm flex-shrink-0">
+                  <Sun className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <div>
-                  <div className="text-sm font-bold text-foreground">Light Theme (Default)</div>
-                  <p className="text-[11px] text-zinc-500 mt-0.5">Clean white canvas with soft contrast</p>
+                <div className="min-w-0">
+                  <div className="text-xs sm:text-sm font-bold text-foreground truncate">Light (Default)</div>
+                  <p className="text-[10px] sm:text-[11px] text-zinc-500 mt-0.5 hidden sm:block truncate">Clean white canvas</p>
                 </div>
               </div>
 
               {/* Dark Theme Card */}
               <div
                 onClick={() => setTheme('dark')}
-                className={`p-5 rounded-2xl border cursor-pointer flex items-center space-x-4 transition-all ${
+                className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border cursor-pointer flex items-center space-x-2.5 sm:space-x-3.5 transition-all ${
                   theme === 'dark'
                     ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary/20 shadow-sm'
                     : 'border-surface-border bg-surface-raised text-zinc-500 hover:text-foreground'
                 }`}
               >
-                <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-surface-border flex items-center justify-center text-indigo-400 shadow-sm">
-                  <Moon className="w-5 h-5" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-zinc-900 border border-surface-border flex items-center justify-center text-indigo-400 shadow-sm flex-shrink-0">
+                  <Moon className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <div>
-                  <div className="text-sm font-bold text-foreground">Dark Mode</div>
-                  <p className="text-[11px] text-zinc-500 mt-0.5">Deep slate backdrop for low light</p>
+                <div className="min-w-0">
+                  <div className="text-xs sm:text-sm font-bold text-foreground truncate">Dark Mode</div>
+                  <p className="text-[10px] sm:text-[11px] text-zinc-500 mt-0.5 hidden sm:block truncate">Deep slate backdrop</p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Typography & Font Size Slider Section */}
-          <div className="space-y-4 pt-4 border-t border-surface-border">
-            <div className="flex items-center justify-between">
+          <div className="space-y-3 sm:space-y-4 pt-3 sm:pt-4 border-t border-surface-border">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2">
               <div className="flex items-center space-x-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                <ALargeSmall className="w-4 h-4 text-violet-500" />
-                <span>Text Size & Typography Scaling</span>
+                <ALargeSmall className="w-4 h-4 text-violet-500 flex-shrink-0" />
+                <span>Text Size & Typography</span>
               </div>
-              <span className="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-violet-500/10 border border-violet-500/20 text-violet-600 dark:text-violet-400 font-semibold">
+              <span className="self-start sm:self-auto text-[10px] sm:text-[11px] font-mono px-2 py-0.5 rounded-lg bg-violet-500/10 border border-violet-500/20 text-violet-600 dark:text-violet-400 font-semibold whitespace-nowrap">
                 Current: {fontSizes[Math.max(0, fontSizes.findIndex((f) => f.id === fontSize))]?.scale} ({fontSizes[Math.max(0, fontSizes.findIndex((f) => f.id === fontSize))]?.label})
               </span>
             </div>
 
             {/* Slider Control Card */}
-            <div className="p-5 sm:p-6 rounded-2xl bg-surface-raised border border-surface-border shadow-sm">
-              {/* Slider Track with A icons */}
+            <div className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-surface-raised border border-surface-border shadow-sm">
               <div className="flex items-center space-x-3 sm:space-x-4">
                 <span className="text-xs font-bold text-zinc-400 select-none">A</span>
                 <div className="relative flex-1 flex items-center">
@@ -220,26 +219,26 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                     className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-zinc-200 dark:bg-zinc-800 accent-violet-600 focus:outline-none transition-all"
                   />
                 </div>
-                <span className="text-xl font-bold text-zinc-600 dark:text-zinc-200 select-none">A</span>
+                <span className="text-lg sm:text-xl font-bold text-zinc-600 dark:text-zinc-200 select-none">A</span>
               </div>
             </div>
 
             {/* Live Interactive Preview */}
-            <div className="p-4 rounded-2xl bg-surface-raised border border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center space-x-3">
-                <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-500 font-bold">
+            <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-surface-raised border border-surface-border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div className="flex items-center space-x-2.5 min-w-0">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-500 font-bold text-xs flex-shrink-0">
                   Aa
                 </div>
-                <div>
-                  <div className="text-sm font-bold text-foreground">Live Typography Preview</div>
-                  <div className="text-xs text-zinc-500">Coffee with friends · ₹250.00 · Food & Dining</div>
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-foreground">Live Typography Preview</div>
+                  <div className="text-[11px] text-zinc-500 truncate">Coffee with friends · ₹250.00 · Food & Dining</div>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <div className="flex items-center space-x-2 flex-wrap">
+                <span className="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                   + ₹50,000 Income
                 </span>
-                <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                <span className="inline-flex items-center px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-medium bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
                   - ₹450 Expense
                 </span>
               </div>
@@ -247,49 +246,47 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           </div>
 
           {/* Currency Preference Section */}
-          <div className="space-y-3 pt-4 border-t border-surface-border">
+          <div className="space-y-2.5 sm:space-y-3 pt-3 sm:pt-4 border-t border-surface-border">
             <div className="flex items-center space-x-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
               <Globe className="w-4 h-4 text-emerald-500" />
               <span>Display Currency</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               {currencies.map((c) => (
                 <div
                   key={c.code}
                   onClick={() => setCurrency(c.code)}
-                  className={`p-4 rounded-2xl border cursor-pointer flex items-center justify-between transition-all ${
+                  className={`p-2.5 sm:p-3.5 rounded-xl border cursor-pointer flex items-center justify-between transition-all ${
                     currency === c.code
-                      ? 'border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-2 ring-emerald-500/20'
+                      ? 'border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-2 ring-emerald-500/20 shadow-sm'
                       : 'border-surface-border bg-surface-raised text-zinc-500 hover:text-foreground'
                   }`}
                 >
-                  <div className="flex items-center space-x-3">
-                    <span className="w-8 h-8 rounded-xl bg-surface border border-surface-border flex items-center justify-center font-mono font-bold text-foreground">
+                  <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                    <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-surface border border-surface-border flex items-center justify-center font-mono font-bold text-xs text-foreground flex-shrink-0">
                       {c.symbol}
                     </span>
-                    <div>
-                      <div className="text-xs font-bold text-foreground">{c.name}</div>
-                      <div className="text-[10px] text-zinc-400 font-mono">{c.code}</div>
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-foreground truncate">{c.name.split(' (')[0]}</div>
+                      <div className="text-[10px] text-zinc-400 font-mono truncate">{c.code}</div>
                     </div>
                   </div>
 
                   {currency === c.code && (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                    <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 flex-shrink-0 ml-1" />
                   )}
                 </div>
               ))}
             </div>
           </div>
 
-
-
           {/* Action buttons */}
-          <div className="pt-4 flex items-center justify-between border-t border-surface-border">
+          <div className="pt-4 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-4 border-t border-surface-border">
             <button
               type="button"
               onClick={onBackToHome}
-              className="px-5 py-2.5 rounded-xl text-xs font-semibold text-zinc-500 hover:text-foreground hover:bg-surface-raised transition-colors"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-semibold text-zinc-500 hover:text-foreground hover:bg-surface-raised transition-colors text-center"
             >
               Cancel
             </button>
@@ -297,7 +294,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             <button
               type="submit"
               disabled={isSaving}
-              className="px-6 py-3 rounded-xl bg-primary hover:bg-primary-600 text-white text-xs font-semibold flex items-center space-x-2 transition-all shadow-lg shadow-primary/25 disabled:opacity-50"
+              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-primary hover:bg-primary-600 text-white text-xs font-semibold flex items-center justify-center space-x-2 transition-all shadow-lg shadow-primary/25 disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
               <span>{isSaving ? 'Applying Settings...' : 'Save & Apply Preferences'}</span>
