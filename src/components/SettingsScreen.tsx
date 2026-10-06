@@ -204,7 +204,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             </div>
 
             {/* Slider Control Card */}
-            <div className="p-5 sm:p-6 rounded-2xl bg-surface-raised border border-surface-border space-y-4 shadow-sm">
+            <div className="p-5 sm:p-6 rounded-2xl bg-surface-raised border border-surface-border shadow-sm">
               {/* Slider Track with A icons */}
               <div className="flex items-center space-x-3 sm:space-x-4">
                 <span className="text-xs font-bold text-zinc-400 select-none">A</span>
@@ -221,28 +221,6 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                   />
                 </div>
                 <span className="text-xl font-bold text-zinc-600 dark:text-zinc-200 select-none">A</span>
-              </div>
-
-              {/* Step Tick Marks & Clickable Labels */}
-              <div className="grid grid-cols-4 gap-1.5 pt-1">
-                {fontSizes.map((item, idx) => {
-                  const isSelected = item.id === fontSize;
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => handleFontSizeSelect(item.id)}
-                      className={`text-center py-2 px-1 rounded-xl transition-all flex flex-col items-center ${
-                        isSelected
-                          ? 'bg-violet-500/15 border border-violet-500/30 text-violet-600 dark:text-violet-400 font-bold shadow-sm'
-                          : 'text-zinc-400 hover:text-foreground hover:bg-surface border border-transparent'
-                      }`}
-                    >
-                      <span className="text-xs">{item.label}</span>
-                      <span className="text-[10px] font-mono opacity-70 mt-0.5">{item.scale}</span>
-                    </button>
-                  );
-                })}
               </div>
             </div>
 

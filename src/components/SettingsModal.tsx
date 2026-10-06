@@ -195,7 +195,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </span>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-surface-raised border border-surface-border space-y-3">
+            <div className="p-3.5 rounded-2xl bg-surface-raised border border-surface-border">
               <div className="flex items-center space-x-3">
                 <span className="text-xs font-bold text-zinc-400 select-none">A</span>
                 <input
@@ -209,22 +209,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-zinc-200 dark:bg-zinc-800 accent-violet-600 focus:outline-none transition-all"
                 />
                 <span className="text-lg font-bold text-zinc-600 dark:text-zinc-200 select-none">A</span>
-              </div>
-              <div className="grid grid-cols-4 gap-1 text-center">
-                {fontSizes.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => handleFontSizeSelect(item.id)}
-                    className={`text-[10px] py-1 rounded-lg transition-colors ${
-                      item.id === fontSize
-                        ? 'font-bold text-violet-600 dark:text-violet-400 bg-violet-500/10'
-                        : 'text-zinc-400 hover:text-foreground'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
               </div>
             </div>
           </div>
