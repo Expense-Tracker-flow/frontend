@@ -22,7 +22,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onClose,
   user,
   currentTheme,
-  currentFontSize = 'medium',
+  currentFontSize = 'small',
   onThemeChange,
   onFontSizeChange,
   onCurrencyChange,
@@ -39,7 +39,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       setCurrency(user.currency || 'INR');
     }
     setTheme(currentTheme);
-    const savedFs = (localStorage.getItem('flow_font_size') as FontSize) || currentFontSize || 'medium';
+    const savedFs = (localStorage.getItem('flow_font_size') as FontSize) || currentFontSize || 'small';
     setFontSize(savedFs);
   }, [user, currentTheme, currentFontSize, isOpen]);
 
@@ -56,8 +56,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   ];
 
   const fontSizes: { id: FontSize; label: string; scale: string; desc: string; previewClass: string }[] = [
-    { id: 'small', label: 'Small', scale: '87.5%', desc: 'Compact view', previewClass: 'text-xs' },
-    { id: 'medium', label: 'Default', scale: '100%', desc: 'Balanced standard', previewClass: 'text-sm' },
+    { id: 'small', label: 'Small (Default)', scale: '87.5%', desc: 'Compact view', previewClass: 'text-xs' },
+    { id: 'medium', label: 'Medium', scale: '100%', desc: 'Balanced standard', previewClass: 'text-sm' },
     { id: 'large', label: 'Large', scale: '112.5%', desc: 'Comfortable', previewClass: 'text-base' },
     { id: 'xlarge', label: 'X-Large', scale: '125%', desc: 'High legibility', previewClass: 'text-lg' },
   ];

@@ -18,7 +18,7 @@ interface SettingsScreenProps {
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   user,
   currentTheme,
-  currentFontSize = 'medium',
+  currentFontSize = 'small',
   onThemeChange,
   onFontSizeChange,
   onCurrencyChange,
@@ -34,7 +34,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   useEffect(() => {
     setCurrency(user.currency || 'INR');
     setTheme(currentTheme);
-    const savedFs = (localStorage.getItem('flow_font_size') as FontSize) || currentFontSize || 'medium';
+    const savedFs = (localStorage.getItem('flow_font_size') as FontSize) || currentFontSize || 'small';
     setFontSize(savedFs);
   }, [user, currentTheme, currentFontSize]);
 
@@ -49,8 +49,8 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   ];
 
   const fontSizes: { id: FontSize; label: string; scale: string; desc: string; previewClass: string }[] = [
-    { id: 'small', label: 'Small', scale: '87.5%', desc: 'Compact view for high data density', previewClass: 'text-xs' },
-    { id: 'medium', label: 'Default', scale: '100%', desc: 'Balanced standard typography scale', previewClass: 'text-sm' },
+    { id: 'small', label: 'Small (Default)', scale: '87.5%', desc: 'Compact view for high data density', previewClass: 'text-xs' },
+    { id: 'medium', label: 'Medium', scale: '100%', desc: 'Balanced standard typography scale', previewClass: 'text-sm' },
     { id: 'large', label: 'Large', scale: '112.5%', desc: 'Comfortable size for easy reading', previewClass: 'text-base' },
     { id: 'xlarge', label: 'X-Large', scale: '125%', desc: 'Enhanced legibility and accessibility', previewClass: 'text-lg' },
   ];

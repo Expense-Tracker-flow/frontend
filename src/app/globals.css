@@ -29,19 +29,19 @@
 
   /* Typography scale variable for font size only (preserves layout, padding & margins) */
   :root {
-    --font-scale: 1;
+    --font-scale: 0.875;
   }
 
   html {
     font-size: 16px;
   }
 
-  html[data-font-size="small"] {
+  html[data-font-size="small"],
+  html:not([data-font-size]) {
     --font-scale: 0.875;
   }
 
-  html[data-font-size="medium"],
-  html:not([data-font-size]) {
+  html[data-font-size="medium"] {
     --font-scale: 1;
   }
 

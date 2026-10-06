@@ -50,10 +50,8 @@ export default function RootLayout({
                 } else if (savedTheme === 'dark') {
                   document.documentElement.classList.add('dark');
                 }
-                const savedFontSize = localStorage.getItem('flow_font_size');
-                if (savedFontSize) {
-                  document.documentElement.setAttribute('data-font-size', savedFontSize);
-                }
+                const savedFontSize = localStorage.getItem('flow_font_size') || 'small';
+                document.documentElement.setAttribute('data-font-size', savedFontSize);
               } catch (_) {}
             `,
           }}

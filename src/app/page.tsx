@@ -49,7 +49,7 @@ export default function DashboardPage() {
 
   // Theme, Font Size & Currency preferences (Light theme is default)
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [fontSize, setFontSize] = useState<FontSize>('medium');
+  const [fontSize, setFontSize] = useState<FontSize>('small');
   const [currencySymbol, setCurrencySymbol] = useState<string>('₹');
 
   // Authentication UI state on landing
@@ -301,7 +301,7 @@ export default function DashboardPage() {
         document.documentElement.classList.remove('dark');
       }
 
-      const savedFontSize = (localStorage.getItem('flow_font_size') as FontSize) || 'medium';
+      const savedFontSize = (localStorage.getItem('flow_font_size') as FontSize) || 'small';
       setFontSize(savedFontSize);
       document.documentElement.setAttribute('data-font-size', savedFontSize);
     }
@@ -324,8 +324,8 @@ export default function DashboardPage() {
     }
     localStorage.setItem('flow_font_size', newSize);
     const labelMap: Record<FontSize, string> = {
-      small: 'Small (87.5%)',
-      medium: 'Default (100%)',
+      small: 'Small (Default - 87.5%)',
+      medium: 'Medium (100%)',
       large: 'Large (112.5%)',
       xlarge: 'X-Large (125%)',
     };
