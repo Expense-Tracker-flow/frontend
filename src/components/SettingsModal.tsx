@@ -184,35 +184,48 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           </div>
 
-          {/* Text Size Selector */}
-          <div className="space-y-2">
+          {/* Text Size Slider */}
+          <div className="space-y-2.5">
             <div className="flex items-center justify-between">
               <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                 Text Size
               </label>
-              <span className="text-[10px] font-mono text-zinc-400">
-                {fontSizes.find((f) => f.id === fontSize)?.scale}
+              <span className="text-[11px] font-mono font-medium text-violet-600 dark:text-violet-400">
+                {fontSizes[Math.max(0, fontSizes.findIndex((f) => f.id === fontSize))]?.label} ({fontSizes[Math.max(0, fontSizes.findIndex((f) => f.id === fontSize))]?.scale})
               </span>
             </div>
-            <div className="grid grid-cols-4 gap-2">
-              {fontSizes.map((item) => {
-                const isSelected = fontSize === item.id;
-                return (
+
+            <div className="p-3.5 rounded-2xl bg-surface-raised border border-surface-border space-y-3">
+              <div className="flex items-center space-x-3">
+                <span className="text-xs font-bold text-zinc-400 select-none">A</span>
+                <input
+                  type="range"
+                  min="0"
+                  max="3"
+                  step="1"
+                  value={Math.max(0, fontSizes.findIndex((f) => f.id === fontSize))}
+                  onChange={(e) => handleFontSizeSelect(fontSizes[Number(e.target.value)].id)}
+                  aria-label="Font size slider"
+                  className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-zinc-200 dark:bg-zinc-800 accent-violet-600 focus:outline-none transition-all"
+                />
+                <span className="text-lg font-bold text-zinc-600 dark:text-zinc-200 select-none">A</span>
+              </div>
+              <div className="grid grid-cols-4 gap-1 text-center">
+                {fontSizes.map((item) => (
                   <button
                     key={item.id}
                     type="button"
                     onClick={() => handleFontSizeSelect(item.id)}
-                    className={`p-2.5 rounded-xl border flex flex-col items-center justify-center transition-all ${
-                      isSelected
-                        ? 'border-violet-500 bg-violet-500/10 text-violet-600 dark:text-violet-400 ring-2 ring-violet-500/20 shadow-sm'
-                        : 'border-surface-border bg-surface-raised text-zinc-400 hover:text-foreground'
+                    className={`text-[10px] py-1 rounded-lg transition-colors ${
+                      item.id === fontSize
+                        ? 'font-bold text-violet-600 dark:text-violet-400 bg-violet-500/10'
+                        : 'text-zinc-400 hover:text-foreground'
                     }`}
                   >
-                    <span className={`font-bold ${item.previewClass}`}>Aa</span>
-                    <span className="text-[10px] font-semibold mt-1">{item.label}</span>
+                    {item.label}
                   </button>
-                );
-              })}
+                ))}
+              </div>
             </div>
           </div>
 

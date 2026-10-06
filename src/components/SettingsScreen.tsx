@@ -191,56 +191,59 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             </div>
           </div>
 
-          {/* Typography & Font Size Section */}
+          {/* Typography & Font Size Slider Section */}
           <div className="space-y-4 pt-4 border-t border-surface-border">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                 <ALargeSmall className="w-4 h-4 text-violet-500" />
                 <span>Text Size & Typography Scaling</span>
               </div>
-              <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-surface-raised border border-surface-border text-zinc-400">
-                Current: {fontSizes.find((f) => f.id === fontSize)?.scale} ({fontSizes.find((f) => f.id === fontSize)?.label})
+              <span className="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-violet-500/10 border border-violet-500/20 text-violet-600 dark:text-violet-400 font-semibold">
+                Current: {fontSizes[Math.max(0, fontSizes.findIndex((f) => f.id === fontSize))]?.scale} ({fontSizes[Math.max(0, fontSizes.findIndex((f) => f.id === fontSize))]?.label})
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {fontSizes.map((item) => {
-                const isSelected = fontSize === item.id;
-                return (
-                  <div
-                    key={item.id}
-                    onClick={() => handleFontSizeSelect(item.id)}
-                    className={`p-4 rounded-2xl border cursor-pointer flex flex-col justify-between transition-all ${
-                      isSelected
-                        ? 'border-violet-500 bg-violet-500/10 text-violet-600 dark:text-violet-400 ring-2 ring-violet-500/20 shadow-sm'
-                        : 'border-surface-border bg-surface-raised text-zinc-500 hover:text-foreground hover:border-zinc-300 dark:hover:border-zinc-700'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <div
-                        className={`w-9 h-9 rounded-xl border flex items-center justify-center font-bold font-sans transition-all ${
-                          isSelected
-                            ? 'bg-violet-500 text-white border-violet-400 shadow-sm'
-                            : 'bg-surface border-surface-border text-foreground'
-                        }`}
-                      >
-                        <span className={item.previewClass}>Aa</span>
-                      </div>
-                      {isSelected && (
-                        <CheckCircle2 className="w-4 h-4 text-violet-500 flex-shrink-0" />
-                      )}
-                    </div>
+            {/* Slider Control Card */}
+            <div className="p-5 sm:p-6 rounded-2xl bg-surface-raised border border-surface-border space-y-4 shadow-sm">
+              {/* Slider Track with A icons */}
+              <div className="flex items-center space-x-3 sm:space-x-4">
+                <span className="text-xs font-bold text-zinc-400 select-none">A</span>
+                <div className="relative flex-1 flex items-center">
+                  <input
+                    type="range"
+                    min="0"
+                    max="3"
+                    step="1"
+                    value={Math.max(0, fontSizes.findIndex((f) => f.id === fontSize))}
+                    onChange={(e) => handleFontSizeSelect(fontSizes[Number(e.target.value)].id)}
+                    aria-label="Font size scale slider"
+                    className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-zinc-200 dark:bg-zinc-800 accent-violet-600 focus:outline-none transition-all"
+                  />
+                </div>
+                <span className="text-xl font-bold text-zinc-600 dark:text-zinc-200 select-none">A</span>
+              </div>
 
-                    <div>
-                      <div className="flex items-baseline justify-between">
-                        <span className="text-xs font-bold text-foreground">{item.label}</span>
-                        <span className="text-[10px] font-mono text-zinc-400">{item.scale}</span>
-                      </div>
-                      <p className="text-[10px] text-zinc-500 mt-0.5 line-clamp-1">{item.desc}</p>
-                    </div>
-                  </div>
-                );
-              })}
+              {/* Step Tick Marks & Clickable Labels */}
+              <div className="grid grid-cols-4 gap-1.5 pt-1">
+                {fontSizes.map((item, idx) => {
+                  const isSelected = item.id === fontSize;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => handleFontSizeSelect(item.id)}
+                      className={`text-center py-2 px-1 rounded-xl transition-all flex flex-col items-center ${
+                        isSelected
+                          ? 'bg-violet-500/15 border border-violet-500/30 text-violet-600 dark:text-violet-400 font-bold shadow-sm'
+                          : 'text-zinc-400 hover:text-foreground hover:bg-surface border border-transparent'
+                      }`}
+                    >
+                      <span className="text-xs">{item.label}</span>
+                      <span className="text-[10px] font-mono opacity-70 mt-0.5">{item.scale}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Live Interactive Preview */}
