@@ -27,26 +27,30 @@
     --muted: #94A3B8;
   }
 
-  /* Root typography scaling */
+  /* Typography scale variable for font size only (preserves layout, padding & margins) */
+  :root {
+    --font-scale: 1;
+  }
+
   html {
     font-size: 16px;
-    transition: font-size 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   html[data-font-size="small"] {
-    font-size: 14px;
+    --font-scale: 0.875;
   }
 
-  html[data-font-size="medium"] {
-    font-size: 16px;
+  html[data-font-size="medium"],
+  html:not([data-font-size]) {
+    --font-scale: 1;
   }
 
   html[data-font-size="large"] {
-    font-size: 18px;
+    --font-scale: 1.125;
   }
 
   html[data-font-size="xlarge"] {
-    font-size: 20px;
+    --font-scale: 1.25;
   }
 
   body {
