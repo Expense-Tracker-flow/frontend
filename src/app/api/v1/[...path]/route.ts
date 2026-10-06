@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'edge';
 
-const DEFAULT_BACKEND_URL = 'https://tigers-effects-matter-bowling.trycloudflare.com/api/v1';
+const DEFAULT_BACKEND_URL = 'https://guarantee-webpage-trio-resolution.trycloudflare.com/api/v1';
 
 export async function OPTIONS() {
   return new NextResponse(null, {
