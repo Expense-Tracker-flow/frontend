@@ -15,6 +15,7 @@ import { AddTransactionModal } from '../components/AddTransactionModal';
 import { EditTransactionModal } from '../components/EditTransactionModal';
 import { MobileBottomNav } from '../components/MobileBottomNav';
 import { DateRangeFilter } from '../components/DateRangeFilter';
+import { SummaryTableExport } from '../components/SummaryTableExport';
 import { Category, CategoryBreakdown, DashboardSummary, Transaction, TransactionType, UserProfile, AutomationRule, FontSize } from '../lib/types';
 import { api } from '../lib/api';
 import { 
@@ -1004,16 +1005,26 @@ export default function DashboardPage() {
         {/* ============================================================== */}
         {activeTab === 'summary' && (
           <div className="space-y-4 sm:space-y-6 max-w-6xl mx-auto">
-            {/* From & To Date Range Filter */}
-            <div className="flex justify-end w-full">
-              <DateRangeFilter
-                fromDate={summaryFromDate}
-                toDate={summaryToDate}
-                onFromChange={setSummaryFromDate}
-                onToChange={setSummaryToDate}
-                onResetToCurrentMonth={handleResetSummaryDates}
-                onPresetSelect={handleSummaryPreset}
-              />
+            {/* Summary Header & Date Range Filter */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full">
+              <div>
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground font-mono">
+                  Financial Summary
+                </h1>
+                <p className="text-xs text-zinc-400">
+                  Cashflow metrics, category distribution, and itemized ledger
+                </p>
+              </div>
+              <div className="flex items-center justify-end">
+                <DateRangeFilter
+                  fromDate={summaryFromDate}
+                  toDate={summaryToDate}
+                  onFromChange={setSummaryFromDate}
+                  onToChange={setSummaryToDate}
+                  onResetToCurrentMonth={handleResetSummaryDates}
+                  onPresetSelect={handleSummaryPreset}
+                />
+              </div>
             </div>
 
             {/* 1. Unified Executive Financial Hub */}
@@ -1148,6 +1159,14 @@ export default function DashboardPage() {
                 currencySymbol={currencySymbol}
               />
             </div>
+
+            {/* 4. Itemized Ledger & Export (Expenses & Income) */}
+            <SummaryTableExport
+              transactions={summaryFilteredTransactions}
+              fromDate={summaryFromDate}
+              toDate={summaryToDate}
+              currencySymbol={currencySymbol}
+            />
           </div>
         )}
 
