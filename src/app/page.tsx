@@ -15,7 +15,6 @@ import { AddTransactionModal } from '../components/AddTransactionModal';
 import { EditTransactionModal } from '../components/EditTransactionModal';
 import { MobileBottomNav } from '../components/MobileBottomNav';
 import { DateRangeFilter } from '../components/DateRangeFilter';
-import { SummaryTableExport } from '../components/SummaryTableExport';
 import { Category, CategoryBreakdown, DashboardSummary, Transaction, TransactionType, UserProfile, AutomationRule, FontSize } from '../lib/types';
 import { api } from '../lib/api';
 import { 
@@ -1159,14 +1158,6 @@ export default function DashboardPage() {
                 currencySymbol={currencySymbol}
               />
             </div>
-
-            {/* 4. Itemized Ledger & Export (Expenses & Income) */}
-            <SummaryTableExport
-              transactions={summaryFilteredTransactions}
-              fromDate={summaryFromDate}
-              toDate={summaryToDate}
-              currencySymbol={currencySymbol}
-            />
           </div>
         )}
 

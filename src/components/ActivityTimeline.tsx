@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Transaction, Category } from '../lib/types';
-import { Trash2, Search, ArrowDownRight, ArrowUpRight, RotateCcw, Pencil, Sparkles, Filter, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trash2, Search, ArrowDownRight, ArrowUpRight, RotateCcw, Pencil, Sparkles, Filter, X, ChevronLeft, ChevronRight, Download, FileSpreadsheet, Printer } from 'lucide-react';
 import { SearchableSelect, SelectOption } from './SearchableSelect';
 
 const getPageNumbers = (current: number, total: number): (number | string)[] => {
@@ -196,11 +196,160 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
       }));
   }, [paginatedTransactions]);
 
+  // Export Handlers
+  const handleExportCSV = () => {
+    if (sortedFiltered.length === 0) return;
+    const headers = ['Date', 'Type', 'Category', 'Description', 'Notes', 'Payment Method', 'Amount'];
+    const rows = sortedFiltered.map((tx) => [
+      `"${tx.transactionDate ? tx.transactionDate.split('T')[0] : ''}"`,
+      `"${tx.type}"`,
+      `"${(tx.category?.name || (tx as any).categoryName || 'General').replace(/"/g, '""')}"`,
+      `"${(tx.description || '').replace(/"/g, '""')}"`,
+      `"${(tx.notes || '').replace(/"/g, '""')}"`,
+      `"${tx.paymentMethod || 'CASH'}"`,
+      `"${tx.amount}"`,
+    ]);
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `transactions_${fromDate}_to_${toDate}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportExcel = () => {
+    if (sortedFiltered.length === 0) return;
+    const totalIncome = sortedFiltered.filter((t) => t.type === 'INCOME').reduce((acc, t) => acc + (t.amount || 0), 0);
+    const totalExpense = sortedFiltered.filter((t) => t.type === 'EXPENSE').reduce((acc, t) => acc + (t.amount || 0), 0);
+    const net = totalIncome - totalExpense;
+
+    const metadata = [
+      ['"FLOW Expense Tracker - Financial Statement"'],
+      [`"Statement Period"`, `"${fromDate} to ${toDate}"`],
+      [`"Generated At"`, `"${new Date().toLocaleString()}"`],
+      [`"Total Inflow"`, `"${totalIncome}"`],
+      [`"Total Outflow"`, `"${totalExpense}"`],
+      [`"Net Balance"`, `"${net}"`],
+      ['""'],
+    ];
+
+    const headers = ['Date', 'Type', 'Category', 'Description', 'Notes', 'Payment Method', 'Amount'];
+    const rows = sortedFiltered.map((tx) => [
+      `"${tx.transactionDate ? tx.transactionDate.split('T')[0] : ''}"`,
+      `"${tx.type}"`,
+      `"${(tx.category?.name || (tx as any).categoryName || 'General').replace(/"/g, '""')}"`,
+      `"${(tx.description || '').replace(/"/g, '""')}"`,
+      `"${(tx.notes || '').replace(/"/g, '""')}"`,
+      `"${tx.paymentMethod || 'CASH'}"`,
+      `"${tx.amount}"`,
+    ]);
+
+    const csvContent = '\uFEFF' + [
+      ...metadata.map((r) => r.join(',')),
+      headers.join(','),
+      ...rows.map((r) => r.join(',')),
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ledger_${fromDate}_to_${toDate}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportPDF = () => {
+    if (sortedFiltered.length === 0) return;
+    const totalIncome = sortedFiltered.filter((t) => t.type === 'INCOME').reduce((acc, t) => acc + (t.amount || 0), 0);
+    const totalExpense = sortedFiltered.filter((t) => t.type === 'EXPENSE').reduce((acc, t) => acc + (t.amount || 0), 0);
+    const net = totalIncome - totalExpense;
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const rowsHtml = sortedFiltered.map((tx) => `
+      <tr>
+        <td>${tx.transactionDate ? tx.transactionDate.split('T')[0] : ''}</td>
+        <td style="color: ${tx.type === 'INCOME' ? '#059669' : '#dc2626'}; font-weight: 600;">${tx.type}</td>
+        <td>${tx.category?.name || (tx as any).categoryName || 'General'}</td>
+        <td>${tx.description || '-'}</td>
+        <td>${tx.notes || '-'}</td>
+        <td>${tx.paymentMethod || 'CASH'}</td>
+        <td style="text-align: right; font-weight: 600; color: ${tx.type === 'INCOME' ? '#059669' : '#dc2626'}">
+          ${tx.type === 'INCOME' ? '+' : '-'}${currencySymbol}${Number(tx.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+        </td>
+      </tr>
+    `).join('');
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Transaction Ledger - ${fromDate} to ${toDate}</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 28px; color: #18181b; }
+            h1 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+            .subtitle { font-size: 12px; color: #71717a; margin-bottom: 24px; }
+            .cards { display: flex; gap: 16px; margin-bottom: 24px; }
+            .card { border: 1px solid #e4e4e7; border-radius: 12px; padding: 12px 18px; min-width: 140px; background: #fafafa; }
+            .card-label { font-size: 10px; text-transform: uppercase; color: #71717a; font-weight: 700; letter-spacing: 0.5px; }
+            .card-val { font-size: 18px; font-weight: 800; margin-top: 4px; }
+            table { width: 100%; border-collapse: collapse; font-size: 12px; }
+            th { text-align: left; padding: 10px 8px; border-bottom: 2px solid #e4e4e7; font-size: 11px; text-transform: uppercase; color: #71717a; font-weight: 700; }
+            td { padding: 9px 8px; border-bottom: 1px solid #f4f4f5; }
+            @media print { body { padding: 0; } }
+          </style>
+        </head>
+        <body>
+          <h1>FLOW • Financial Transaction Ledger</h1>
+          <div class="subtitle">Statement Period: ${fromDate} to ${toDate} • Exported on ${new Date().toLocaleDateString()}</div>
+          <div class="cards">
+            <div class="card">
+              <div class="card-label">Total Inflow</div>
+              <div class="card-val" style="color: #059669;">+${currencySymbol}${totalIncome.toLocaleString('en-IN')}</div>
+            </div>
+            <div class="card">
+              <div class="card-label">Total Outflow</div>
+              <div class="card-val" style="color: #dc2626;">-${currencySymbol}${totalExpense.toLocaleString('en-IN')}</div>
+            </div>
+            <div class="card">
+              <div class="card-label">Net Balance</div>
+              <div class="card-val" style="color: ${net >= 0 ? '#059669' : '#dc2626'};">${currencySymbol}${net.toLocaleString('en-IN')}</div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Notes</th>
+                <th>Method</th>
+                <th style="text-align: right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+          <script>
+            window.onload = function() { window.print(); };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   return (
     <div className="w-full rounded-2xl sm:rounded-3xl bg-surface border border-surface-border p-4 sm:p-6 space-y-5 sm:space-y-6 shadow-sm text-foreground">
       {/* Header & Filter Controls */}
       <div className="flex flex-col gap-4 border-b border-surface-border pb-5">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center space-x-2">
               <h2 className="text-sm sm:text-base font-bold text-foreground tracking-tight">Activity Ledger</h2>
@@ -221,6 +370,37 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
               {totalCount} {totalCount === 1 ? 'transaction' : 'transactions'} found
               {totalPages > 1 && ` • Page ${safeCurrentPage} of ${totalPages}`}
             </p>
+          </div>
+
+          {/* Export Action Buttons: CSV, Excel, PDF */}
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap self-start sm:self-auto">
+            <button
+              onClick={handleExportCSV}
+              disabled={sortedFiltered.length === 0}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-surface-raised border border-surface-border hover:bg-surface hover:border-primary/40 text-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-xs cursor-pointer"
+              title="Download filtered transactions as CSV"
+            >
+              <Download className="w-3.5 h-3.5 text-primary" />
+              <span>CSV</span>
+            </button>
+            <button
+              onClick={handleExportExcel}
+              disabled={sortedFiltered.length === 0}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/10 border border-emerald-500/25 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-xs cursor-pointer"
+              title="Download formatted Excel ledger"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              <span>Excel</span>
+            </button>
+            <button
+              onClick={handleExportPDF}
+              disabled={sortedFiltered.length === 0}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-surface-raised border border-surface-border hover:bg-surface hover:border-zinc-400 text-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-xs cursor-pointer"
+              title="Print or Save PDF Statement"
+            >
+              <Printer className="w-3.5 h-3.5 text-zinc-400" />
+              <span>PDF</span>
+            </button>
           </div>
         </div>
 
