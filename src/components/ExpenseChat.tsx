@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { Category, Transaction, TransactionType, DashboardSummary, AutomationRule } from '../lib/types';
 import { api, ParsedTransactionDraft } from '../lib/api';
+import { paymentLabel } from '../lib/paymentTypes';
 
 export interface SlashCommand {
   command: string;
@@ -2372,7 +2373,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                         <dt className="text-zinc-500">Category</dt>
                         <dd className="text-right text-foreground">{msg.widget.draft.categoryName || 'None'}</dd>
                         <dt className="text-zinc-500">Payment</dt>
-                        <dd className="text-right text-foreground">{msg.widget.draft.paymentMethod.replace('_', ' ')}</dd>
+                        <dd className="text-right text-foreground">{paymentLabel(msg.widget.draft.paymentMethod)}</dd>
                         <dt className="text-zinc-500">Date</dt>
                         <dd className="text-right text-foreground">{msg.widget.draft.transactionDate}</dd>
                       </dl>
@@ -2491,7 +2492,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                         <div className="p-2 rounded-xl bg-white dark:bg-[#1A1D28] border border-surface-border/60">
                           <div className="text-[9px] text-zinc-400 font-mono uppercase font-semibold">Payment</div>
                           <div className="font-semibold text-foreground text-[11px] mt-0.5 uppercase tracking-wide font-mono">
-                            {msg.widget.transaction.paymentMethod?.replace('_', ' ') || 'CASH'}
+                            {paymentLabel(msg.widget.transaction.paymentMethod)}
                           </div>
                         </div>
                       </div>

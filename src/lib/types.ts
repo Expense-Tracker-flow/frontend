@@ -2,7 +2,8 @@ export type TransactionType = 'EXPENSE' | 'INCOME';
 
 export type FontSize = 'small' | 'medium' | 'large' | 'xlarge';
 
-export type PaymentMethod = 'UPI' | 'CASH' | 'CREDIT_CARD' | 'DEBIT_CARD' | 'BANK_TRANSFER' | 'OTHER';
+// A built-in code (UPI, CASH, ...) or the id of a user's custom payment type
+export type PaymentMethod = string;
 
 export interface Category {
   id: string;

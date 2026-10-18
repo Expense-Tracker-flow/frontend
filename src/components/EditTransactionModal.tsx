@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowDownRight, ArrowUpRight, Check, Trash2, AlertCircle } from 'lucide-react';
 import { Category, PaymentMethod, Transaction, TransactionType } from '../lib/types';
 import { api } from '../lib/api';
+import { getCustomPaymentTypes } from '../lib/paymentTypes';
 import { SearchableSelect, SelectOption } from './SearchableSelect';
 
 const PAYMENT_METHOD_OPTIONS: SelectOption[] = [
@@ -243,7 +244,10 @@ export const EditTransactionModal: React.FC<EditTransactionModalProps> = ({
                 <SearchableSelect
                   value={paymentMethod}
                   onChange={(val) => setPaymentMethod(val as PaymentMethod)}
-                  options={PAYMENT_METHOD_OPTIONS}
+                  options={[
+                    ...PAYMENT_METHOD_OPTIONS,
+                    ...getCustomPaymentTypes().map((c) => ({ value: c.code, label: c.label })),
+                  ]}
                   placeholder="Select Payment Method..."
                   searchPlaceholder="Search payment method..."
                 />

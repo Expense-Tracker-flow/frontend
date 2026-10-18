@@ -220,6 +220,22 @@ export const api = {
     return res.data;
   },
 
+  // Payment types
+  async getPaymentTypes() {
+    const res = await apiClient.get<ApiResponse<{ code: string; label: string; builtIn: boolean }[]>>('/payment-types');
+    return res.data;
+  },
+
+  async createPaymentType(data: { name: string }) {
+    const res = await apiClient.post<ApiResponse<{ code: string; label: string; builtIn: boolean }>>('/payment-types', data);
+    return res.data;
+  },
+
+  async deletePaymentType(id: string) {
+    const res = await apiClient.delete<ApiResponse<void>>(`/payment-types/${id}`);
+    return res.data;
+  },
+
   async deleteCategory(id: string) {
     const res = await apiClient.delete<ApiResponse<void>>(`/categories/${id}`);
     return res.data;

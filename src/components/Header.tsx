@@ -13,11 +13,13 @@ import {
   Settings as SettingsIcon, 
   ChevronDown,
   Download,
-  Smartphone
+  Smartphone,
+  Tags,
+  Wallet
 } from 'lucide-react';
 import { UserProfile } from '../lib/types';
 
-export type DashboardTab = 'home' | 'summary' | 'automate' | 'history' | 'profile' | 'settings';
+export type DashboardTab = 'home' | 'summary' | 'automate' | 'history' | 'profile' | 'settings' | 'categories' | 'payments';
 
 interface HeaderProps {
   user: UserProfile | null;
@@ -235,6 +237,36 @@ export const Header: React.FC<HeaderProps> = ({
                       >
                         <SettingsIcon className="w-4 h-4 text-indigo-500" />
                         <span>Settings & Preferences</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          onTabChange?.('categories');
+                        }}
+                        className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs transition-colors text-left font-medium ${
+                          activeTab === 'categories'
+                            ? 'bg-primary/10 text-primary'
+                            : 'text-zinc-600 dark:text-zinc-300 hover:text-foreground hover:bg-surface-raised'
+                        }`}
+                      >
+                        <Tags className="w-4 h-4 text-violet-500" />
+                        <span>Category Master</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          onTabChange?.('payments');
+                        }}
+                        className={`w-full flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs transition-colors text-left font-medium ${
+                          activeTab === 'payments'
+                            ? 'bg-primary/10 text-primary'
+                            : 'text-zinc-600 dark:text-zinc-300 hover:text-foreground hover:bg-surface-raised'
+                        }`}
+                      >
+                        <Wallet className="w-4 h-4 text-sky-500" />
+                        <span>Payment Type Master</span>
                       </button>
 
                       {/* Install App / PWA Option */}

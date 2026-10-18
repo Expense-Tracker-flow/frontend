@@ -38,7 +38,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -57,7 +57,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="bg-background text-zinc-100 min-h-screen selection:bg-primary/30 selection:text-white antialiased overflow-x-hidden">
+      <body suppressHydrationWarning className="bg-background text-zinc-100 min-h-screen selection:bg-primary/30 selection:text-white antialiased overflow-x-hidden">
         <PwaRegistrar />
         {children}
       </body>

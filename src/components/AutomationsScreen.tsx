@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { AutomationRule, Category } from '../lib/types';
 import { AddAutomationModal } from './AddAutomationModal';
+import { paymentLabel } from '../lib/paymentTypes';
 
 interface AutomationsScreenProps {
   rules: AutomationRule[];
@@ -198,7 +199,7 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
         const q = search.toLowerCase();
         const matchTitle = rule.title.toLowerCase().includes(q);
         const matchCat = (rule.categoryName || '').toLowerCase().includes(q);
-        const matchMethod = (rule.paymentMethod || '').toLowerCase().includes(q);
+        const matchMethod = paymentLabel(rule.paymentMethod).toLowerCase().includes(q);
         if (!matchTitle && !matchCat && !matchMethod) return false;
       }
       return true;
@@ -436,7 +437,7 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
                         <div className="min-w-0">
                           <div className="font-bold text-xs text-foreground truncate">{rule.title}</div>
                           <div className="text-[10px] text-zinc-400 font-mono">
-                            {rule.categoryName || (isIncome ? 'Income' : 'Expense')} • {rule.paymentMethod || 'UPI'}
+                            {rule.categoryName || (isIncome ? 'Income' : 'Expense')} • {paymentLabel(rule.paymentMethod || 'UPI')}
                           </div>
                         </div>
                       </div>
@@ -750,7 +751,7 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
                             {rule.categoryName || 'General'}
                           </span>
                           <span>•</span>
-                          <span>{rule.paymentMethod}</span>
+                          <span>{paymentLabel(rule.paymentMethod)}</span>
                           {rule.autoLog && (
                             <>
                               <span>•</span>

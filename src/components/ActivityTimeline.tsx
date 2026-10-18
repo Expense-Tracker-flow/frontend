@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Transaction, Category } from '../lib/types';
 import { Trash2, Search, ArrowDownRight, ArrowUpRight, RotateCcw, Pencil, Sparkles, Filter, X, ChevronLeft, ChevronRight, Download, FileSpreadsheet, Printer } from 'lucide-react';
 import { SearchableSelect, SelectOption } from './SearchableSelect';
+import { paymentLabel } from '../lib/paymentTypes';
 
 const getPageNumbers = (current: number, total: number): (number | string)[] => {
   if (total <= 7) {
@@ -206,7 +207,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
       `"${(tx.category?.name || (tx as any).categoryName || 'General').replace(/"/g, '""')}"`,
       `"${(tx.description || '').replace(/"/g, '""')}"`,
       `"${(tx.notes || '').replace(/"/g, '""')}"`,
-      `"${tx.paymentMethod || 'CASH'}"`,
+      `"${paymentLabel(tx.paymentMethod)}"`,
       `"${tx.amount}"`,
     ]);
     const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
@@ -242,7 +243,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
       `"${(tx.category?.name || (tx as any).categoryName || 'General').replace(/"/g, '""')}"`,
       `"${(tx.description || '').replace(/"/g, '""')}"`,
       `"${(tx.notes || '').replace(/"/g, '""')}"`,
-      `"${tx.paymentMethod || 'CASH'}"`,
+      `"${paymentLabel(tx.paymentMethod)}"`,
       `"${tx.amount}"`,
     ]);
 
@@ -277,7 +278,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
         <td>${tx.category?.name || (tx as any).categoryName || 'General'}</td>
         <td>${tx.description || '-'}</td>
         <td>${tx.notes || '-'}</td>
-        <td>${tx.paymentMethod || 'CASH'}</td>
+        <td>${paymentLabel(tx.paymentMethod)}</td>
         <td style="text-align: right; font-weight: 600; color: ${tx.type === 'INCOME' ? '#059669' : '#dc2626'}">
           ${tx.type === 'INCOME' ? '+' : '-'}${currencySymbol}${Number(tx.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
         </td>
@@ -543,7 +544,7 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
                               AI
                             </span>
                           )}
-                          {tx.paymentMethod ? <span>• {tx.paymentMethod}</span> : null}
+                          {tx.paymentMethod ? <span>• {paymentLabel(tx.paymentMethod)}</span> : null}
                           {tx.notes && !tx.notes.includes('Categorized by MonAI') ? <span>• {tx.notes}</span> : null}
                         </div>
                       </div>

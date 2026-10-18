@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Category, PaymentMethod, TransactionType } from '../lib/types';
 import { api } from '../lib/api';
+import { getCustomPaymentTypes } from '../lib/paymentTypes';
 import { SearchableSelect, SelectOption } from './SearchableSelect';
 
 const PAYMENT_METHOD_OPTIONS: SelectOption[] = [
@@ -696,7 +697,10 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                     <SearchableSelect
                       value={paymentMethod}
                       onChange={(val) => setPaymentMethod(val as PaymentMethod)}
-                      options={PAYMENT_METHOD_OPTIONS}
+                      options={[
+                        ...PAYMENT_METHOD_OPTIONS,
+                        ...getCustomPaymentTypes().map((c) => ({ value: c.code, label: c.label })),
+                      ]}
                       placeholder="Select Payment Method..."
                       searchPlaceholder="Search payment method..."
                       searchable={false}

@@ -7,6 +7,9 @@ import { Header, DashboardTab } from '../components/Header';
 import { ExpenseChat } from '../components/ExpenseChat';
 import { ProfileScreen } from '../components/ProfileScreen';
 import { SettingsScreen } from '../components/SettingsScreen';
+import { CategoryMasterScreen } from '../components/CategoryMasterScreen';
+import { loadPaymentTypes, clearPaymentTypes } from '../lib/paymentTypes';
+import { PaymentMasterScreen } from '../components/PaymentMasterScreen';
 import { MoneyOrbit } from '../components/MoneyOrbit';
 import { MoneyPulse } from '../components/MoneyPulse';
 import { CategoryCircleChart } from '../components/CategoryCircleChart';
@@ -68,6 +71,17 @@ export default function DashboardPage() {
 
   // Dashboard data state
   const [categories, setCategories] = useState<Category[]>([]);
+
+  // Custom payment types are needed by the forms and by every list that shows a payment method
+  useEffect(() => {
+    if (user) {
+      loadPaymentTypes().catch(() => {
+        // Built-in types still work without the custom list
+      });
+    } else {
+      clearPaymentTypes();
+    }
+  }, [user]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [summary, setSummary] = useState<DashboardSummary>({
     totalBalance: 0,
@@ -1228,6 +1242,16 @@ export default function DashboardPage() {
             onCurrencyChange={handleCurrencyChange}
             onBackToHome={() => setActiveTab('home')}
           />
+        )}
+        {activeTab === 'categories' && user && (
+          <CategoryMasterScreen
+            onBackToHome={() => setActiveTab('home')}
+            onCategoriesChanged={() => loadData()}
+          />
+        )}
+
+        {activeTab === 'payments' && user && (
+          <PaymentMasterScreen onBackToHome={() => setActiveTab('home')} />
         )}
       </main>
 

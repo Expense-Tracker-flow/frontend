@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Zap, ArrowDownRight, ArrowUpRight, Check, AlertCircle, Calendar, Sparkles } from 'lucide-react';
 import { Category, PaymentMethod, TransactionType, AutomationRule, AutomationFrequency } from '../lib/types';
+import { getCustomPaymentTypes } from '../lib/paymentTypes';
 import { SearchableSelect, SelectOption } from './SearchableSelect';
 
 const FREQUENCY_OPTIONS: SelectOption[] = [
@@ -371,7 +372,10 @@ export const AddAutomationModal: React.FC<AddAutomationModalProps> = ({
                 <SearchableSelect
                   value={paymentMethod}
                   onChange={(val) => setPaymentMethod(val as PaymentMethod)}
-                  options={AUTO_PAYMENT_OPTIONS}
+                  options={[
+                    ...AUTO_PAYMENT_OPTIONS,
+                    ...getCustomPaymentTypes().map((c) => ({ value: c.code, label: c.label })),
+                  ]}
                   placeholder="Select Payment Method..."
                   searchPlaceholder="Search payment method..."
                 />
