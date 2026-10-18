@@ -191,7 +191,7 @@ const renderFormattedMessageText = (text: string, isUser: boolean) => {
             return (
               <strong
                 key={partIdx}
-                className={isUser ? 'font-bold text-[#111b21] dark:text-[#e9edef]' : 'font-semibold text-foreground'}
+                className={isUser ? 'font-bold text-white' : 'font-semibold text-foreground'}
               >
                 {part.slice(2, -2)}
               </strong>
@@ -215,7 +215,7 @@ const renderFormattedMessageText = (text: string, isUser: boolean) => {
             return (
               <em
                 key={partIdx}
-                className={isUser ? 'text-[#54656f] dark:text-[#aebac1] italic' : 'text-zinc-500 dark:text-zinc-400 not-italic font-medium'}
+                className={isUser ? 'text-white/90 italic' : 'text-zinc-500 dark:text-zinc-400 not-italic font-medium'}
               >
                 {part.slice(1, -1)}
               </em>
@@ -227,7 +227,7 @@ const renderFormattedMessageText = (text: string, isUser: boolean) => {
         if (isBullet) {
           return (
             <div key={lineIdx} className="flex items-start space-x-1.5 pl-0.5">
-              <span className={`text-xs select-none mt-0.5 ${isUser ? 'text-[#667781] dark:text-[#8696a0]' : 'text-primary'}`}>
+              <span className={`text-xs select-none mt-0.5 ${isUser ? 'text-white/70' : 'text-primary'}`}>
                 •
               </span>
               <div className="flex-1 leading-relaxed">{renderedLine}</div>
@@ -2091,22 +2091,6 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
     }
   };
 
-  // Day and time helpers for WhatsApp-style date separators and bubble timestamps
-  const dayKey = (value: Date | string) => new Date(value).toDateString();
-
-  const dayLabel = (value: Date | string) => {
-    const date = new Date(value);
-    const today = new Date();
-    const yesterday = new Date();
-    yesterday.setDate(today.getDate() - 1);
-    if (dayKey(date) === dayKey(today)) return 'Today';
-    if (dayKey(date) === dayKey(yesterday)) return 'Yesterday';
-    return date.toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
-  };
-
-  const formatTime = (value: Date | string) =>
-    new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
   const handleConfirmDraft = async (messageId: string, draft: ParsedTransactionDraft) => {
     if (draft.amount == null) return;
     setIsProcessing(true);
@@ -2207,7 +2191,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
       {/* Unified WhatsApp / Instagram DM Chat Structure */}
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden max-w-2xl w-full mx-auto px-0 sm:px-4">
         {/* WhatsApp / Instagram DM Style Top App Bar (Always Frozen at Top) */}
-        <div className="flex-shrink-0 z-30 bg-[#f0f2f5] dark:bg-[#202c33] flex items-center justify-between px-3.5 sm:px-4 py-2.5 shadow-xs w-full">
+        <div className="flex-shrink-0 z-30 bg-white dark:bg-[#12141C] flex items-center justify-between px-3.5 sm:px-4 py-2.5 border-b border-surface-border shadow-xs w-full">
           <div className="flex items-center space-x-2.5">
             {/* MonAI Avatar with Online Indicator */}
             <div className="relative">
@@ -2219,11 +2203,11 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
 
             <div>
               <div className="flex items-center space-x-1.5">
-                <span className="font-semibold text-sm text-[#111b21] dark:text-[#e9edef]">MonAI</span>
+                <span className="font-bold text-xs sm:text-sm text-foreground tracking-tight">MonAI</span>
                 <span className="px-1.5 py-0.2 rounded-full bg-primary/10 text-primary text-[9px] font-mono font-semibold">AI Agent</span>
               </div>
-              <div className="text-[11px] text-[#667781] dark:text-[#8696a0] flex items-center gap-1">
-                <span>online</span>
+              <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                <span>Online • Instant Assistant</span>
               </div>
             </div>
           </div>
@@ -2252,7 +2236,13 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
         </div>
 
         {/* Messages Stream (Independently scrollable message area) */}
-        <div ref={messagesContainerRef} className="flex-1 min-h-0 py-3 overflow-y-auto px-3 sm:px-6 custom-scrollbar overscroll-contain bg-[#efeae2] dark:bg-[#0b141a] bg-[radial-gradient(rgba(0,0,0,0.04)_1px,transparent_1px)] dark:bg-[radial-gradient(rgba(255,255,255,0.025)_1px,transparent_1px)] [background-size:18px_18px]">
+        <div ref={messagesContainerRef} className="flex-1 min-h-0 space-y-3 sm:space-y-4 py-2 sm:py-3 overflow-y-auto px-2 sm:px-3 custom-scrollbar overscroll-contain">
+          {/* WhatsApp Style Date Divider */}
+          <div className="flex justify-center my-1.5">
+            <span className="px-3 py-0.5 rounded-full bg-surface-raised/90 dark:bg-surface-raised/60 border border-surface-border/70 text-[10px] font-medium text-zinc-400 shadow-2xs">
+              Today
+            </span>
+          </div>
 
           {/* Initial Welcome Message Bubble (Crystal clear guide for customers, no prompt pills) */}
           {messages.length === 0 && (
@@ -2261,7 +2251,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary via-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-xs flex-shrink-0 mb-0.5">
                   <Bot className="w-4 h-4" />
                 </div>
-                <div className="relative text-xs sm:text-sm leading-relaxed rounded-lg rounded-tl-none bg-white dark:bg-[#202c33] text-[#111b21] dark:text-[#e9edef] shadow-[0_1px_0.5px_rgba(11,20,26,0.13)] max-w-[92%] sm:max-w-[80%] p-4 sm:p-5 space-y-3.5">
+                <div className="relative text-xs sm:text-sm leading-relaxed rounded-2xl rounded-tl-xs bg-surface dark:bg-[#181B26] border border-surface-border text-foreground shadow-md max-w-[96%] sm:max-w-[88%] p-4 sm:p-5 space-y-3.5">
                   {/* Greeting & Subtitle */}
                   <div>
                     <div className="flex items-center space-x-2">
@@ -2331,28 +2321,26 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
             </div>
           )}
 
-            {messages.map((msg, index) => {
-              const prev = messages[index - 1];
-              const newDay = !prev || dayKey(prev.timestamp) !== dayKey(msg.timestamp);
-              const grouped = !newDay && prev.sender === msg.sender;
-              const isUser = msg.sender === 'user';
-              return (
-              <React.Fragment key={msg.id}>
-                {newDay && (
-                  <div className="flex justify-center my-2">
-                    <span className="px-3 py-1 rounded-lg bg-white dark:bg-[#182229] text-[11px] font-medium text-[#54656f] dark:text-[#8696a0] shadow-sm">
-                      {dayLabel(msg.timestamp)}
-                    </span>
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex items-end gap-2 ${
+                  msg.sender === 'user' ? 'justify-end' : 'justify-start'
+                }`}
+              >
+                {/* Assistant Bot Avatar (Left side) */}
+                {msg.sender === 'assistant' && (
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary via-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-xs flex-shrink-0 mb-0.5">
+                    <Bot className="w-3.5 h-3.5" />
                   </div>
                 )}
 
-                <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} ${grouped ? 'mt-0.5' : 'mt-2'}`}>
-                {/* WhatsApp-style bubble: tail on the first message of each run from the same sender */}
+                {/* WhatsApp / Instagram Speech Bubble */}
                 <div
-                  className={`relative max-w-[85%] sm:max-w-[70%] px-2.5 pt-1.5 pb-1 text-[13.5px] sm:text-sm leading-snug shadow-[0_1px_0.5px_rgba(11,20,26,0.13)] ${
-                    isUser
-                      ? `bg-[#d9fdd3] dark:bg-[#005c4b] text-[#111b21] dark:text-[#e9edef] ${grouped ? 'rounded-lg' : 'rounded-lg rounded-tr-none'}`
-                      : `bg-white dark:bg-[#202c33] text-[#111b21] dark:text-[#e9edef] ${grouped ? 'rounded-lg' : 'rounded-lg rounded-tl-none'}`
+                  className={`relative text-xs sm:text-sm leading-relaxed transition-all ${
+                    msg.sender === 'user'
+                      ? 'rounded-2xl rounded-tr-xs bg-primary text-white shadow-md shadow-primary/20 max-w-[85%] sm:max-w-[75%] px-3.5 py-2.5 ml-auto'
+                      : 'rounded-2xl rounded-tl-xs bg-surface dark:bg-[#181B26] border border-surface-border text-foreground shadow-sm max-w-[88%] sm:max-w-[80%] px-3.5 py-2.5'
                   }`}
                 >
                   {msg.text && msg.widget?.type !== 'TRANSACTION_CONFIRMATION' && (
@@ -2624,23 +2612,29 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                     </div>
                   )}
 
-                  {/* Time and read ticks sit inside the bubble, bottom-right, as in WhatsApp */}
-                  <span className="float-right ml-2 mt-1 flex items-center gap-0.5 text-[11px] leading-none text-[#667781] dark:text-[#8696a0] select-none">
-                    <span>{formatTime(msg.timestamp)}</span>
-                    {isUser && <span className="text-[#53bdeb] text-[13px] tracking-[-2px]">✓✓</span>}
-                  </span>
+                  {/* Message Timestamp & WhatsApp Double Checkmark */}
+                  <div
+                    className={`text-[9px] mt-1 font-mono flex items-center justify-end space-x-1 ${
+                      msg.sender === 'user' ? 'text-white/75' : 'text-zinc-400'
+                    }`}
+                  >
+                    <span>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    {msg.sender === 'user' && (
+                      <span className="text-[10px] leading-none text-white/90">✓✓</span>
+                    )}
+                  </div>
                 </div>
-                </div>
-              </React.Fragment>
-              );
-            })}
+              </div>
+            ))}
 
             {isProcessing && (
-              <div className="flex justify-start mt-2">
-                <div className="flex items-center gap-1 px-3 py-2.5 rounded-lg rounded-tl-none bg-white dark:bg-[#202c33] shadow-[0_1px_0.5px_rgba(11,20,26,0.13)]">
-                  <span className="w-2 h-2 rounded-full bg-[#8696a0] animate-bounce [animation-delay:-0.3s]" />
-                  <span className="w-2 h-2 rounded-full bg-[#8696a0] animate-bounce [animation-delay:-0.15s]" />
-                  <span className="w-2 h-2 rounded-full bg-[#8696a0] animate-bounce" />
+              <div className="flex items-center space-x-2 text-[11px] text-zinc-500 pl-1">
+                <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
+                  <Sparkles className="w-3.5 h-3.5 animate-spin" />
+                </div>
+                <div className="flex items-center space-x-1.5 bg-surface border border-surface-border px-3 py-1.5 rounded-2xl rounded-tl-xs shadow-xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
+                  <span>MonAI is typing...</span>
                 </div>
               </div>
             )}
@@ -2649,7 +2643,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
           </div>
 
           {/* WhatsApp / Instagram DM Sticky Bottom Bar (Always Frozen at Bottom) */}
-          <div className="flex-shrink-0 z-30 w-full py-2 px-2 bg-[#f0f2f5] dark:bg-[#202c33]">
+          <div className="flex-shrink-0 z-30 w-full pt-1.5 pb-2 px-2 sm:px-0 bg-white dark:bg-[#12141C] border-t border-surface-border/70 sm:border-t-0">
             {/* Quick Reply Chips Row - WhatsApp / Instagram Style */}
             <div className="flex items-center justify-center gap-2 mb-1.5">
               <button
@@ -2685,7 +2679,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                 e.preventDefault();
                 handleSendMessage();
               }}
-              className="relative flex items-center gap-2 z-40"
+              className="relative flex items-center bg-white dark:bg-[#12141C] border border-surface-border focus-within:border-primary/80 rounded-full p-1.5 shadow-xl transition-all z-40"
             >
               {renderSlashCommandPalette()}
               {renderSuggestionsDropdown('up')}
@@ -2703,7 +2697,6 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                 <Terminal className="w-3.5 h-3.5 text-primary" />
               </button>
 
-              <div className="flex-1 flex items-center min-w-0 bg-white dark:bg-[#2a3942] rounded-full px-3.5 shadow-xs">
               <input
                 ref={activeInputRef}
                 type="text"
@@ -2718,9 +2711,8 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
                     ? "amount (e.g. 50000 for Salary by Bank)..."
                     : "e.g. 300 for Groceries by UPI (or type /)..."
                 }
-                className="w-full bg-transparent py-2.5 text-sm text-[#111b21] dark:text-[#e9edef] placeholder-[#8696a0] focus:outline-none"
+                className="w-full bg-transparent pl-2.5 sm:pl-3 pr-2 py-2 text-xs sm:text-sm text-foreground placeholder-zinc-400 focus:outline-none"
               />
-              </div>
 
               <button
                 type="button"
@@ -2734,7 +2726,7 @@ export const ExpenseChat: React.FC<ExpenseChatProps> = ({
               <button
                 type="submit"
                 disabled={!input.trim() || isProcessing}
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#00a884] hover:bg-[#029a7a] disabled:opacity-40 text-white transition-all shadow-sm flex items-center justify-center flex-shrink-0 active:scale-95"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-primary hover:bg-primary-600 disabled:opacity-30 text-white transition-all shadow-md shadow-primary/25 flex items-center justify-center flex-shrink-0 active:scale-95"
               >
                 <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-0.5" />
               </button>
