@@ -145,6 +145,16 @@ export const api = {
     return res.data;
   },
 
+  async forgotPassword(data: { email: string }) {
+    const res = await apiClient.post<ApiResponse<void>>('/auth/forgot-password', data);
+    return res.data;
+  },
+
+  async resetPassword(data: { email: string; otpCode: string; newPassword: string }) {
+    const res = await apiClient.post<ApiResponse<void>>('/auth/reset-password', data);
+    return res.data;
+  },
+
   async refresh(refreshToken: string) {
     const res = await apiClient.post<ApiResponse<AuthResponse>>('/auth/refresh', { refreshToken });
     return res.data;

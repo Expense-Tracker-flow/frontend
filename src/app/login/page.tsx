@@ -18,6 +18,10 @@ export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [isForgot, setIsForgot] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetCode, setResetCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
 
   useEffect(() => {
     if (otpTimer > 0) {
@@ -56,10 +60,77 @@ export default function AuthPage() {
     }
   };
 
+  const exitForgot = () => {
+    setIsForgot(false);
+    setResetSent(false);
+    setResetCode('');
+    setNewPassword('');
+    setError(null);
+    setSuccessMsg(null);
+  };
+
+  const handleSendResetCode = async () => {
+    if (!email.trim() || !email.includes('@')) {
+      setError('Please enter a valid email address first.');
+      return;
+    }
+
+    setError(null);
+    setSuccessMsg(null);
+    setIsLoading(true);
+
+    try {
+      await api.forgotPassword({ email: email.trim() });
+      setResetSent(true);
+      setOtpTimer(60);
+      setSuccessMsg(`If an account exists for ${email.trim()}, a reset code has been sent.`);
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || 'Could not send the reset code. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (resetCode.length !== 6) {
+      setError('Enter the 6-digit code from your email.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
+
+    setError(null);
+    setSuccessMsg(null);
+    setIsLoading(true);
+
+    try {
+      await api.resetPassword({ email: email.trim(), otpCode: resetCode, newPassword });
+      exitForgot();
+      setIsLogin(true);
+      setPassword('');
+      setSuccessMsg('Password reset. Sign in with your new password.');
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || 'Could not reset your password. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccessMsg(null);
+
+    if (isForgot) {
+      if (resetSent) {
+        await handleResetPassword();
+      } else {
+        await handleSendResetCode();
+      }
+      return;
+    }
 
     // In signup mode, if OTP not sent, send OTP first
     if (!isLogin && !otpSent) {
@@ -143,10 +214,14 @@ export default function AuthPage() {
           {/* Header */}
           <div className="text-center mb-6">
             <h2 className="text-2xl font-bold text-white tracking-tight font-mono">
-              {isLogin ? 'Sign In' : 'Create Account'}
+              {isForgot ? 'Reset Password' : isLogin ? 'Sign In' : 'Create Account'}
             </h2>
             <p className="text-xs text-zinc-400 mt-1">
-              {isLogin
+              {isForgot
+                ? resetSent
+                  ? 'Enter the code sent to your email and choose a new password'
+                  : 'We will email you a 6-digit reset code'
+                : isLogin
                 ? 'Access your personal financial ledger'
                 : otpSent
                 ? 'Enter the 6-digit code sent to your email'
@@ -155,6 +230,7 @@ export default function AuthPage() {
           </div>
 
           {/* Tab Switcher */}
+          {!isForgot && (
           <div className="grid grid-cols-2 gap-1 bg-[#1A1D28] p-1 rounded-2xl mb-6 text-xs font-semibold border border-[#262A3B]">
             <button
               type="button"
@@ -184,6 +260,7 @@ export default function AuthPage() {
               Sign Up
             </button>
           </div>
+          )}
 
           {/* Error Message */}
           {error && (
@@ -203,7 +280,7 @@ export default function AuthPage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
+            {!isLogin && !isForgot && (
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-zinc-300">
                   Full Name
@@ -231,7 +308,7 @@ export default function AuthPage() {
                 <input
                   type="email"
                   required
-                  disabled={!isLogin && otpSent}
+                  disabled={(!isLogin && otpSent) || resetSent}
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
@@ -243,6 +320,7 @@ export default function AuthPage() {
               </div>
             </div>
 
+            {!isForgot && (
             <div className="space-y-1">
               <label className="block text-xs font-medium text-zinc-300">
                 Password
@@ -258,7 +336,79 @@ export default function AuthPage() {
                   className="w-full bg-[#1A1D28] border border-[#262A3B] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-primary transition-colors"
                 />
               </div>
+              {isLogin && (
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsForgot(true);
+                      setIsLogin(true);
+                      setOtpSent(false);
+                      setResetSent(false);
+                      setError(null);
+                      setSuccessMsg(null);
+                    }}
+                    className="text-[11px] text-zinc-400 hover:text-primary-300 transition-colors"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+              )}
             </div>
+            )}
+
+            {/* Reset fields when in forgot mode and the code has been sent */}
+            {isForgot && resetSent && (
+              <>
+                <div className="space-y-1 pt-1">
+                  <label className="block text-xs font-medium text-primary-300">
+                    6-Digit Reset Code
+                  </label>
+                  <div className="relative">
+                    <KeyRound className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-primary-400" />
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      required
+                      maxLength={6}
+                      value={resetCode}
+                      onChange={(e) => setResetCode(e.target.value.replace(/\D/g, ''))}
+                      placeholder="123456"
+                      className="w-full bg-[#1A1D28] border border-primary/50 focus:border-primary rounded-xl pl-10 pr-4 py-2.5 text-sm font-mono tracking-widest text-white placeholder-zinc-500 focus:outline-none transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-zinc-300">
+                    New Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
+                    <input
+                      type="password"
+                      required
+                      minLength={6}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="At least 6 characters"
+                      className="w-full bg-[#1A1D28] border border-[#262A3B] rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-primary transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    disabled={otpTimer > 0 || isLoading}
+                    onClick={handleSendResetCode}
+                    className="text-[11px] text-zinc-400 hover:text-primary-300 disabled:opacity-50 transition-colors"
+                  >
+                    {otpTimer > 0 ? `Resend code in ${otpTimer}s` : 'Resend code'}
+                  </button>
+                </div>
+              </>
+            )}
 
             {/* OTP Code Field when in Sign Up mode and OTP is sent */}
             {!isLogin && otpSent && (
@@ -299,6 +449,10 @@ export default function AuthPage() {
               <span>
                 {isLoading
                   ? 'Processing...'
+                  : isForgot
+                  ? resetSent
+                    ? 'Reset Password'
+                    : 'Send Reset Code'
                   : isLogin
                   ? 'Sign In to FIN-XL'
                   : !otpSent
@@ -311,7 +465,18 @@ export default function AuthPage() {
 
           {/* Toggle helper */}
           <div className="text-center mt-6 text-xs text-zinc-400">
-            {isLogin ? (
+            {isForgot ? (
+              <span>
+                Remembered your password?{' '}
+                <button
+                  type="button"
+                  onClick={exitForgot}
+                  className="text-primary-300 font-semibold hover:underline"
+                >
+                  Back to sign in
+                </button>
+              </span>
+            ) : isLogin ? (
               <span>
                 Don&apos;t have an account?{' '}
                 <button
