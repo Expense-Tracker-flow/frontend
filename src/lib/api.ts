@@ -123,6 +123,20 @@ apiClient.interceptors.response.use(
   }
 );
 
+// Draft read from a sentence by POST /transactions/parse. Nothing is saved until the user confirms it.
+export interface ParsedTransactionDraft {
+  entry: boolean;
+  type: 'EXPENSE' | 'INCOME';
+  amount: number | null;
+  description: string;
+  categoryId?: string | null;
+  categoryName?: string | null;
+  paymentMethod: string;
+  transactionDate: string;
+  missingFields: string[];
+  assumptions: string[];
+}
+
 export const api = {
   // Auth
   async sendOtp(data: { email: string; purpose?: string }) {
@@ -222,6 +236,11 @@ export const api = {
     size?: number;
   }) {
     const res = await apiClient.get<ApiResponse<PageResponse<Transaction>>>('/transactions', { params });
+    return res.data;
+  },
+
+  async parseTransaction(data: { text: string; today?: string }) {
+    const res = await apiClient.post<ApiResponse<ParsedTransactionDraft>>('/transactions/parse', data);
     return res.data;
   },
 
