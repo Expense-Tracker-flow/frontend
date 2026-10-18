@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Header, DashboardTab } from '../components/Header';
 import { ExpenseChat } from '../components/ExpenseChat';
 import { ProfileScreen } from '../components/ProfileScreen';
@@ -765,6 +766,14 @@ export default function DashboardPage() {
                     />
                   </div>
                 </div>
+
+                {isLoginMode && (
+                  <div className="flex justify-end">
+                    <Link href="/login?forgot=1" className="text-[11px] text-zinc-400 hover:text-primary-300 transition-colors">
+                      Forgot password?
+                    </Link>
+                  </div>
+                )}
 
                 {/* OTP Code Field when in Sign Up mode and OTP is sent */}
                 {!isLoginMode && otpSent && (

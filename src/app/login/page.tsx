@@ -23,6 +23,14 @@ export default function AuthPage() {
   const [resetCode, setResetCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
 
+  // Opened from the home page sign-in form with /login?forgot=1
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('forgot') === '1') {
+      setIsForgot(true);
+      setIsLogin(true);
+    }
+  }, []);
+
   useEffect(() => {
     if (otpTimer > 0) {
       const interval = setInterval(() => {
