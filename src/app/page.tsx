@@ -11,6 +11,7 @@ import { SettingsScreen } from '../components/SettingsScreen';
 import { CategoryMasterScreen } from '../components/CategoryMasterScreen';
 import { loadPaymentTypes, clearPaymentTypes } from '../lib/paymentTypes';
 import { PaymentMasterScreen } from '../components/PaymentMasterScreen';
+import { NotificationsScreen } from '../components/NotificationsScreen';
 import { MoneyOrbit } from '../components/MoneyOrbit';
 import { MoneyPulse } from '../components/MoneyPulse';
 import { CategoryCircleChart } from '../components/CategoryCircleChart';
@@ -55,7 +56,7 @@ export default function DashboardPage() {
 
   // Main screens in swipe order (the bottom bar tabs), and every screen the URL can point to
   const SWIPE_TABS: DashboardTab[] = ['home', 'summary', 'automate', 'history'];
-  const ALL_TABS: DashboardTab[] = ['home', 'summary', 'automate', 'history', 'profile', 'settings', 'categories', 'payments'];
+  const ALL_TABS: DashboardTab[] = ['home', 'summary', 'automate', 'history', 'profile', 'settings', 'categories', 'payments', 'notifications'];
   const [slideDir, setSlideDir] = useState<1 | -1>(1);
   const activeTabRef = useRef<DashboardTab>(activeTab);
   activeTabRef.current = activeTab;
@@ -1060,6 +1061,7 @@ export default function DashboardPage() {
         user={user}
         activeTab={activeTab}
         onTabChange={(tab) => navigateTo(tab)}
+        onShowAllNotifications={() => navigateTo('notifications')}
         onRefresh={loadData}
         onOpenAuth={() => {
           setShowAuthForm(true);
@@ -1354,6 +1356,10 @@ export default function DashboardPage() {
             onBackToHome={() => navigateTo('home')}
             onCategoriesChanged={() => loadData()}
           />
+        )}
+
+        {activeTab === 'notifications' && user && (
+          <NotificationsScreen onBackToHome={() => navigateTo('home')} />
         )}
 
         {activeTab === 'payments' && user && (

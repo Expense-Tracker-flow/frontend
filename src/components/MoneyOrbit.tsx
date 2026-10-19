@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CategoryBreakdown } from '../lib/types';
 import { 
@@ -54,21 +54,21 @@ export const MoneyOrbit: React.FC<MoneyOrbitProps> = ({
   const [inspectedCategory, setInspectedCategory] = useState<CategoryBreakdown | null>(null);
   const [pinnedCategory, setPinnedCategory] = useState<CategoryBreakdown | null>(null);
 
+  // Size the orbit from the space the card actually has, so the outer labels stay inside it
+  const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
     const updateRadius = () => {
-      if (typeof window !== 'undefined') {
-        if (window.innerWidth < 480) {
-          setRadius(140);
-        } else if (window.innerWidth < 768) {
-          setRadius(165);
-        } else {
-          setRadius(190);
-        }
-      }
+      // Each label is about 150px wide and sits on the ring, so keep the ring at least 85px from each edge
+      const half = el.clientWidth / 2;
+      const fitted = Math.floor(half - 85);
+      setRadius(Math.max(95, Math.min(190, fitted)));
     };
     updateRadius();
-    window.addEventListener('resize', updateRadius);
-    return () => window.removeEventListener('resize', updateRadius);
+    const observer = new ResizeObserver(updateRadius);
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   // Filter top categories (up to 6)
@@ -105,7 +105,8 @@ export const MoneyOrbit: React.FC<MoneyOrbitProps> = ({
   };
 
   return (
-    <div 
+    <div
+      ref={containerRef}
       className="relative w-full h-[420px] sm:h-[470px] flex items-center justify-center overflow-hidden rounded-3xl bg-transparent p-4 sm:p-6 transition-colors select-none"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => {

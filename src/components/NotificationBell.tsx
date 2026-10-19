@@ -8,7 +8,11 @@ import { UserProfile } from '../lib/types';
 
 interface NotificationBellProps {
   user: UserProfile | null;
+  onShowAll?: () => void;
 }
+
+// How many alerts the bell panel shows before "Show all"
+const PANEL_LIMIT = 7;
 
 const REFRESH_MS = 5 * 60 * 1000;
 
@@ -33,7 +37,7 @@ const timeAgo = (iso: string) => {
   return new Date(iso).toLocaleDateString([], { day: 'numeric', month: 'short' });
 };
 
-export const NotificationBell: React.FC<NotificationBellProps> = ({ user }) => {
+export const NotificationBell: React.FC<NotificationBellProps> = ({ user, onShowAll }) => {
   const [open, setOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [items, setItems] = useState<AlertItem[]>([]);
@@ -146,7 +150,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ user }) => {
             {items.length === 0 ? (
               <p className="px-4 py-6 text-center text-xs text-zinc-500">No notifications</p>
             ) : (
-              items.map((item) => (
+              items.slice(0, PANEL_LIMIT).map((item) => (
                 <button
                   key={item.id}
                   type="button"
@@ -168,6 +172,19 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ user }) => {
               ))
             )}
           </div>
+
+          {items.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                onShowAll?.();
+              }}
+              className="px-4 py-3 text-xs font-semibold text-primary hover:bg-surface-raised text-center border-t border-surface-border/60 cursor-pointer rounded-b-2xl"
+            >
+              Show all notifications
+            </button>
+          )}
         </div>,
         document.body
       )}

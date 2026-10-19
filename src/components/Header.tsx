@@ -20,7 +20,7 @@ import {
 import { UserProfile } from '../lib/types';
 import { NotificationBell } from './NotificationBell';
 
-export type DashboardTab = 'home' | 'summary' | 'automate' | 'history' | 'profile' | 'settings' | 'categories' | 'payments';
+export type DashboardTab = 'home' | 'summary' | 'automate' | 'history' | 'profile' | 'settings' | 'categories' | 'payments' | 'notifications';
 
 interface HeaderProps {
   user: UserProfile | null;
@@ -29,6 +29,7 @@ interface HeaderProps {
   onRefresh: () => void;
   onOpenAuth: () => void;
   onLogout: () => void;
+  onShowAllNotifications?: () => void;
   isLoading?: boolean;
 }
 
@@ -39,6 +40,7 @@ export const Header: React.FC<HeaderProps> = ({
   onRefresh,
   onOpenAuth,
   onLogout,
+  onShowAllNotifications,
   isLoading,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -166,7 +168,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right Section: Refresh & User Profile Dropdown */}
         <div className="flex items-center space-x-3">
-          <NotificationBell user={user} />
+          <NotificationBell user={user} onShowAll={onShowAllNotifications} />
           <button
             onClick={onRefresh}
             className="p-2 text-zinc-400 hover:text-foreground rounded-xl hover:bg-surface-raised transition-colors"
