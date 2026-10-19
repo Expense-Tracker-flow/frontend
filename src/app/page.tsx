@@ -72,6 +72,22 @@ export default function DashboardPage() {
   // Dashboard data state
   const [categories, setCategories] = useState<Category[]>([]);
 
+  // Send the device's timezone once, so daily reminders arrive at the user's local evening
+  useEffect(() => {
+    if (!user) return;
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (tz && user.timezone !== tz) {
+      api
+        .updateProfile({ timezone: tz })
+        .then((res) => {
+          if (res.success && res.data) setUser(res.data);
+        })
+        .catch(() => {
+          // Reminders fall back to UTC until the timezone can be saved
+        });
+    }
+  }, [user]);
+
   // Custom payment types are needed by the forms and by every list that shows a payment method
   useEffect(() => {
     if (user) {

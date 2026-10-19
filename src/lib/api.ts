@@ -123,6 +123,16 @@ apiClient.interceptors.response.use(
   }
 );
 
+// One in-app alert from GET /notifications
+export interface AlertItem {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  readAt?: string | null;
+  createdAt: string;
+}
+
 // Draft read from a sentence by POST /transactions/parse. Nothing is saved until the user confirms it.
 export interface ParsedTransactionDraft {
   entry: boolean;
@@ -193,7 +203,7 @@ export const api = {
     return res.data;
   },
 
-  async updateProfile(data: { fullName?: string; currency?: string }) {
+  async updateProfile(data: { fullName?: string; currency?: string; timezone?: string }) {
     const res = await apiClient.put<ApiResponse<UserProfile>>('/auth/profile', data);
     return res.data;
   },
@@ -217,6 +227,40 @@ export const api = {
     color?: string;
   }) {
     const res = await apiClient.post<ApiResponse<Category>>('/categories', data);
+    return res.data;
+  },
+
+  // Phone (web push) notifications
+  async getPushPublicKey() {
+    const res = await apiClient.get<ApiResponse<{ enabled: boolean; publicKey: string | null }>>('/push/public-key');
+    return res.data;
+  },
+
+  async subscribePush(data: { endpoint: string; keys: { p256dh: string; auth: string } }) {
+    const res = await apiClient.post<ApiResponse<void>>('/push/subscribe', data);
+    return res.data;
+  },
+
+  async unsubscribePush(endpoint: string) {
+    const res = await apiClient.post<ApiResponse<void>>('/push/unsubscribe', { endpoint });
+    return res.data;
+  },
+
+  // Notifications (in-app alerts)
+  async getNotifications(today: string) {
+    const res = await apiClient.get<ApiResponse<{ unreadCount: number; items: AlertItem[] }>>('/notifications', {
+      params: { today },
+    });
+    return res.data;
+  },
+
+  async markNotificationRead(id: string) {
+    const res = await apiClient.post<ApiResponse<void>>(`/notifications/${id}/read`);
+    return res.data;
+  },
+
+  async markAllNotificationsRead() {
+    const res = await apiClient.post<ApiResponse<void>>('/notifications/read-all');
     return res.data;
   },
 

@@ -74,6 +74,7 @@ export interface UserProfile {
   email: string;
   fullName: string;
   currency: string;
+  timezone?: string;
   createdAt: string;
 }
 

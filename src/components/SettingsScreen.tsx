@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Settings as SettingsIcon, Sun, Moon, DollarSign, CheckCircle2, Save, ArrowLeft, Shield, Palette, Globe, ALargeSmall } from 'lucide-react';
 import { UserProfile, FontSize } from '../lib/types';
 import { api } from '../lib/api';
+import { PhoneNotificationsCard } from './PhoneNotificationsCard';
 
 interface SettingsScreenProps {
   user: UserProfile;
@@ -127,6 +128,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             <p className="text-[11px] sm:text-xs text-zinc-500 mt-0.5 truncate">Customize theme mode, typography scale, and default currency</p>
           </div>
         </div>
+
+        {/* Phone notifications: off by default, the user turns it on */}
+        <PhoneNotificationsCard />
 
         {/* Success Alert */}
         {success && (

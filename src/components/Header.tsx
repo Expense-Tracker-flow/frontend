@@ -18,6 +18,7 @@ import {
   Wallet
 } from 'lucide-react';
 import { UserProfile } from '../lib/types';
+import { NotificationBell } from './NotificationBell';
 
 export type DashboardTab = 'home' | 'summary' | 'automate' | 'history' | 'profile' | 'settings' | 'categories' | 'payments';
 
@@ -165,6 +166,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right Section: Refresh & User Profile Dropdown */}
         <div className="flex items-center space-x-3">
+          <NotificationBell user={user} />
           <button
             onClick={onRefresh}
             className="p-2 text-zinc-400 hover:text-foreground rounded-xl hover:bg-surface-raised transition-colors"
