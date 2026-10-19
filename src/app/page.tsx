@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Header, DashboardTab } from '../components/Header';
@@ -50,6 +51,65 @@ export default function DashboardPage() {
 
   // Active dashboard navigation tab: 'home' | 'summary' | 'history' | 'profile' | 'settings'
   const [activeTab, setActiveTab] = useState<DashboardTab>('home');
+
+  // Main screens in swipe order (the bottom bar tabs), and every screen the URL can point to
+  const SWIPE_TABS: DashboardTab[] = ['home', 'summary', 'automate', 'history'];
+  const ALL_TABS: DashboardTab[] = ['home', 'summary', 'automate', 'history', 'profile', 'settings', 'categories', 'payments'];
+  const [slideDir, setSlideDir] = useState<1 | -1>(1);
+  const activeTabRef = useRef<DashboardTab>(activeTab);
+  activeTabRef.current = activeTab;
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  // Changes the screen and records it in history, so the device Back button returns to the previous screen
+  const navigateTo = (tab: DashboardTab, record = true) => {
+    const from = SWIPE_TABS.indexOf(activeTab);
+    const to = SWIPE_TABS.indexOf(tab);
+    if (from !== -1 && to !== -1) setSlideDir(to >= from ? 1 : -1);
+    setActiveTab(tab);
+    if (record && typeof window !== 'undefined' && window.history.state?.tab !== tab) {
+      window.history.pushState({ tab }, '', `#${tab}`);
+    }
+    if (tab === 'home' && typeof window !== 'undefined') {
+      window.scrollTo(0, 0);
+    }
+  };
+
+  // Restore the screen from the URL on load, and follow the Back and Forward buttons
+  useEffect(() => {
+    const fromHash = window.location.hash.slice(1) as DashboardTab;
+    const start: DashboardTab = ALL_TABS.includes(fromHash) ? fromHash : 'home';
+    if (start !== 'home') setActiveTab(start);
+    window.history.replaceState({ tab: start }, '', `#${start}`);
+
+    const onPop = (e: PopStateEvent) => {
+      const tab = (e.state?.tab as DashboardTab) || 'home';
+      const from = SWIPE_TABS.indexOf(activeTabRef.current);
+      const to = SWIPE_TABS.indexOf(tab);
+      if (from !== -1 && to !== -1) setSlideDir(to >= from ? 1 : -1);
+      setActiveTab(tab);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
+  // Swipe left or right on a phone to move between the main screens
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!start || window.innerWidth >= 768) return;
+    // Leave typing and form controls alone
+    if ((e.target as HTMLElement).closest('input, textarea, select, [data-no-swipe]')) return;
+    const dx = e.changedTouches[0].clientX - start.x;
+    const dy = e.changedTouches[0].clientY - start.y;
+    if (Math.abs(dx) < 60 || Math.abs(dy) > 40) return; // only a clear sideways swipe counts
+    const i = SWIPE_TABS.indexOf(activeTab);
+    if (i === -1) return;
+    const next = dx < 0 ? SWIPE_TABS[i + 1] : SWIPE_TABS[i - 1];
+    if (next) navigateTo(next);
+  };
 
   // Theme, Font Size & Currency preferences (Light theme is default)
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -973,12 +1033,7 @@ export default function DashboardPage() {
       <Header
         user={user}
         activeTab={activeTab}
-        onTabChange={(tab) => {
-          setActiveTab(tab);
-          if (tab === 'home' && typeof window !== 'undefined') {
-            window.scrollTo(0, 0);
-          }
-        }}
+        onTabChange={(tab) => navigateTo(tab)}
         onRefresh={loadData}
         onOpenAuth={() => {
           setShowAuthForm(true);
@@ -996,7 +1051,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <main className={`flex-1 min-h-0 max-w-7xl w-full mx-auto ${
+      <main onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} className={`flex-1 min-h-0 max-w-7xl w-full mx-auto ${
         activeTab === 'home' 
           ? 'p-0 sm:px-6 lg:px-8 sm:py-2 overflow-hidden flex flex-col pb-16 md:pb-0' 
           : 'px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-5 sm:space-y-6 pb-24 md:pb-8'
@@ -1004,6 +1059,14 @@ export default function DashboardPage() {
         {/* ============================================================== */}
         {/* 🏠 TAB 1: CHAT (MonAI WhatsApp / Instagram DM Assistant)       */}
         {/* ============================================================== */}
+        {/* Slide-in animation when the screen changes (swipe, bottom bar, or Back) */}
+        <motion.div
+          key={activeTab}
+          className="w-full flex-1 min-h-0 flex flex-col"
+          initial={{ x: slideDir * 40, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.22, ease: 'easeOut' }}
+        >
         {activeTab === 'home' && (
           <div className="w-full h-full flex-1 flex flex-col overflow-hidden">
             <ExpenseChat
@@ -1241,7 +1304,7 @@ export default function DashboardPage() {
               setUser(updatedUser);
               showToast('Profile updated successfully');
             }}
-            onBackToHome={() => setActiveTab('home')}
+            onBackToHome={() => navigateTo('home')}
           />
         )}
 
@@ -1256,19 +1319,20 @@ export default function DashboardPage() {
             onThemeChange={handleThemeChange}
             onFontSizeChange={handleFontSizeChange}
             onCurrencyChange={handleCurrencyChange}
-            onBackToHome={() => setActiveTab('home')}
+            onBackToHome={() => navigateTo('home')}
           />
         )}
         {activeTab === 'categories' && user && (
           <CategoryMasterScreen
-            onBackToHome={() => setActiveTab('home')}
+            onBackToHome={() => navigateTo('home')}
             onCategoriesChanged={() => loadData()}
           />
         )}
 
         {activeTab === 'payments' && user && (
-          <PaymentMasterScreen onBackToHome={() => setActiveTab('home')} />
+          <PaymentMasterScreen onBackToHome={() => navigateTo('home')} />
         )}
+        </motion.div>
       </main>
 
       {/* Add Transaction Modal */}
@@ -1306,12 +1370,7 @@ export default function DashboardPage() {
       {/* Mobile Bottom Navigation Bar */}
       <MobileBottomNav
         activeTab={activeTab}
-        onTabChange={(tab) => {
-          setActiveTab(tab);
-          if (tab === 'home' && typeof window !== 'undefined') {
-            window.scrollTo(0, 0);
-          }
-        }}
+        onTabChange={(tab) => navigateTo(tab)}
         onOpenQuickAdd={handleOpenExpense}
       />
     </div>
