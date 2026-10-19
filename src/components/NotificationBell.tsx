@@ -154,7 +154,11 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ user, onShow
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => markOne(item)}
+                  onClick={() => {
+                    markOne(item);
+                    setOpen(false);
+                    onShowAll?.();
+                  }}
                   className={`w-full text-left flex gap-3 px-4 py-3 border-b border-surface-border/60 last:border-0 hover:bg-surface-raised transition-colors cursor-pointer ${
                     item.readAt ? 'opacity-70' : ''
                   }`}
