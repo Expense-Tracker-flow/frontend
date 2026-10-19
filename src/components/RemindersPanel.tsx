@@ -176,10 +176,10 @@ export const RemindersPanel: React.FC<RemindersPanelProps> = ({ categories, curr
   const paymentOptions = [...PAYMENT_OPTIONS, ...getCustomPaymentTypes().map((c) => ({ value: c.code, label: c.label }))];
 
   return (
-    <div className="bg-surface border border-surface-border rounded-2xl p-3.5 sm:p-5 shadow-sm space-y-3.5 sm:space-y-4">
-      <div className="flex items-center justify-between gap-2.5 border-b border-surface-border pb-3.5">
+    <div className="bg-surface border border-surface-border/60 rounded-3xl p-4 sm:p-6 space-y-4 sm:space-y-5">
+      <div className="flex items-center justify-between gap-2.5">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+          <div className="w-9 h-9 rounded-2xl bg-primary/5 text-primary flex items-center justify-center flex-shrink-0">
             <Bell className="w-4 h-4" />
           </div>
           <div>
@@ -194,7 +194,7 @@ export const RemindersPanel: React.FC<RemindersPanelProps> = ({ categories, curr
           <button
             type="button"
             onClick={openNew}
-            className="px-3 py-1.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-xs flex items-center gap-1.5 transition-all shadow-md shadow-primary/25 active:scale-[0.98] flex-shrink-0"
+            className="px-3.5 py-2 rounded-2xl bg-primary/10 hover:bg-primary/15 text-primary font-semibold text-xs flex items-center gap-1.5 transition-all active:scale-[0.98] flex-shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>New Reminder</span>
@@ -325,13 +325,13 @@ export const RemindersPanel: React.FC<RemindersPanelProps> = ({ categories, curr
             return (
               <div
                 key={r.id}
-                className={`relative overflow-hidden rounded-2xl border p-3.5 sm:p-4 flex flex-col justify-between space-y-3 bg-surface-raised/40 border-surface-border ${
+                className={`relative overflow-hidden rounded-2xl border border-surface-border/60 p-4 flex flex-col justify-between space-y-3 bg-surface ${
                   r.active ? '' : 'opacity-60'
                 }`}
               >
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-rose-500" />
+                <span className="absolute left-4 top-[1.15rem] w-1.5 h-1.5 rounded-full bg-rose-400" />
 
-                <div className="flex items-start justify-between gap-2.5 pl-1.5">
+                <div className="flex items-start justify-between gap-2.5 pl-3">
                   <div className="min-w-0">
                     <h4 className="font-bold text-xs sm:text-sm text-foreground truncate">{r.title}</h4>
                     <div className="flex items-center gap-1.5 flex-wrap mt-1 text-[10px] sm:text-[11px] font-mono text-zinc-400">
@@ -352,7 +352,7 @@ export const RemindersPanel: React.FC<RemindersPanelProps> = ({ categories, curr
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between gap-2 pt-2 border-t border-surface-border/70 pl-1.5">
+                <div className="flex items-center justify-between gap-2 pt-1 pl-3">
                   <button
                     type="button"
                     onClick={() => handleLog(r)}
@@ -360,7 +360,7 @@ export const RemindersPanel: React.FC<RemindersPanelProps> = ({ categories, curr
                     className={`px-2.5 py-1 rounded-xl border text-[10px] sm:text-[11px] font-bold flex items-center gap-1 transition-all ${
                       doneId === r.id
                         ? 'bg-emerald-500 text-white border-emerald-500'
-                        : 'bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 active:scale-95'
+                        : 'bg-transparent hover:bg-primary/5 text-primary border-primary/20 active:scale-95'
                     }`}
                   >
                     {busy ? <Sparkles className="w-2.5 h-2.5 animate-spin" /> : doneId === r.id ? <Check className="w-2.5 h-2.5" /> : null}

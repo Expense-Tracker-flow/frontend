@@ -1155,7 +1155,7 @@ export default function DashboardPage() {
             </div>
 
             {/* 1. Unified Executive Financial Hub */}
-            <div className="bg-surface border border-surface-border rounded-3xl p-4 sm:p-7 shadow-sm">
+            <div className="bg-surface border border-surface-border/60 rounded-3xl p-4 sm:p-7">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 sm:gap-6">
                 {/* Total Balance Hero */}
                 <div className="space-y-1.5 sm:pr-8">
@@ -1182,7 +1182,7 @@ export default function DashboardPage() {
                 {/* 3 Executive Stat Pillars: Responsive 2-Col on mobile, 3-Col on sm+ */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4 lg:gap-6 flex-1 pt-3 sm:pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l border-surface-border lg:pl-8">
                   {/* Income Stat Card */}
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/15 space-y-1">
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-surface-raised/50 border border-surface-border/60 space-y-1">
                     <div className="flex items-center space-x-1 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
                       <ArrowUpRight className="w-3.5 h-3.5 flex-shrink-0" />
                       <span className="truncate">Income</span>
@@ -1196,7 +1196,7 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Expense Stat Card */}
-                  <div className="p-3 sm:p-3.5 rounded-2xl bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/15 space-y-1">
+                  <div className="p-3 sm:p-3.5 rounded-2xl bg-surface-raised/50 border border-surface-border/60 space-y-1">
                     <div className="flex items-center space-x-1 text-rose-600 dark:text-rose-400 text-xs font-medium">
                       <ArrowDownRight className="w-3.5 h-3.5 flex-shrink-0" />
                       <span className="truncate">Spent</span>
