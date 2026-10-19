@@ -211,7 +211,7 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
   }, [rules, filterType, search, selectedDayFilter]);
 
   return (
-    <div className="space-y-4 sm:space-y-6 text-foreground pb-24 sm:pb-12 max-w-6xl mx-auto">
+    <div className="space-y-4 sm:space-y-6 text-foreground pb-24 sm:pb-12 max-w-6xl w-full min-w-0 mx-auto">
       {/* 1. Header & Main Action Bar: switch between automations and payment reminders */}
       <div className="flex items-center justify-between gap-3 pb-0.5">
         <div className="flex items-center gap-2.5 min-w-0">
@@ -367,7 +367,7 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
         {/* 7-Column Google Calendar Month Grid */}
         <div className="bg-surface-raised/40 border border-surface-border/80 rounded-2xl p-2.5 sm:p-4">
           {/* Weekday Header: S M T W T F S on mobile, SUN MON TUE... on desktop */}
-          <div className="grid grid-cols-7 gap-1 text-center mb-1.5 border-b border-surface-border/50 pb-1.5">
+          <div className="grid grid-cols-7 gap-1 text-center mb-1.5 border-b border-surface-border/50 pb-1.5 [&>*]:min-w-0">
             {WEEKDAYS.map((wd, idx) => (
               <div
                 key={wd}
@@ -380,7 +380,7 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
           </div>
 
           {/* Month Day Cells */}
-          <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
+          <div className="grid grid-cols-7 gap-1 sm:gap-1.5 [&>*]:min-w-0">
             {/* Blank cells for offset before 1st of month */}
             {Array.from({ length: firstDayOfMonth }, (_, i) => (
               <div key={`offset-${i}`} className="h-10 sm:h-12 pointer-events-none opacity-0" />

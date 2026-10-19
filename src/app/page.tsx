@@ -1080,7 +1080,7 @@ export default function DashboardPage() {
       <main onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} className={`flex-1 min-h-0 max-w-7xl w-full mx-auto ${
         activeTab === 'home' 
           ? 'p-0 sm:px-6 lg:px-8 sm:py-2 overflow-hidden flex flex-col pb-16 md:pb-0' 
-          : 'px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-5 sm:space-y-6 pb-24 md:pb-8'
+          : 'px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-5 sm:space-y-6 pb-24 md:pb-8 overflow-x-hidden'
       }`}>
         {/* ============================================================== */}
         {/* 🏠 TAB 1: CHAT (MonAI WhatsApp / Instagram DM Assistant)       */}
