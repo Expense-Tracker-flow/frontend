@@ -1,5 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { ApiResponse, DashboardSummary, PageResponse, Transaction, Category, UserProfile, AuthResponse } from './types';
+import { ApiResponse, DashboardSummary, PageResponse, PaymentReminder, PaymentReminderInput, Transaction, Category, UserProfile, AuthResponse } from './types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://fin-xl.duckdns.org/api/v1';
 
@@ -261,6 +261,33 @@ export const api = {
 
   async markAllNotificationsRead() {
     const res = await apiClient.post<ApiResponse<void>>('/notifications/read-all');
+    return res.data;
+  },
+
+  // Payment reminders (phone alert before a bill is due)
+  async getPaymentReminders() {
+    const res = await apiClient.get<ApiResponse<PaymentReminder[]>>('/payment-reminders');
+    return res.data;
+  },
+
+  async createPaymentReminder(data: PaymentReminderInput) {
+    const res = await apiClient.post<ApiResponse<PaymentReminder>>('/payment-reminders', data);
+    return res.data;
+  },
+
+  async updatePaymentReminder(id: string, data: PaymentReminderInput) {
+    const res = await apiClient.put<ApiResponse<PaymentReminder>>(`/payment-reminders/${id}`, data);
+    return res.data;
+  },
+
+  async deletePaymentReminder(id: string) {
+    const res = await apiClient.delete<ApiResponse<void>>(`/payment-reminders/${id}`);
+    return res.data;
+  },
+
+  // Moves the reminder's due date to next month, after its payment was logged as an expense
+  async logPaymentReminder(id: string) {
+    const res = await apiClient.post<ApiResponse<PaymentReminder>>(`/payment-reminders/${id}/log`);
     return res.data;
   },
 

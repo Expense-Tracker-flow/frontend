@@ -86,6 +86,21 @@ export interface AuthResponse {
   user: UserProfile;
 }
 
+// A bill that sends a phone alert before it is due. Stored on the server, so the alert arrives even when the app is closed
+export interface PaymentReminder {
+  id: string;
+  title: string;
+  amount: number;
+  categoryId?: string | null;
+  paymentMethod?: string | null;
+  dueDay: number; // 1 - 31
+  remindDaysBefore: number; // 0 - 7 (0 = on the due date)
+  nextDueDate: string; // YYYY-MM-DD
+  active: boolean;
+}
+
+export type PaymentReminderInput = Omit<PaymentReminder, 'id' | 'nextDueDate' | 'active'>;
+
 export type AutomationFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 
 export interface AutomationRule {

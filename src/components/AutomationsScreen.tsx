@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { AutomationRule, Category } from '../lib/types';
 import { AddAutomationModal } from './AddAutomationModal';
+import { RemindersPanel } from './RemindersPanel';
 import { paymentLabel } from '../lib/paymentTypes';
 
 interface AutomationsScreenProps {
@@ -34,6 +35,7 @@ interface AutomationsScreenProps {
   onDeleteRule: (id: string) => void;
   onToggleRule: (id: string) => void;
   onTriggerRule: (rule: AutomationRule) => void;
+  onExpenseLogged?: () => void;
 }
 
 export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
@@ -44,7 +46,9 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
   onDeleteRule,
   onToggleRule,
   onTriggerRule,
+  onExpenseLogged,
 }) => {
+  const [view, setView] = useState<'automations' | 'reminders'>('automations');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<AutomationRule | null>(null);
   const [filterType, setFilterType] = useState<'ALL' | 'EXPENSE' | 'INCOME' | 'ACTIVE' | 'PAUSED'>('ALL');
@@ -208,22 +212,51 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
 
   return (
     <div className="space-y-4 sm:space-y-6 text-foreground pb-24 sm:pb-12 max-w-6xl mx-auto">
-      {/* 1. Header & Main Action Bar */}
+      {/* 1. Header & Main Action Bar: switch between automations and payment reminders */}
       <div className="flex items-center justify-between gap-3 pb-0.5">
-        <div className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse" />
-          <span>{activeRules.length} Active Rules</span>
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex items-center bg-surface-raised border border-surface-border rounded-xl p-0.5 text-[11px] sm:text-xs font-semibold flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => setView('automations')}
+              className={`px-2.5 sm:px-3 py-1 rounded-lg transition-all ${
+                view === 'automations' ? 'bg-primary text-white shadow-sm font-bold' : 'text-zinc-400 hover:text-foreground'
+              }`}
+            >
+              Automations
+            </button>
+            <button
+              type="button"
+              onClick={() => setView('reminders')}
+              className={`px-2.5 sm:px-3 py-1 rounded-lg transition-all ${
+                view === 'reminders' ? 'bg-primary text-white shadow-sm font-bold' : 'text-zinc-400 hover:text-foreground'
+              }`}
+            >
+              Reminders
+            </button>
+          </div>
+
+          {view === 'automations' && (
+            <div className="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse" />
+              <span>{activeRules.length} Active Rules</span>
+            </div>
+          )}
         </div>
 
-        <button
-          onClick={handleOpenCreate}
-          className="px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-xs sm:text-sm flex items-center space-x-1.5 transition-all shadow-md shadow-primary/25 active:scale-[0.98]"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Automation</span>
-        </button>
+        {view === 'automations' && (
+          <button
+            onClick={handleOpenCreate}
+            className="px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-xs sm:text-sm flex items-center space-x-1.5 transition-all shadow-md shadow-primary/25 active:scale-[0.98] flex-shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Automation</span>
+          </button>
+        )}
       </div>
 
+      {view === 'automations' && (
+      <>
       {/* 2. Top Metric Cards (Scheduled Out & Scheduled In) */}
       <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
         {/* Scheduled Outflows */}
@@ -857,6 +890,14 @@ export const AutomationsScreen: React.FC<AutomationsScreenProps> = ({
           </div>
         )}
       </div>
+
+      </>
+      )}
+
+      {/* Payment Reminders (separate from automations: they alert you, and you choose whether to log) */}
+      {view === 'reminders' && (
+        <RemindersPanel categories={categories} currencySymbol={currencySymbol} onExpenseLogged={onExpenseLogged} />
+      )}
 
       {/* Add / Edit Rule Modal */}
       <AddAutomationModal

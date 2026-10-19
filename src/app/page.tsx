@@ -22,6 +22,7 @@ import { MobileBottomNav } from '../components/MobileBottomNav';
 import { DateRangeFilter } from '../components/DateRangeFilter';
 import { Category, CategoryBreakdown, DashboardSummary, Transaction, TransactionType, UserProfile, AutomationRule, FontSize } from '../lib/types';
 import { api } from '../lib/api';
+import { logReminderAsExpense } from '../lib/reminders';
 import { 
   TrendingUp, 
   ArrowUpRight, 
@@ -484,6 +485,31 @@ export default function DashboardPage() {
       setIsLoading(false);
     }
   }, []);
+
+  // Opened from a payment reminder's "Add expense" button: log that payment once the user is signed in
+  useEffect(() => {
+    if (!user || typeof window === 'undefined') return;
+    const reminderId = new URLSearchParams(window.location.search).get('addReminder');
+    if (!reminderId) return;
+    // Remove the parameter first so a reload or a second run never logs the payment twice
+    window.history.replaceState(window.history.state, '', `${window.location.pathname}${window.location.hash}`);
+
+    (async () => {
+      try {
+        const res = await api.getPaymentReminders();
+        const reminder = res.data?.find((r) => r.id === reminderId);
+        if (!reminder) {
+          showToast('That payment reminder no longer exists');
+          return;
+        }
+        await logReminderAsExpense(reminder);
+        showToast(`Logged "${reminder.title}" as an expense`);
+        loadData();
+      } catch (err: any) {
+        showToast(err?.response?.data?.message || 'Could not add the expense');
+      }
+    })();
+  }, [user, loadData]);
 
   // Check stored auth session
   useEffect(() => {
@@ -1275,6 +1301,7 @@ export default function DashboardPage() {
             onDeleteRule={handleDeleteAutomationRule}
             onToggleRule={handleToggleAutomationRule}
             onTriggerRule={handleTriggerAutomationRule}
+            onExpenseLogged={loadData}
           />
         )}
 

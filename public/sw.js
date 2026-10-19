@@ -25,19 +25,30 @@ self.addEventListener('push', (event) => {
       body: data.body,
       icon: '/icons/icon-192.png',
       badge: '/icons/icon-192.png',
-      data: { url: data.url || '/' },
+      // Payment reminders carry an "Add expense" button; browsers that do not show buttons ignore this list
+      actions: Array.isArray(data.actions) ? data.actions : [],
+      data: { url: data.url || '/', actionUrl: data.actionUrl || data.url || '/' },
     })
   );
 });
 
-// Tapping an alert opens the app, or brings the open window to the front
+// Tapping an alert opens the app, or brings the open window to the front.
+// The "Add expense" button opens the reminder's link, which logs the payment in the app.
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const url = (event.notification.data && event.notification.data.url) || '/';
+  const data = event.notification.data || {};
+  const isAddExpense = event.action === 'add-expense';
+  const url = (isAddExpense ? data.actionUrl : data.url) || '/';
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
       for (const client of clients) {
-        if ('focus' in client) return client.focus();
+        if ('focus' in client) {
+          // An open window is moved to the reminder link only for the button, so a plain tap does not reload it
+          if (isAddExpense && 'navigate' in client) {
+            return client.navigate(url).then((c) => (c || client).focus());
+          }
+          return client.focus();
+        }
       }
       return self.clients.openWindow(url);
     })
